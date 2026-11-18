@@ -13,6 +13,8 @@ test("a first-time visitor can rehearse and retry without a microphone", async (
   await page.getByRole("button", { name: "Check my reply" }).click();
   await expect(page.getByText("I heard your fee and when I can collect the trousers.")).toBeVisible();
   await expect(page.getByRole("listitem")).toHaveCount(2);
+  await page.getByRole("button", { name: "Hear feedback" }).click();
+  await expect(page.getByRole("button", { name: "Pause audio" })).toBeVisible();
 });
 
 test("a learner can switch languages, play the Tamil customer and clear the rehearsal", async ({ page, context, baseURL }) => {
@@ -30,4 +32,30 @@ test("a learner can switch languages, play the Tamil customer and clear the rehe
   await page.getByRole("button", { name: "மீண்டும் தொடங்கு" }).click();
   await expect(page.getByRole("listitem")).toHaveCount(0);
   await expect(page.getByRole("textbox")).toBeFocused();
+});
+
+test("dictation leaves the transcript editable before assessment", async ({ page, context, baseURL }) => {
+  await useEnglish(context, baseURL!);
+  await page.addInitScript(() => {
+    class RecognitionFixture {
+      lang = "";
+      onresult?: (event: { results: { transcript: string }[][] }) => void;
+      onend?: () => void;
+      start() {
+        this.onresult?.({ results: [[{ transcript: "I charge fifty rupees" }]] });
+        this.onend?.();
+      }
+      abort() {}
+    }
+    Reflect.set(window, "SpeechRecognition", RecognitionFixture);
+  });
+  await page.goto("/practice");
+  await page.getByText("Speak a reply", { exact: true }).click();
+  await page.getByRole("button", { name: "Use microphone" }).click();
+  const reply = page.getByRole("textbox");
+  await expect(reply).toHaveValue("I charge fifty rupees");
+  await expect(page.getByRole("listitem")).toHaveCount(0);
+  await reply.fill("I charge fifty rupees. I need two days.");
+  await page.getByRole("button", { name: "Check my reply" }).click();
+  await expect(page.getByRole("listitem")).toHaveCount(1);
 });

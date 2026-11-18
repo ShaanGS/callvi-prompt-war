@@ -11,16 +11,16 @@ Callvi gives women running small businesses a place to practise that conversatio
 ## Try it in a minute
 
 1. Open the rehearsal above and press **Hear the customer**. The prompt is also written on screen.
-2. Answer **“I charge fifty rupees.”** Press **Check my reply**. Callvi recognises the fee and asks when the trousers will be ready.
+2. Answer **“I charge fifty rupees.”** Press **Check my reply**. Press **Hear feedback**. Callvi recognises the fee and asks when the trousers will be ready.
 3. Add **“I can have them ready in two days.”** Submit the complete offer. Compare both attempts, or try giving only the pickup time. Switch to Tamil to hear the same customer's request.
 
-The public rehearsal plays prerecorded customer speech. Written replies are checked in your tab with the same assessment function used by the voice agent. Refreshing clears the exercise. The prices and turnaround time belong to this fictional order.
+The public rehearsal plays prerecorded customer speech. Use **Speak a reply** for optional browser dictation where supported, or type. Review the words before checking them. Dictation may send audio to the browser’s speech service. Written replies are checked in your tab with the same assessment function used by the voice agent. Refreshing clears the exercise. The prices and turnaround time belong to this fictional order.
 
 ## Where the phone fits
 
 | Experience | What the learner does | What it needs |
 | --- | --- | --- |
-| Browser rehearsal | Listen, type a reply, retry and compare attempts | The public link above |
+| Browser rehearsal | Listen, dictate or type, hear tailored feedback and compare attempts | The public link above |
 | Live AI conversation | Speak to the customer, interrupt, ask for another explanation and retry | Configured Sarvam or ElevenLabs browser agent and microphone |
 | Inbound phone | Dial from a handset, practise by speech and resume a consented checkpoint on a later call | Deployed Sarvam phone agent, inbound number and verified redial |
 
@@ -54,4 +54,4 @@ The app uses TypeScript, React, Next.js, Zod and PostgreSQL. Sarvam and ElevenLa
 
 ## Project history
 
-The Callvi voice companion, three courses and provider adapters predate Prompt War. For this edition we built the tailoring scenario and bilingual rubric, an audible browser rehearsal with per-attempt feedback, a two-call regression, Cloud Run packaging and a public interactive demo. The curriculum is team-authored. [Project description and pitch](docs/PROMPT_WAR.md) · [Media credits](docs/MEDIA.md)
+The Callvi voice companion, three courses and provider adapters predate Prompt War. For this edition we built the tailoring scenario and bilingual rubric, a browser rehearsal with optional dictation and bilingual spoken feedback, a two-call regression, Cloud Run packaging and a public interactive demo. The curriculum is team-authored. [Project description and pitch](docs/PROMPT_WAR.md) · [Media credits](docs/MEDIA.md)

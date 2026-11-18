@@ -9,9 +9,9 @@ Callvi is an AI for Education assistant for women who run small businesses and w
 | Time | What the audience sees and hears |
 | --- | --- |
 | 0–10s | Open the [Tamil rehearsal](https://shaangs.github.io/callvi-prompt-war/?lang=ta). Say “Imagine you do alterations from home. You charge fifty rupees and need two days. Listen to what your customer wants.” Press the headphone button. |
-| 10–25s | Switch to English if helpful. Invite a judge to answer as the tailor. If they give the fee alone, read the feedback asking when the trousers will be ready. If they give both details straight away, ask them to remove one and retry. |
+| 10–25s | Switch to English if helpful. Invite a judge to answer as the tailor. If they give the fee alone, play the feedback asking when the trousers will be ready. If they give both details straight away, ask them to remove one and retry. |
 | 25–40s | Compare the two attempts on screen. Point to the detail that changed. Say “She can try those words here before she needs to say them to a paying customer.” |
-| 40–55s | In a configured voice session, let the judge interrupt or ask for another try. Explain that the voice agent plays the customer and the curriculum checks the offer. On GitHub Pages the customer audio is prerecorded and the learner types. |
+| 40–55s | In a configured voice session, let the judge interrupt or ask for another try. Explain that the voice agent plays the customer and the curriculum checks the offer. On GitHub Pages the customer audio is prerecorded and the learner can type or use supported browser dictation. |
 | 55–60s | Close with “A woman who runs her business by phone should be able to practise by phone.” Demonstrate handset access once the inbound number has passed the redial test below. |
 
 ## Demonstrate the decision
@@ -52,6 +52,8 @@ Configure the published Sarvam agents with those HTTPS callback URLs. The source
 The production standalone build passed and returned HTTP 200 from its health endpoint with the hosted PostgreSQL connection. All 126 unit and integration tests passed. Six desktop/mobile browser journeys passed, including the new keyboard-only rehearsal. A separate live Sarvam browser test used a synthetic microphone and reached the provider's speaking state. Run it explicitly with `LIVE_SARVAM_TEST=1` and `npx playwright test e2e/live-sarvam.spec.ts --project desktop` against a configured agent. Seven optional ElevenLabs journeys were skipped in this run.
 
 The phone regression exercises the actual authenticated tool handler, curriculum and database across two simulated carrier interactions. At verification time the Sarvam workspace had zero inbound deployments. Physical handset audio, hangup delivery, redial and production callback routing still need a live test after deployment.
+
+The public rehearsal offers English and Tamil customer audio, optional browser dictation and spoken coaching. Dictation availability and accuracy depend on the browser, language and microphone permission. The typed flow and recorded feedback work independently.
 
 Provide the public one-branch repository under 10 MB, working Cloud Run service URL, project description above and LinkedIn post URL. The README identifies the pre-existing Callvi components and the features built for this edition. Open the final links in a signed-out browser before using one of the two submission attempts.
 

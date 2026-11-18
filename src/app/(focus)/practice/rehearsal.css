@@ -75,3 +75,9 @@
   .cv-foot { align-items: flex-start }
 }
 @media(max-width:420px) { .cv-brand>span { display:none } }
+.cv-dictation { font-size: 14px; color: #4d5650 }
+.cv-dictation summary { cursor: pointer; width: fit-content; color: var(--accent); font-weight: 600 }
+.cv-dictation summary:focus-visible { outline: 3px solid #12739b; outline-offset: 3px }
+.cv-dictation p { margin: 7px 0 }
+.cv-dictation button { border: 1px solid var(--line); border-radius: 5px; padding: 5px 9px; background: #fffcf5 }
+.cv-dictation [role=status] { margin-inline-start: 8px }

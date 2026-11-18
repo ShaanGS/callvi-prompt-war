@@ -11,3 +11,4 @@ await build({
 await cp("demo/index.html", "dist/rehearsal-demo/index.html");
 await cp("public/rehearsal", "dist/rehearsal-demo/rehearsal", { recursive: true });
 await cp("demo/walkthrough.mp4", "dist/rehearsal-demo/walkthrough.mp4");
+await cp("docs/media/callvi-cover.webp", "dist/rehearsal-demo/callvi-cover.webp");
