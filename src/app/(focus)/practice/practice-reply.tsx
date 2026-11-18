@@ -117,6 +117,6 @@ export function PracticeReply({ exercise, language: initialLanguage, assets = "/
           })}</div></li>)}</ol>
       </section>}
     </main>
-    <footer className="cv-foot"><span>{text.privacy}</span>{homeHref ? <a href={homeHref}>{text.back}</a> : <a href="https://github.com/ShaanGS/callvi-prompt-war">GitHub ↗</a>}</footer>
+    <footer className="cv-foot"><span>{text.privacy}</span>{homeHref ? <a href={homeHref}>{text.back}</a> : <a href="./call-sample.html">{language === "ta-IN" ? "மாதிரி அழைப்பைக் கேளுங்கள் (ஆங்கிலம்)" : "Hear a live AI call sample"}</a>}</footer>
   </div>;
 }

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1d3533">
+  <title>Hear the live AI call · Callvi</title>
+  <style>
+    * { box-sizing: border-box }
+    body { margin: 0; background: #f8f5ef; color: #202a29; font: 17px/1.55 Arial, sans-serif }
+    main { width: min(100% - 36px, 740px); margin: 32px auto 48px }
+    a { color: #84331f; text-underline-offset: 4px }
+    h1 { font: 48px/1.05 Georgia, serif; letter-spacing: -.04em; margin: 20px 0 8px }
+    h2 { font: 26px Georgia, serif }
+    header { color: #fffaf0; background: #1d3533; border-radius: 12px; overflow: hidden; margin: 24px 0 }
+    header img { display: block; width: 100%; height: clamp(130px, 25vw, 220px); object-fit: cover; object-position: 50% 61% }
+    header div { padding: 20px clamp(18px,4vw,34px) 26px }
+    header p { max-width: 55ch; margin: 12px 0 18px }
+    audio { display: block; width: 100% }
+    dt { font-weight: bold; margin-top: 14px }
+    dd { margin: 0 }
+    .note { color: #58605c; font-size: 15px }
+  </style>
+</head>
+<body><main>
+  <a href="./">← Try the tailoring rehearsal</a>
+  <header>
+    <img src="./rehearsal/worktable.webp" alt="">
+    <div><h1>On the line with Callvi</h1>
+    <p>A caller asks to rehearse. Listen for the two details the AI picks up before it starts teaching.</p>
+    <audio controls preload="metadata" aria-label="Call sample in English" src="./rehearsal/live-call.mp3"></audio></div>
+  </header>
+  <h2>Call transcript</h2>
+  <dl>
+    <dt>Callvi</dt><dd>Vanakkam. I am Callvi, an AI learning companion. Shall we continue in Tamil or English?</dd>
+    <dt>Caller</dt><dd>I am a home tailor. I want to practise a customer call about a price and a pickup time. Can you play my customer?</dd>
+    <dt>Callvi</dt><dd>That sounds like a great practical goal. So basically you want to practise handling a customer call to discuss pricing and pickup times for your tailoring business. Is that correct?</dd>
+  </dl>
+  <p class="note">Captured from a live Sarvam browser call with a synthetic test caller. Pauses were shortened. The transcript uses standard spelling.</p>
+  <a href="https://github.com/ShaanGS/callvi-prompt-war">View the project on GitHub</a>
+</main></body>
+</html>

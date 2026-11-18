@@ -2,7 +2,7 @@
 
 [![Practise the call before the customer rings. A keypad phone rests beside a sewing machine on a tailor’s worktable.](docs/media/callvi-cover.webp)](https://shaangs.github.io/callvi-prompt-war/)
 
-**[Try the rehearsal in English](https://shaangs.github.io/callvi-prompt-war/) · [தமிழில் முயலுங்கள்](https://shaangs.github.io/callvi-prompt-war/?lang=ta) · [Watch the 25-second demo](https://shaangs.github.io/callvi-prompt-war/walkthrough.mp4)**
+**[Hear the live AI call sample](https://shaangs.github.io/callvi-prompt-war/call-sample.html) · [Try the rehearsal in English](https://shaangs.github.io/callvi-prompt-war/) · [தமிழில் முயலுங்கள்](https://shaangs.github.io/callvi-prompt-war/?lang=ta) · [Watch the 25-second demo](https://shaangs.github.io/callvi-prompt-war/walkthrough.mp4)**
 
 A customer wants her trousers shortened for ₹40 by tomorrow. You charge ₹50 and need two days. What would you say when she calls?
 
@@ -14,7 +14,7 @@ Callvi gives women running small businesses a place to practise that conversatio
 2. Answer **“I charge fifty rupees.”** Press **Check my reply**. Press **Hear feedback**. Callvi recognises the fee and asks when the trousers will be ready.
 3. Add **“I can have them ready in two days.”** Submit the complete offer. Compare both attempts, or try giving only the pickup time. Switch to Tamil to hear the same customer's request.
 
-The public rehearsal plays prerecorded customer speech. Use **Speak a reply** for optional browser dictation where supported, or type. Review the words before checking them. Dictation may send audio to the browser’s speech service. Written replies are checked in your tab with the same assessment function used by the voice agent. Refreshing clears the exercise. The prices and turnaround time belong to this fictional order.
+In the call sample, the live Sarvam agent hears a synthetic caller ask to practise and confirms her tailoring goal in its own words. The public rehearsal plays prerecorded customer speech. Use **Speak a reply** for optional browser dictation where supported, or type. Review the words before checking them. Dictation may send audio to the browser’s speech service. Written replies are checked in your tab with the same assessment function used by the voice agent. Refreshing clears the exercise. The prices and turnaround time belong to this fictional order.
 
 ## Where the phone fits
 
