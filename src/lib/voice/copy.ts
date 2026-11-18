@@ -1,10 +1,10 @@
 import type { LanguageCode } from "../languages";
 
 const en = {
-  eyebrow: "A LEARNING COMPANION FOR EVERY WOMAN.",
-  title: "Build your skills.\nFind your own way.",
-  body: "A voice companion for women ready to learn, earn and grow. Explore practical skills in Tamil or English, one conversation at a time.",
-  announcement: "Your voice. Your language. Your next chapter.",
+  eyebrow: "VOICE PRACTICE FOR WOMEN IN SMALL BUSINESS",
+  title: "Practise the call\nbefore the customer rings.",
+  body: "Rehearse a customer conversation in Tamil or English. Tell Callvi what you charge and when the work will be ready. Hear what your customer still needs to know.",
+  announcement: "Customer-call rehearsal in Tamil and English",
   discover: "Meet Callvi", how: "How it works", start: "Start learning", voiceChat: "Voice chat",
   business: "Small business", digital: "Everyday digital skills", communication: "Confident conversations",
   cardTitle: "Start with a hello.",
@@ -35,9 +35,9 @@ const en = {
 
 const ta: typeof en = {
   eyebrow: "ஒரு உரையாடலில் தொடங்கும் புதிய வாய்ப்புகள்",
-  title: "புதிய திறன்கள்.\nபுதிய வாய்ப்புகள்.",
-  body: "கற்கவும், சம்பாதிக்கவும், வளரவும் விரும்பும் பெண்களுக்கான குரல் வழித் துணை. தமிழிலோ ஆங்கிலத்திலோ, ஒவ்வொரு உரையாடலிலும் பயனுள்ள திறன்களைக் கற்றிடுங்கள்.",
-  announcement: "உங்கள் குரல். உங்கள் மொழி. உங்கள் அடுத்த படி.",
+  title: "வாடிக்கையாளர் அழைக்கும் முன்\nபேசிப் பழகுங்கள்.",
+  body: "தமிழிலோ ஆங்கிலத்திலோ வாடிக்கையாளருடன் பேசிப் பழகுங்கள். உங்கள் கூலி எவ்வளவு, வேலை எப்போது முடியும் என்று கால்வியிடம் சொல்லுங்கள். இன்னும் என்ன சொல்ல வேண்டும் என்று கேளுங்கள்.",
+  announcement: "தமிழிலும் ஆங்கிலத்திலும் வாடிக்கையாளர் அழைப்புப் பயிற்சி",
   discover: "கால்வியை அறியுங்கள்", how: "எப்படிச் செயல்படுகிறது", start: "கற்கத் தொடங்குங்கள்", voiceChat: "குரல் உரையாடல்",
   business: "சிறு வணிகம்", digital: "அன்றாட டிஜிட்டல் திறன்கள்", communication: "நம்பிக்கையான உரையாடல்கள்",
   cardTitle: "ஒரு வணக்கத்தில் தொடங்கலாம்.",

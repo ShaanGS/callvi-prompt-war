@@ -4,6 +4,16 @@
 
 Callvi is an AI for Education assistant for women who run small businesses and want to practise real customer conversations in Tamil or English. A caller can rehearse a price negotiation, hear which part of her offer was unclear and try again. The learner chooses whether Callvi remembers her place. The web version offers microphone access and a keyboard-only rehearsal. A configured inbound phone agent can deliver the lesson through speech on a basic phone.
 
+## The 60-second pitch
+
+| Time | What the audience sees and hears |
+| --- | --- |
+| 0–10s | Open the [Tamil rehearsal](https://shaangs.github.io/callvi-prompt-war/?lang=ta). Say “Imagine you do alterations from home. You charge fifty rupees and need two days. Listen to what your customer wants.” Press the headphone button. |
+| 10–25s | Switch to English if helpful. Invite a judge to answer as the tailor. If they give the fee alone, read the feedback asking when the trousers will be ready. If they give both details straight away, ask them to remove one and retry. |
+| 25–40s | Compare the two attempts on screen. Point to the detail that changed. Say “She can try those words here before she needs to say them to a paying customer.” |
+| 40–55s | In a configured voice session, let the judge interrupt or ask for another try. Explain that the voice agent plays the customer and the curriculum checks the offer. On GitHub Pages the customer audio is prerecorded and the learner types. |
+| 55–60s | Close with “A woman who runs her business by phone should be able to practise by phone.” Demonstrate handset access once the inbound number has passed the redial test below. |
+
 ## Demonstrate the decision
 
 1. Open Callvi and choose English or Tamil. In a voice session, say “I'd like to rehearse a customer call” or “தையல் வாடிக்கையாளரிடம் விலை பேசிப் பழகணும்.” Choose the rehearsal when offered. The agent asks separately about memory.

@@ -1,71 +1,57 @@
-# Callvi · AI for Education
+# Callvi
 
-Callvi helps women who run small businesses rehearse practical conversations in Tamil or English. A home tailor can practise quoting a price and pickup time before a customer phones. Callvi plays the customer, listens to the offer and uses a bilingual rubric to identify the detail still missing. A learner can ask for a different explanation, retry, decline memory or save a stopping point.
+[![Practise the call before the customer rings. A keypad phone rests beside a sewing machine on a tailor’s worktable.](docs/media/callvi-cover.webp)](https://shaangs.github.io/callvi-prompt-war/)
 
-### Try the Prompt War exercise
+**[Try the rehearsal in English](https://shaangs.github.io/callvi-prompt-war/) · [தமிழில் முயலுங்கள்](https://shaangs.github.io/callvi-prompt-war/?lang=ta) · [Watch the 25-second demo](https://shaangs.github.io/callvi-prompt-war/walkthrough.mp4)**
 
-Run the app locally with Node.js 24 and `npm ci`, then `npm run dev`. Open the homepage and choose Tamil or English. In a configured voice session, ask to rehearse a customer call and choose the course of that name. **Practise by text** opens the same scenario and rubric without a voice account, microphone or API key.
+A customer wants her trousers shortened for ₹40 by tomorrow. You charge ₹50 and need two days. What would you say when she calls?
 
-In the exercise, shortening a pair of trousers costs ₹50 and takes two days. The customer asks for ₹40 and collection tomorrow. Give the fee alone, then try the full reply. Compare the feedback after each attempt. These numbers are fictional terms of the exercise. The rubric checks a bounded set of phrases and can leave an unfamiliar answer ungraded.
+Callvi gives women running small businesses a place to practise that conversation in Tamil or English. The AI voice agent plays the customer. A bilingual lesson rubric checks the offer and tells the learner which detail the customer still needs. She can try again in her own words. **Prompt War vertical · AI for Education.**
 
-**Implementation.** Next.js and TypeScript serve the learner interface, authenticated voice tools and course content. Sarvam or ElevenLabs handles browser speech and dialogue. Sarvam inbound calls use server-to-server tools. PostgreSQL stores consented checkpoints. Zod validates tool inputs, Vitest checks decisions and Playwright exercises the learner journey.
+## Try it in a minute
 
-**Project history.** The voice companion, three original courses and provider adapters predate Prompt War. This public edition builds on the earlier Callvi prototype and adds the tailoring rehearsal, bilingual browser practice, homepage channel fixes, a two-call regression and Cloud Run packaging. The inbound flow uses a provider-owned phone number and requires a real two-call test before the app displays it.
+1. Open the rehearsal above and press **Hear the customer**. The prompt is also written on screen.
+2. Answer **“I charge fifty rupees.”** Press **Check my reply**. Callvi recognises the fee and asks when the trousers will be ready.
+3. Add **“I can have them ready in two days.”** Submit the complete offer. Compare both attempts, or try giving only the pickup time. Switch to Tamil to hear the same customer's request.
 
-[Demo script, project description and deployment](docs/PROMPT_WAR.md)
+The public rehearsal plays prerecorded customer speech. Written replies are checked in your tab with the same assessment function used by the voice agent. Refreshing clears the exercise. The prices and turnaround time belong to this fictional order.
 
-## Learning by phone
+## Where the phone fits
 
-The call is the product: the intended learner may have only a basic button phone. The current browser is a demo access channel; service discovery, today's intent, consent, learning navigation and ending the call work through speech. A new or returning call does not automatically start a lesson. See [the call-first product contract](docs/CALL_FIRST_PRODUCT.md) for the flow and the remaining inbound-telephony/SMS integration work.
+| Experience | What the learner does | What it needs |
+| --- | --- | --- |
+| Browser rehearsal | Listen, type a reply, retry and compare attempts | The public link above |
+| Live AI conversation | Speak to the customer, interrupt, ask for another explanation and retry | Configured Sarvam or ElevenLabs browser agent and microphone |
+| Inbound phone | Dial from a handset, practise by speech and resume a consented checkpoint on a later call | Deployed Sarvam phone agent, inbound number and verified redial |
 
-Learners enter directly without an account or sign-in. A signed, httpOnly cookie identifies this browser; saved progress resumes in the same browser when memory consent is granted. Clearing cookies or using a different device starts a separate profile. Staff access remains protected at `/sign-in?next=/staff`.
+The intended learner can use a basic phone. The inbound integration has a two-call regression covering consent, identity and resume. A physical handset test and public Cloud Run URL are still pending. [Phone flow](docs/CALL_FIRST_PRODUCT.md) · [Pitch and deployment](docs/PROMPT_WAR.md)
 
-- **Channels:** browser voice (ElevenLabs, with the Sarvam adapter retained), a text study room that drives the same agent tools, and optional inbound phone through a separately configured Sarvam phone agent. Phone is shown to learners only after a real inbound call and second-call resume test have been verified.
-- The four courses are Rehearse a Customer Call, Small Business Starter, Customer Communication and Digital Basics for a Small Business. The curriculum is team-authored and awaits expert review.
-- **The application owns the data.** Identity, consent, goals, courses, progress, checkpoints, practice records and memory live in Postgres, behind server-side domain services. The voice provider reaches them only through authenticated, idempotent API tools.
+## How Callvi makes a decision
 
-## Quick start
+The voice provider handles dialogue and speech. The Next.js server authenticates tool callbacks, loads the current lesson and evaluates the reply against its criteria. The tailoring lesson checks fee and pickup independently. Its Tamil and English phrase lists accept common variants. An unfamiliar substantive answer can receive an ungraded result. This exercise checks the details of an offer; it does not score accent or fluency.
+
+PostgreSQL holds consented checkpoints. Repeated provider callbacks use idempotency checks. The browser rehearsal needs neither a database nor a provider key. [Lesson and rubric](src/content/courses/customer-call.ts) · [Assessment function](src/server/services/assessment/assessment-service.ts) · [Privacy and retention](docs/PRIVACY_AND_RETENTION.md)
+
+## Run locally
+
+Use Node.js 24. The development server starts an embedded PostgreSQL database on first use.
 
 ```bash
-npm install
-npm run dev        # http://localhost:3000 — direct entry, embedded database, no credentials needed
+npm ci
+npm run dev
 ```
 
-The main screen is voice first: tap **Call Callvi** and complete consent, goal discovery, course choice and learning through conversation.
+Open [localhost:3000](http://localhost:3000) and choose **Practise by text**. For live voice, configure a provider and its authenticated callbacks. [Setup guide](docs/SETUP.md) · [Environment variables](.env.example)
 
-See [docs/SETUP.md](docs/SETUP.md) for Supabase, Sarvam and phone configuration, and [.env.example](.env.example) for every variable.
+| Verify or build | Command |
+| --- | --- |
+| Lint, type-check, run tests and build Next.js | `npm run check` |
+| Run unit, integration and agent-scenario tests | `npm test` |
+| Run desktop and mobile journeys | `npx playwright install chromium` then `npm run test:e2e` |
+| Build the standalone judge rehearsal | `npm run build:rehearsal` |
 
-## Scripts
+The app uses TypeScript, React, Next.js, Zod and PostgreSQL. Sarvam and ElevenLabs provide live voice integrations. PGlite, Vitest and Playwright support local testing. GitHub Actions verifies and publishes the standalone rehearsal. [Verification and build workflow](.github/workflows/rehearsal.yml)
 
-| Command | Purpose |
-|---|---|
-| `npm run dev` / `build` / `start` | Next.js |
-| `npm run lint` / `typecheck` | ESLint, `tsc --noEmit` |
-| `npm test` | Vitest: unit, integration (consent, deletion, RLS, tool-callback auth, phone identity, provider proxy) and the 12 agent scenarios |
-| `npm run test:e2e` | Playwright journeys on desktop and mobile |
-| `npm run db:migrate` / `db:seed` | Apply `supabase/migrations/`, upsert course content |
-| `npm run staff:grant` | Grant or revoke staff access for a Supabase Auth user |
-| `npm run sarvam:config` | Print agent instructions and API-tool settings for the Sarvam dashboard |
-| `npm run agent:eval-export` | Export the agent scenarios as conversation test cases for the provider |
+## Project history
 
-## Layout
-
-```
-src/app/                 routes: learner pages (app), live room (focus), staff workspace, API routes
-src/components/          UI primitives, learner shell, learning room, voice panel
-src/content/             course content and its Zod schema
-src/lib/                 i18n (en, ta), languages, client-safe voice state
-src/server/agent/        tool registry, orchestrator, context builder, learning policy, evaluation scenarios
-src/server/services/     domain services: learners, sessions, courses, progress, memory, assessment, deletion
-src/server/providers/    Sarvam adapter: signed-URL proxy, tool callbacks, dashboard configuration
-src/server/repositories/ SQL access (Zod-validated rows)
-supabase/migrations/     versioned schema and row-level security
-tests/  e2e/  scripts/
-```
-
-## Documentation
-
-- Product and technical specifications: [docs/PRD.md](docs/PRD.md), [docs/TRD.md](docs/TRD.md), [docs/AGENT_SPEC.md](docs/AGENT_SPEC.md), [docs/COURSES_AND_ACCEPTANCE.md](docs/COURSES_AND_ACCEPTANCE.md), [docs/SOURCES.md](docs/SOURCES.md)
-- [docs/SETUP.md](docs/SETUP.md): setup and provider configuration
-- [docs/PRIVACY_AND_RETENTION.md](docs/PRIVACY_AND_RETENTION.md): what is stored, and how deletion works
-- [Verification and submission](docs/PROMPT_WAR.md#verification-on-november-18) covers the browser, database, simulated carrier interactions and outstanding real-call checks.
+The Callvi voice companion, three courses and provider adapters predate Prompt War. For this edition we built the tailoring scenario and bilingual rubric, an audible browser rehearsal with per-attempt feedback, a two-call regression, Cloud Run packaging and a public interactive demo. The curriculum is team-authored. [Project description and pitch](docs/PROMPT_WAR.md) · [Media credits](docs/MEDIA.md)
