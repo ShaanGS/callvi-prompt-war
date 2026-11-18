@@ -1,0 +1,11 @@
+.git
+.env*
+.data
+.vercel
+.next
+node_modules
+test-results
+playwright-report
+*.tsbuildinfo
+marlloz_product_build_pack
+supabase/.temp

@@ -1,0 +1,179 @@
+/* Scan only src/ for classes (not .data/, test output or node_modules), with or without git. */
+@import "tailwindcss" source("../");
+
+/*
+ * Callvi design tokens — the single source for colour, type,
+ * spacing, radius, shadow and focus. Components use these through Tailwind
+ * utilities (bg-canvas, text-ink, rounded-md, ...). Do not add one-off colours.
+ *
+ * Palette: clean white base, charcoal ink, and a clear blue voice accent.
+ * Status colours are muted and always paired with text/icon, never colour alone.
+ */
+@theme {
+  /* Type: Geist for everything; Noto Sans Tamil only supplies Tamil glyphs. */
+  --font-sans: var(--font-geist-sans), "Noto Sans Tamil", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.875rem;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2.25rem;
+  --text-3xl--line-height: 2.75rem;
+  --text-4xl: 3rem;
+  --text-4xl--line-height: 3.5rem;
+
+  /* Colour */
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
+  --color-sunken: #f0f1f4;
+  --color-ink: #17181c;
+  --color-muted: #5e626c;
+  --color-subtle: #858994;
+  --color-line: #e8e9ed;
+  --color-line-strong: #d8dbe2;
+
+  --color-accent: #4269df;
+  --color-accent-hover: #3457c6;
+  --color-accent-soft: #edf2ff;
+  --color-accent-ink: #294aaa;
+  --color-on-accent: #ffffff;
+
+  --color-success: #2f6b3a;
+  --color-success-soft: #e4efe4;
+  --color-warning: #8a5a12;
+  --color-warning-soft: #f6ecd9;
+  --color-danger: #a23b2a;
+  --color-danger-hover: #87301f;
+  --color-danger-soft: #f7e3de;
+  --color-info: #3c5a72;
+  --color-info-soft: #e3ebf1;
+
+  /* Voice call screen: a dark, focused mode using the same accent */
+  --color-call: #292929;
+  --color-call-raised: #414141;
+  --color-call-raised-hover: #505050;
+  --color-call-ink: #ffffff;
+  --color-call-muted: #b6b6b6;
+  --color-call-end: #f12731;
+  --color-call-end-hover: #d71f29;
+  --color-call-backdrop: rgb(21 23 20 / 0.72);
+
+  /* Radius: restrained, 6/8/12 only */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Shadow: one quiet elevation for overlays only */
+  --shadow-sm: 0 1px 2px rgb(28 31 26 / 0.06);
+  --shadow-md: 0 4px 16px rgb(28 31 26 / 0.08);
+
+  /* Layout widths */
+  --container-prose: 40rem;
+  --container-content: 64rem;
+  --container-wide: 76rem;
+}
+
+:root {
+  --focus-ring: #4269df;
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01";
+  text-rendering: optimizeLegibility;
+}
+
+/* Tamil script needs a little more line height to stay legible. */
+:lang(ta) body,
+[lang="ta"] {
+  line-height: 1.7;
+}
+
+/* One visible, consistent focus style for every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* On the dark call screen the focus ring switches to the light ink colour. */
+.call-surface :focus-visible {
+  outline-color: var(--color-call-ink);
+  outline-offset: 3px;
+  /* Keep each control's own shape (round call buttons stay round). */
+  border-radius: revert-layer;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Voice-first surfaces. The orb is static until the SDK supplies audio levels. */
+.voice-orb {
+  --voice-level: 0;
+  position: relative;
+  width: clamp(180px, 25vw, 256px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 28% 8%, #3f70ed 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 90%, #c7d9ff 0%, transparent 60%),
+    linear-gradient(145deg, #4778f5 5%, #7897ed 50%, #c5d5fa 100%);
+  transform: scale(calc(1 + var(--voice-level) * 0.14));
+  transition: transform 100ms linear;
+  box-shadow: inset 0 0 36px rgb(255 255 255 / 0.14);
+}
+.voice-orb-light {
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 75% 18% at 48% 54%, #f9fbff 0%, rgb(244 248 255 / 0.9) 20%, rgb(233 242 255 / 0.15) 65%, transparent 100%);
+  transform: rotate(calc(-35deg + var(--voice-level) * 38deg)) translateY(calc(var(--voice-level) * -12px));
+  filter: blur(8px);
+  transition: transform 120ms linear;
+}
+.voice-lobby { background: #fdfdfd; }
+.voice-live-surface { background: #fdfdfd; color: #17181c; }
+.voice-live-surface :focus-visible { outline-color: #4269df; }
+.voice-control {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #f1f2f5; color: #24262c; transition: background 150ms;
+}
+.voice-control:hover { background: #e7e9ee; }
+.voice-control:disabled { opacity: 0.4; }
+.voice-control-dark { background: #202124; color: white; }
+.voice-control-dark:hover { background: #34363b; }
+.voice-dial-control { width: 76px; height: 76px; background: #444; color: white; border: 1px solid #727272; }
+.voice-dial-control:hover { background: #505050; }
+.voice-dial-end { background: #f12731; border-color: #f12731; }
+.voice-dial-end:hover { background: #d71f29; }
