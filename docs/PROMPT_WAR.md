@@ -73,9 +73,11 @@ What was run, and what it showed. Anything not listed here was not verified.
 | Check | Result |
 | --- | --- |
 | Lint and strict type-check | Pass, no warnings |
-| Unit, integration and agent-scenario tests (`npm test`) | 241 pass across 21 files, including row-level security, idempotent callbacks and the educator dashboard against a real PostgreSQL; 82% statement coverage, enforced in CI |
+| Unit, integration and agent-scenario tests (`npm test`) | 244 pass across 22 files, including row-level security, foreign-key indexes, idempotent callbacks and the educator dashboard against a real PostgreSQL; 82% statement coverage, enforced in CI |
 | Deployed-preview tests (`npm run test:preview`) | 34 pass on desktop and mobile: accessibility, security headers and every lesson in both languages |
-| Accessibility of the public preview (axe-core, WCAG 2.2 AA and best practice) | 0 violations on every page, desktop and mobile, English and Tamil, checked on every push |
+| Full-app browser tests (`npm run test:e2e`) | 32 pass against the Next.js app and an embedded PostgreSQL: learner journeys, the customer-call rehearsal, and accessibility of every screen; run in CI |
+| Accessibility (axe-core, WCAG 2.2 AA and best practice) | 0 violations on every public preview page and every full-app screen, desktop and phone, English and Tamil, checked on every push |
+| Dependency audit (`npm audit --omit=dev`) | 0 vulnerabilities; CI fails on any high or critical advisory |
 | Security headers on the public preview | CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and HSTS served by Vercel |
 | Production standalone build | Built and returned HTTP 200 from `/api/health` with the hosted PostgreSQL connection |
 | Live Sarvam browser call | Reached the speaking state; with a synthetic caller, the agent identified a tailoring goal and, in a separate call, taught ₹50 divided by five packets and offered another example |

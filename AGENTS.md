@@ -12,11 +12,12 @@ Guidance for contributors and coding agents.
 ## Before you push
 
 ```bash
-npm run lint && npm run typecheck && npm run test:coverage
+npm run lint && npm run typecheck && npm run test:coverage && npm run build
 npm run test:preview   # the deployed preview: accessibility, headers, lessons
+npm run test:e2e       # the full app: journeys and accessibility in both languages
 ```
 
-Coverage thresholds live in [`vitest.config.mts`](vitest.config.mts) and only go up. A new route needs a Zod schema, the 16 KB body cap from [`body.ts`](src/server/http/body.ts) and an authentication check.
+Coverage thresholds live in [`vitest.config.mts`](vitest.config.mts) and only go up. A new route needs a Zod schema, the 16 KB body cap from [`body.ts`](src/server/http/body.ts), an authentication check and a rate limit keyed with [`clientKey`](src/server/http/respond.ts) or the learner id. A new foreign key needs an index; [`schema.test.ts`](tests/integration/schema.test.ts) enforces it.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

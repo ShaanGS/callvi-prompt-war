@@ -154,7 +154,7 @@ src/
       customer-communication/
 ```
 
-Claude Code may adapt this after inspecting framework conventions, but it must not merge all logic into one route or one giant component.
+Implementers may adapt this to framework conventions, but must not merge all logic into one route or one giant component.
 
 ## 5. Data model
 

@@ -8,6 +8,8 @@ Callvi is an AI learning companion that teaches practical skills **by voice conv
 
 **Prompt War theme: 2 — AI for Education.**
 
+> **What the public link runs:** three of Callvi's lessons with the same exercises and rubric as the full app, prerecorded lesson audio, and [a recording of a real live AI call](https://callvi-prompt-war.vercel.app/call-sample.html). It needs no account or keys. The full app, with saved progress and the educator dashboard, runs from this repository with no setup; live voice lessons also need a Sarvam or ElevenLabs key ([Run locally](#run-locally)).
+
 ---
 
 ## The problem
@@ -111,24 +113,28 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 | Languages | TypeScript, SQL, CSS |
 | Frameworks | Next.js 16 (App Router), React 19, Tailwind CSS |
 | AI and voice | Sarvam Conversational AI, ElevenLabs Agents (`gpt-6-sol`, `eleven_v4_turbo`) |
+| Speech in the preview | Piper text-to-speech for the prerecorded lesson audio ([voices and attribution](docs/MEDIA.md)), the browser Web Speech API for dictation |
 | Data | PostgreSQL (Supabase in production, PGlite for local and tests) |
-| Validation and security | Zod, HMAC-signed identities, row-level security |
+| Identity | Supabase Auth email one-time codes; HMAC-signed browser identity for learners who have not signed in |
+| Validation and security | Zod, row-level security, constant-time secret comparison |
 | Testing | Vitest, Playwright, axe-core |
 | Build and deploy | esbuild (preview), Vercel, Docker for Cloud Run, GitHub Actions |
 
 ## Security
 
 - Every API route validates its input with Zod and caps the body at 16 KB; every route except the health check authenticates the caller.
-- Agent tool callbacks require a per-agent bearer secret, compared in constant time, and are idempotent.
+- Agent tool callbacks require a per-agent bearer secret, compared in constant time, and are idempotent. Repeated wrong secrets lock the address out before any secret is compared.
+- Every route and learner action is rate limited, keyed on an address the client cannot forge (not the first `X-Forwarded-For` entry).
+- Each staff page checks the staff role itself rather than relying on its layout. Cookies are `httpOnly`, `SameSite=Lax` and `Secure` in production.
 - Phone numbers are stored only as HMAC hashes; logs are redacted.
-- Row-level security on all 18 application tables, covered by integration tests.
+- Row-level security on every table, enforced by a test that fails if a new table arrives without it.
 - The deployed site sends a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` and HSTS ([`vercel.json`](vercel.json)).
 
 Details and the threat model: [SECURITY.md](SECURITY.md) · [Privacy and retention](docs/PRIVACY_AND_RETENTION.md)
 
 ## Accessibility
 
-- Zero axe-core violations (WCAG 2.2 AA and best practice) on every demo page, desktop and mobile, English and Tamil — enforced by an automated test.
+- Zero axe-core violations (WCAG 2.2 AA and best practice) on every public demo page and every screen of the full app, including the educator dashboard and feedback states, in English and Tamil, on desktop and phone. CI enforces it on every push.
 - `<html lang>` follows the chosen language so screen readers pronounce Tamil correctly.
 - Feedback is announced through live regions; a changed explanation is announced too.
 - Skip links, visible focus, `prefers-reduced-motion` support and 44px touch targets.
@@ -140,17 +146,18 @@ Callvi's learners are often on basic phones and patchy mobile data, so the previ
 - **JavaScript cut by two thirds, from 928 KB to 303 KB** (about 95 KB compressed, as served). Lesson content is validated against the schema once at build time ([`extract-preview.ts`](scripts/extract-preview.ts)), so the phone receives three exercises as plain data rather than whole courses plus a validation library. The build fails if either is pulled back in ([`build-rehearsal.mjs`](scripts/build-rehearsal.mjs)).
 - Voice SDKs load only when a call starts; lesson audio loads only when played.
 - Hash-named fonts are cached for a year; audio for a day.
-- 21 database indexes cover the learner, session and mastery lookups the agent makes on every turn.
+- Every foreign key has an index, so deleting a learner's data follows an index instead of scanning each table. A test fails if a new foreign key arrives without one.
+- The educator overview takes 4 queries rather than 15, and a learner's courses are read concurrently rather than one after another.
 
 ## Testing
 
-**275 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking and a dependency audit.
+**310 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
-| Unit, integration and agent scenarios | **241** in 21 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
+| Unit, integration and agent scenarios | **244** in 22 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
 | Deployed preview | **34** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
-| Full app journeys (local) | 9 | Sign-in, practice, memory consent and the staff dashboard in the Next.js app | `npm run test:e2e` |
+| Full app | **32** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every learner screen in English and Tamil, on a phone, in feedback states and across the educator dashboard | `npm run test:e2e` |
 
 Coverage of `src/server`, `src/content` and `src/lib` is 82% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
 

@@ -2,7 +2,7 @@
 
 Date: 5 November 2026. Status: product and engineering plan, not a claim that these capabilities are implemented.
 
-The platform vision includes women starting a business, women operating a business, and women preparing for employment. The user agreed to **home business as the first narrow proving ground**, without abandoning that wider vision.
+The platform vision includes women starting a business, women operating a business, and women preparing for employment. The team chose **home business as the first narrow proving ground**, without abandoning that wider vision.
 
 ## The promise to prove
 

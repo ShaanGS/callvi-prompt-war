@@ -58,7 +58,7 @@ npm run build
 2. The app signs people in with a **one-time code**, not a magic link. Edit **Authentication → Email Templates → Magic Link** so that it shows the code:
 
    ```html
-   <h2>Your Learning Companion sign-in code</h2>
+   <h2>Your Callvi sign-in code</h2>
    <p>Enter this code to sign in: <strong>{{ .Token }}</strong></p>
    <p>If you did not ask for this, you can ignore this email.</p>
    ```
