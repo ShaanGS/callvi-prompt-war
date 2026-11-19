@@ -15,7 +15,11 @@ Callvi is a phone-first AI skill-building platform for women learning in Tamil o
 
 The public preview offers three interactive examples. The communication example is a tailoring conversation. The published audio sample captures the live agent teaching the cost of one packet. A physical handset demonstration requires a verified inbound number.
 
-## Cloud Run
+## Public Vercel demo
+
+[Open Callvi](https://callvi-prompt-war.vercel.app/). Vercel builds the three bilingual exercises and the recorded call from the main branch with `npm run build:rehearsal` and serves `dist/rehearsal-demo`. This deployment runs without provider keys or a learner database.
+
+## Optional full application on Cloud Run
 
 Use a billing-enabled project with Cloud Run, Cloud Build and Artifact Registry access. The Dockerfile builds the Next.js standalone server and listens on Cloud Run's injected port. The upload ignores local keys, generated files and learner databases.
 
@@ -76,7 +80,7 @@ The full application passed its production build, 126 unit and integration tests
 
 The public rehearsal offers English and Tamil customer audio, optional browser dictation and spoken coaching. Dictation availability and accuracy depend on the browser, language and microphone permission. The typed flow and recorded feedback work independently.
 
-Provide the public one-branch repository under 10 MB, working Cloud Run service URL, project description above and LinkedIn post URL. The README identifies the pre-existing Callvi components and the features built for this edition. Open the final links in a signed-out browser before using one of the two submission attempts.
+Provide the public one-branch repository under 10 MB, working Vercel deployment URL, project description above and LinkedIn post URL. The README identifies the pre-existing Callvi components and the features built for this edition. Open the final links in a signed-out browser before using one of the two submission attempts.
 
 ### LinkedIn draft
 
@@ -86,5 +90,5 @@ We built Callvi for women who want to practise everyday skills in Tamil or Engli
 
 For Prompt War’s AI for Education track, we built on our earlier voice companion and made three learning paths available to try in a browser. The demo includes a recording from a live AI call.
 
-Try Callvi: https://shaangs.github.io/callvi-prompt-war/
+Try Callvi: https://callvi-prompt-war.vercel.app/
 Source: https://github.com/ShaanGS/callvi-prompt-war
