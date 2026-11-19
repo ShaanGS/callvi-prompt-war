@@ -13,7 +13,7 @@ Callvi is a phone-first AI skill-building platform for women learning in Tamil o
 | 25–45s | For small business, try the cost of one packet. Ask for another explanation and give an answer. Switch to Tamil to hear the same practice question. For digital skills, try the payment verification scenario instead. |
 | 45–60s | Show how the response changes the feedback. Explain that a live learner can pause and return to a saved step if she grants memory consent. |
 
-The public preview offers three interactive examples. The communication example is a tailoring conversation. The published audio sample captures the live agent confirming a learner’s goal. A physical handset demonstration requires a verified inbound number.
+The public preview offers three interactive examples. The communication example is a tailoring conversation. The published audio sample captures the live agent teaching the cost of one packet. A physical handset demonstration requires a verified inbound number.
 
 ## Cloud Run
 
@@ -39,6 +39,29 @@ Configure the published Sarvam agents with those HTTPS callback URLs. The source
 
 [Google Cloud source deployments](https://cloud.google.com/run/docs/deploying-source-code) · [Secret Manager bindings](https://cloud.google.com/run/docs/configuring/services/secrets) · [Sarvam phone numbers](https://docs.sarvam.ai/voice-agents/deploy/telephony/manage-numbers)
 
+### Deploy the public learning preview by itself
+
+For a Cloud Run service with the same three interactive lessons as GitHub Pages, run the following in Cloud Shell from the repository root. This publishes the recorded call and browser exercises. The live AI browser calls, database and learner checkpoints use the full application deployment above.
+
+```bash
+set -e
+PROJECT_ID="$(gcloud config get-value project)"
+REGION=asia-south1
+npm ci
+npm run build:rehearsal
+stage="$(mktemp -d)"
+cp -R dist/rehearsal-demo "$stage/site"
+cat > "$stage/Dockerfile" <<'DOCKER'
+FROM nginxinc/nginx-unprivileged:stable-alpine
+COPY site/ /usr/share/nginx/html/
+DOCKER
+gcloud run deploy callvi-preview --source "$stage" --project "$PROJECT_ID" --region "$REGION" \
+  --allow-unauthenticated --port 8080 --max-instances 2
+url="$(gcloud run services describe callvi-preview --project "$PROJECT_ID" --region "$REGION" --format='value(status.url)')"
+curl --fail --silent --output /dev/null "$url/"
+echo "$url"
+```
+
 ## Submission
 
 ### Verification on November 18
@@ -49,13 +72,13 @@ The phone regression exercises the actual authenticated tool handler, curriculum
 
 ### Verification on November 19
 
-The full application passed its production build, 126 unit and integration tests and eight standard desktop/mobile browser journeys. An additional live Sarvam smoke test reached the speaking state. In a separate browser call, a synthetic caller asked to practise a tailoring conversation. The live agent identified pricing and pickup times and asked the caller to confirm that goal. The recorded excerpt demonstrates goal recognition. Full spoken lesson completion and real handset delivery still need separate verification.
+The full application passed its production build, 126 unit and integration tests and eight standard desktop/mobile browser journeys. An additional live Sarvam smoke test reached the speaking state. In a separate browser call, a synthetic caller asked to practise a tailoring conversation. The live agent identified pricing and pickup times and asked the caller to confirm that goal. A subsequent synthetic learner asked about unit cost. The published excerpt includes the agent teaching ₹50 divided by five packets and offering another example. Full spoken lesson completion and real handset delivery still need separate verification.
 
 The public rehearsal offers English and Tamil customer audio, optional browser dictation and spoken coaching. Dictation availability and accuracy depend on the browser, language and microphone permission. The typed flow and recorded feedback work independently.
 
 Provide the public one-branch repository under 10 MB, working Cloud Run service URL, project description above and LinkedIn post URL. The README identifies the pre-existing Callvi components and the features built for this edition. Open the final links in a signed-out browser before using one of the two submission attempts.
 
-**LinkedIn draft**
+### LinkedIn draft
 
 What would you like to learn if a lesson were a phone call away?
 
