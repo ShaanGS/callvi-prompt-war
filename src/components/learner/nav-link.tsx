@@ -34,7 +34,7 @@ export function BottomNavLink({ href, label, icon }: { href: string; label: stri
       href={href}
       aria-current={active ? "page" : undefined}
       className={clsx(
-        "flex min-h-14 flex-1 flex-col items-center justify-center gap-1 px-1 text-[0.6875rem] font-medium leading-tight",
+        "flex min-h-14 flex-1 flex-col items-center justify-center gap-1 px-1 text-xs font-medium leading-tight",
         active ? "text-accent" : "text-subtle hover:text-ink",
       )}
     >

@@ -188,6 +188,8 @@ export function LearningRoom({
   useEffect(() => {
     if (!isVoice || !voiceActive || ended) return;
     const timer = setInterval(async () => {
+      // A backgrounded tab cannot see the panel; skip the request until it can.
+      if (document.hidden) return;
       const latest = await fetchSessionView(view.id);
       if (latest) setView(latest);
     }, 4000);

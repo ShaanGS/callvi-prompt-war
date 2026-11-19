@@ -49,7 +49,7 @@
   align-items: center;
 }
 .cv-brand {
-  font-size: 29px;
+  font-size: 1.8125rem;
   letter-spacing: -0.06em;
   font-weight: 650;
   color: inherit;
@@ -86,7 +86,7 @@
 .cv-kicker,
 .cv-brief dt {
   color: #4b5353;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 550;
 }
 .cv-studio :is(h1, h2, p, blockquote, dl, dd, ol) {
@@ -110,10 +110,10 @@
   gap: 36px;
 }
 .cv-brief dd {
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 .cv-customer blockquote {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 450;
   line-height: 1.35;
   letter-spacing: -0.025em;
@@ -125,7 +125,7 @@
 .cv-concept button,
 .cv-dictation summary {
   color: #294d91;
-  font-size: 14px;
+  font-size: 0.875rem;
   cursor: pointer;
 }
 .cv-audio,
@@ -143,7 +143,7 @@
 }
 .cv-work h2,
 .cv-reader h2 {
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 500;
   letter-spacing: -0.035em;
 }
@@ -162,7 +162,7 @@
 .cv-checks {
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .cv-examples button,
 .cv-dictation button {
@@ -235,7 +235,7 @@
 .cv-foot {
   border-top: 1px solid #dce0da;
   padding: 18px 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 .cv-back,
 .cv-foot a {
@@ -243,7 +243,7 @@
   text-underline-offset: 3px;
 }
 .cv-dictation {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 .cv-dictation p {
   margin: 8px 0;
