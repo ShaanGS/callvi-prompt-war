@@ -11,7 +11,7 @@ Please open a private security advisory on this repository rather than a public 
 | Threat | Control | Where |
 | --- | --- | --- |
 | A forged tool call from someone other than the voice agent | Per-agent bearer secret, compared in constant time; separate secrets for browser and phone channels | [`tool-callback.ts`](src/server/providers/sarvam/tool-callback.ts), [`crypto.ts`](src/server/security/crypto.ts) |
-| A provider retrying a callback and double-recording an attempt | Idempotency key on every tool call | [`tools.ts`](src/server/agent/tools.ts), [`provider.test.ts`](tests/integration/provider.test.ts) |
+| A provider retrying a callback and double-recording an attempt | Idempotency key on every tool call | [`orchestrator.ts`](src/server/agent/orchestrator.ts), [`provider.test.ts`](tests/integration/provider.test.ts) |
 | Malformed or oversized input | Zod schema on every route and tool; request bodies counted as they stream and cut off at 16 KB | [`body.ts`](src/server/http/body.ts) |
 | One learner reading another's progress | Every service read checks ownership against the signed-in learner; row-level security on every table is the second layer, for Supabase's public Data API, tested against a real Postgres, and a schema test fails if a table arrives without it | [`row_level_security.sql`](supabase/migrations/20261104000200_row_level_security.sql), [`rls.test.ts`](tests/integration/rls.test.ts), [`schema.test.ts`](tests/integration/schema.test.ts) |
 | A tampered browser identity, or a cookie read by script or sent over HTTP | HMAC-signed identity cookie; every cookie the app sets itself is `httpOnly`, `SameSite=Lax` and `Secure` in production (Supabase's session cookies use the library's own settings) | [`browser-identity.ts`](src/server/auth/browser-identity.ts), [`cookies.ts`](src/server/auth/cookies.ts), [`proxy.ts`](src/proxy.ts) |
@@ -25,7 +25,7 @@ Please open a private security advisory on this repository rather than a public 
 
 ## Data the learner controls
 
-- Without her agreement during the call ([`set_memory_consent`](src/server/agent/tools.ts)), no progress, goal, preference or answer is saved to her record. What the server does keep is a pseudonymous learner row, an outline of each session, and traces of which tools ran with the shape of their input, never her words.
+- Without her agreement during the call ([`set_memory_consent`](src/server/agent/tools/learner.ts)), no progress, goal, preference or answer is saved to her record. What the server does keep is a pseudonymous learner row, an outline of each session, and traces of which tools ran with the shape of their input, never her words.
 - She can ask what is remembered, correct it, or ask for everything to be deleted, all by speaking ([`request_data_deletion`](src/server/services/deletion-service.ts)).
 - What is kept, what is never collected, and what is not yet automated (there is no scheduled retention job yet): [Privacy and retention](docs/PRIVACY_AND_RETENTION.md).
 

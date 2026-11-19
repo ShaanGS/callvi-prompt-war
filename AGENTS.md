@@ -5,7 +5,7 @@ Guidance for contributors and coding agents.
 ## Rules that protect learners
 
 - **The model never grades.** Practice results come from the rubric in [`assessment-service.ts`](src/lib/assessment/assessment-service.ts). Never let a prompt or a provider response change a result.
-- **Curriculum and memory come from tools, not prompts.** Course content lives in [`src/content/courses`](src/content/courses) and reaches the agent only through [`tools.ts`](src/server/agent/tools.ts).
+- **Curriculum and memory come from tools, not prompts.** Course content lives in [`src/content/courses`](src/content/courses) and reaches the agent only through the tools in [`agent/tools`](src/server/agent/tools).
 - **Nothing is remembered without recorded consent.** Any new write of learner data must check consent first, as [`learning-policy.ts`](src/server/agent/learning-policy.ts) does.
 - **Both languages, always.** Every learner-facing string needs Tamil and English. A change that adds English only is incomplete.
 

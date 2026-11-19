@@ -42,7 +42,7 @@ Each phrase maps to working code. Where the AI sits, and what it may not do, is 
 | **More personalized** | Her own goal is recorded and matched to a course; language, pace and explanation style are remembered when she consents. | [`recommendation-service.ts`](src/server/services/recommendation-service.ts), [`memory-service.ts`](src/server/services/memory-service.ts) |
 | **More interactive** | A real-time spoken conversation she can interrupt, plus practice she answers out loud or by dictation. | [`use-sarvam-voice.ts`](src/components/room/use-sarvam-voice.ts), [`dictation.tsx`](src/app/%28focus%29/practice/dictation.tsx) |
 | **More effective** | Every exercise has a rubric. Six mastery states separate "practised once" from "mastered" and "carried forward", so one lucky answer does not complete a course. | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts), [`learning-policy.ts`](src/server/agent/learning-policy.ts) |
-| **Adapts to individual learning needs** | Every concept has two or three authored explanations drawn from five approaches (65 across 22 concepts); feedback branches on correct, partial, needs practice or ungraded, and a partial answer gets asked for the *one* missing detail. | [`schema.ts`](src/content/schema.ts), [`tools.ts`](src/server/agent/tools.ts) |
+| **Adapts to individual learning needs** | Every concept has two or three authored explanations drawn from five approaches (65 across 22 concepts); feedback branches on correct, partial, needs practice or ungraded, and a partial answer gets asked for the *one* missing detail. | [`schema.ts`](src/content/schema.ts), [`lesson.ts`](src/server/agent/tools/lesson.ts) |
 | **Assists educators** | Staff dashboard for learners, sessions and courses, plus a trace of every tool the agent called and whether it succeeded, so an educator can check what the AI did. Traces record the shape of each request, never the learner's words. | [`src/app/staff`](src/app/staff), [`staff-service.ts`](src/server/services/staff-service.ts) |
 | **Improves student engagement** | Short lessons of one idea at a time, resume where she paused, and each lesson ends with one small real-world action to try. | [`session-service.ts`](src/server/services/session-service.ts), [`src/content/courses`](src/content/courses) |
 | **Transforms traditional teaching and learning experiences** | The interface is a phone call, not an app or a classroom, so it fits around work and needs no screen. | [Phone experience](docs/CALL_FIRST_PRODUCT.md) |
@@ -57,9 +57,9 @@ Each phrase maps to working code. Where the AI sits, and what it may not do, is 
 
 The model is deliberately kept away from the things it should not decide:
 
-- **It never grades.** [`record_practice_attempt`](src/server/agent/tools.ts) returns the rubric result and the agent is instructed never to change it or call a wrong answer right.
-- **It never invents curriculum.** Lessons are fetched with [`get_lesson_context`](src/server/agent/tools.ts); nothing course-specific is in the prompt.
-- **It never invents memory.** It reads saved progress through [`get_memory_summary`](src/server/agent/tools.ts), and only writes after [`set_memory_consent`](src/server/agent/tools.ts).
+- **It never grades.** [`record_practice_attempt`](src/server/agent/tools/practice.ts) returns the rubric result and the agent is instructed never to change it or call a wrong answer right.
+- **It never invents curriculum.** Lessons are fetched with [`get_lesson_context`](src/server/agent/tools/lesson.ts); nothing course-specific is in the prompt.
+- **It never invents memory.** It reads saved progress through [`get_memory_summary`](src/server/agent/tools/memory.ts), and only writes after [`set_memory_consent`](src/server/agent/tools/learner.ts).
 - **Its instructions are generated from code** ([`agent-setup.ts`](src/server/providers/sarvam/agent-setup.ts)) so the provider dashboard cannot drift from the app's own policy.
 
 ## Features
@@ -69,7 +69,7 @@ The model is deliberately kept away from the things it should not decide:
 - Live voice lessons through Sarvam or ElevenLabs, with interruption and repeat.
 - Rubric-based practice feedback with hints and a model answer only when appropriate.
 - Two or three explanations per concept from five approaches, and six mastery states per learner.
-- Consent-first memory with a spoken request to delete everything ([`request_data_deletion`](src/server/agent/tools.ts)).
+- Consent-first memory with a spoken request to delete everything ([`request_data_deletion`](src/server/agent/tools/memory.ts)).
 - Educator dashboard with session and tool-call traces.
 - A public, keyless web preview of three lessons with recorded audio and browser dictation.
 
@@ -146,7 +146,7 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 
 - TypeScript in `strict` mode throughout, with no `any`, no `@ts-ignore`, no `eslint-disable` and no TODOs in `src`.
 - One direction of dependency: route handlers and server actions are thin; they validate, authorise and call [services](src/server/services), which call [repositories](src/server/repositories). The [learning policy](src/server/agent/learning-policy.ts) and [rubric](src/lib/assessment/assessment-service.ts) are pure functions with no I/O, so they are tested directly.
-- Every tool the agent can call is declared once, with a Zod input schema, in [`tools.ts`](src/server/agent/tools.ts); what the agent is told after each call lives apart in [`tool-guidance.ts`](src/server/agent/tool-guidance.ts).
+- Each tool the agent can call is declared once, with a Zod input schema, in a small file for its area under [`agent/tools`](src/server/agent/tools) (consent, courses, lessons, practice, sessions, memory), and [`tools.ts`](src/server/agent/tools.ts) lists them; what the agent is told after each call lives apart in [`tool-guidance.ts`](src/server/agent/tool-guidance.ts).
 - Comments explain why, not what; constants that encode a decision, such as rate limits and coverage thresholds, carry their reason beside them.
 - ESLint (Next.js core web vitals and TypeScript rules) and Prettier run on every push; CI fails on either.
 
