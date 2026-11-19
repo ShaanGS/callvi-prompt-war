@@ -27,8 +27,8 @@ async function as<T>(
 describe("row-level security", () => {
   it("lets an authenticated learner read only their own rows and write nothing directly", async () => {
     const db = await createTestDb();
-    const a = await learnersRepo.create(db, { preferredLanguage: "en-IN", phoneLast4: null });
-    const b = await learnersRepo.create(db, { preferredLanguage: "en-IN", phoneLast4: null });
+    const a = await learnersRepo.create(db, { preferredLanguage: "en-IN" });
+    const b = await learnersRepo.create(db, { preferredLanguage: "en-IN" });
     const userA = "11111111-1111-4111-8111-111111111111";
     await learnersRepo.addIdentity(db, a.id, "supabase", userA);
     await learnersRepo.addIdentity(db, b.id, "supabase", "22222222-2222-4222-8222-222222222222");
@@ -49,7 +49,7 @@ describe("row-level security", () => {
 
   it("gives anonymous visitors published course content only", async () => {
     const db = await createTestDb();
-    await learnersRepo.create(db, { preferredLanguage: "en-IN", phoneLast4: null });
+    await learnersRepo.create(db, { preferredLanguage: "en-IN" });
     const courses = await as(db, "anon", null, (tx) => tx.query(`select id from courses`));
     expect(Array.isArray(courses) && courses.length).toBe(COURSE_CATALOGUE.length);
     const learners = await as(db, "anon", null, (tx) => tx.query(`select id from learners`));

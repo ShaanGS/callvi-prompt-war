@@ -32,7 +32,8 @@ export interface Learner {
   id: string;
   displayName: string | null;
   preferredLanguage: LanguageCode;
-  phoneLast4: string | null;
+  /** Whether a phone caller's number was available. No digits of it are stored. */
+  callerIdKnown: boolean;
   consentStatus: ConsentStatus;
   consentVersion: string | null;
   consentUpdatedAt: Date | null;

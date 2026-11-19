@@ -6,13 +6,12 @@ import { base64url, hmacSha256 } from "./crypto";
  * Phone learners are resolved only from the caller number supplied by the
  * voice provider on a call to the phone agent — never from a number typed or
  * sent by a browser. The raw number is normalised to E.164, hashed with a
- * server-side HMAC key, and discarded. Only the hash and the last four digits
- * (a display helper) are stored.
+ * server-side HMAC key, and discarded. Only the hash is stored; no digits of
+ * the number are kept anywhere.
  */
 
 export interface NormalisedPhone {
   e164: string;
-  last4: string;
 }
 
 /**
@@ -40,7 +39,7 @@ export function normalisePhone(raw: string, defaultCountryCode = "91"): Normalis
     e164Digits = digits;
   }
   if (e164Digits.length < 8 || e164Digits.length > 15 || e164Digits.startsWith("0")) return null;
-  return { e164: `+${e164Digits}`, last4: e164Digits.slice(-4) };
+  return { e164: `+${e164Digits}` };
 }
 
 export function hashPhone(secret: string, e164: string): string {

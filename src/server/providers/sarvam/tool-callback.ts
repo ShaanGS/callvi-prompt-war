@@ -140,7 +140,7 @@ async function resolvePhoneCaller(
       learner,
       session: existingSession,
       interactionId,
-      anonymous: learner.phoneLast4 === null,
+      anonymous: !learner.callerIdKnown,
     };
   }
 
@@ -157,7 +157,7 @@ async function resolvePhoneCaller(
   const { learner } = await learnerService.resolveOrCreate(
     db,
     { provider: "phone", subject },
-    { preferredLanguage: "ta-IN", phoneLast4: phone?.last4 ?? null },
+    { preferredLanguage: "ta-IN", callerIdKnown: phone !== null },
   );
   let current = learner;
   if (anonymous && learner.consentStatus === "pending") {

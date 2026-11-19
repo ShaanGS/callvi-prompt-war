@@ -18,7 +18,7 @@ export const learnerService = {
   async resolveOrCreate(
     db: Db,
     identity: { provider: IdentityProvider; subject: string },
-    defaults: { preferredLanguage: LanguageCode; phoneLast4?: string | null },
+    defaults: { preferredLanguage: LanguageCode; callerIdKnown?: boolean },
   ): Promise<{ learner: Learner; created: boolean }> {
     const existing = await learnersRepo.findByIdentity(db, identity.provider, identity.subject);
     if (existing) return { learner: existing, created: false };
@@ -26,7 +26,7 @@ export const learnerService = {
       const learner = await db.transaction(async (tx) => {
         const created = await learnersRepo.create(tx, {
           preferredLanguage: defaults.preferredLanguage,
-          phoneLast4: defaults.phoneLast4 ?? null,
+          callerIdKnown: defaults.callerIdKnown ?? false,
         });
         await learnersRepo.addIdentity(tx, created.id, identity.provider, identity.subject);
         return created;

@@ -13,7 +13,6 @@ describe("caller identifier normalisation and HMAC", () => {
     const forms = ["+91 98765 43210", "919876543210", "09876543210", "98765-43210", "0091 9876543210"];
     const values = forms.map((f) => normalisePhone(f)?.e164);
     expect(new Set(values)).toEqual(new Set(["+919876543210"]));
-    expect(normalisePhone("+91 98765 43210")?.last4).toBe("3210");
   });
 
   it("rejects values that are not phone numbers", () => {

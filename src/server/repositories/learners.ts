@@ -7,7 +7,7 @@ const learnerRow = z
     id: col.uuid,
     display_name: col.nullableText,
     preferred_language: languageSchema,
-    phone_last4: col.nullableText,
+    caller_id_known: z.boolean(),
     consent_status: z.enum(CONSENT_STATUSES),
     consent_version: col.nullableText,
     consent_updated_at: col.nullableDate,
@@ -19,7 +19,7 @@ const learnerRow = z
     id: r.id,
     displayName: r.display_name,
     preferredLanguage: r.preferred_language,
-    phoneLast4: r.phone_last4,
+    callerIdKnown: r.caller_id_known,
     consentStatus: r.consent_status,
     consentVersion: r.consent_version,
     consentUpdatedAt: r.consent_updated_at,
@@ -28,7 +28,7 @@ const learnerRow = z
     updatedAt: r.updated_at,
   }));
 
-const LEARNER_COLUMNS = `id, display_name, preferred_language, phone_last4, consent_status, consent_version,
+const LEARNER_COLUMNS = `id, display_name, preferred_language, caller_id_known, consent_status, consent_version,
   consent_updated_at, onboarding_completed_at, created_at, updated_at`;
 
 export type IdentityProvider = "supabase" | "dev" | "phone" | "browser";
@@ -53,14 +53,14 @@ export const learnersRepo = {
 
   async create(
     db: Queryable,
-    input: { preferredLanguage: Learner["preferredLanguage"]; phoneLast4?: string | null; displayName?: string | null },
+    input: { preferredLanguage: Learner["preferredLanguage"]; callerIdKnown?: boolean; displayName?: string | null },
   ): Promise<Learner> {
     return one(
       db,
       learnerRow,
-      `insert into learners (preferred_language, phone_last4, display_name) values ($1, $2, $3)
+      `insert into learners (preferred_language, caller_id_known, display_name) values ($1, $2, $3)
        returning ${LEARNER_COLUMNS}`,
-      [input.preferredLanguage, input.phoneLast4 ?? null, input.displayName ?? null],
+      [input.preferredLanguage, input.callerIdKnown ?? false, input.displayName ?? null],
     );
   },
 

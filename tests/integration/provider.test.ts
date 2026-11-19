@@ -123,6 +123,32 @@ describe("tool callback authentication", () => {
 });
 
 describe("phone caller identity", () => {
+  it("stores no digit of a caller's number anywhere in the database", async () => {
+    const res = await call(`Bearer ${TEST_TOOL_SECRET_PHONE}`, "get_learning_context", {
+      interaction_id: "privacy-call",
+      user_identifier: "+919812345678",
+    });
+    expect(res.status).toBe(200);
+    // Search every text-like column of every table for the number or its tail.
+    const tables = (await db.query(
+      `select table_name, column_name from information_schema.columns
+        where table_schema = 'public' and data_type in ('text', 'jsonb', 'character varying')`,
+    )) as Array<{ table_name: string; column_name: string }>;
+    for (const { table_name, column_name } of tables) {
+      const hits = await db.query(
+        // The whole number, or its last four digits as a stored value. (A bare
+        // substring match on four digits would hit random hex in hashes.)
+        `select 1 from public.${table_name}
+          where ${column_name}::text like '%9812345678%' or ${column_name}::text in ('5678', '"5678"') limit 1`,
+      );
+      expect(hits, `${table_name}.${column_name}`).toEqual([]);
+    }
+    const [learner] = (await db.query(
+      `select l.caller_id_known from learners l join learner_identities i on i.learner_id = l.id where i.provider = 'phone' order by l.created_at desc limit 1`,
+    )) as Array<{ caller_id_known: boolean }>;
+    expect(learner?.caller_id_known).toBe(true);
+  });
+
   it("coaches a tailoring caller, closes on hangup and waits for intent on redial", async () => {
     const invoke = async (interaction: string, tool: string, args: Record<string, unknown> = {}) =>
       (
