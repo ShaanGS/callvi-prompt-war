@@ -15,7 +15,9 @@ import { createTestDb } from "../support/test-db";
 const jar = new Map<string, string>();
 let db: Db;
 
+const requestHeaders = new Headers({ "x-forwarded-for": "198.51.100.20" });
 vi.mock("next/headers", () => ({
+  headers: async () => requestHeaders,
   cookies: async () => ({
     get: (name: string) => (jar.has(name) ? { name, value: jar.get(name)! } : undefined),
     getAll: () => [...jar].map(([name, value]) => ({ name, value })),
@@ -36,7 +38,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/server/db/client", () => ({ getDb: async () => db }));
 
 const config = testConfig();
-const { getCurrentLearner, getIdentity, getStaffRole, requireLearnerApi, requireStaffPage } =
+const { getCurrentLearner, getIdentity, getStaffRole, NEW_LEARNERS_PER_ADDRESS, requireLearnerApi, requireStaffPage } =
   await import("@/server/auth/actor");
 
 async function redirectOf(promise: Promise<unknown>): Promise<string> {
@@ -76,6 +78,22 @@ describe("request identity and guards", () => {
     const second = await getCurrentLearner();
     expect(first?.id).toBeDefined();
     expect(second?.id).toBe(first?.id);
+  });
+
+  it("caps how many new learners one address can create, without blocking returning ones", async () => {
+    requestHeaders.set("x-forwarded-for", "203.0.113.99");
+    let returning = "";
+    for (let i = 0; i < NEW_LEARNERS_PER_ADDRESS; i++) {
+      returning = issueBrowserIdentity(config.signingSecret);
+      jar.set(BROWSER_IDENTITY_COOKIE, returning);
+      await getCurrentLearner();
+    }
+    jar.set(BROWSER_IDENTITY_COOKIE, issueBrowserIdentity(config.signingSecret));
+    await expect(getCurrentLearner()).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    // Someone who already has a learner is unaffected.
+    jar.set(BROWSER_IDENTITY_COOKIE, returning);
+    await expect(getCurrentLearner()).resolves.toMatchObject({ id: expect.any(String) });
+    requestHeaders.set("x-forwarded-for", "198.51.100.20");
   });
 
   it("never gives a browser identity a staff role, and the database cannot hold one", async () => {

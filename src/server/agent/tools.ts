@@ -135,7 +135,7 @@ const setMemoryConsent = defineTool({
     "Record the learner's decision about saving learning progress between sessions. Only call after explaining what is saved and hearing a clear yes or no. Declining is fine; learning continues for this session only.",
   input: z.object({ decision: z.enum(["granted", "declined"]), learner_confirmed: learnerConfirmed }),
   async handler(ctx, input) {
-    if (ctx.channel === "phone" && ctx.learner.phoneLast4 === null && input.decision === "granted") {
+    if (ctx.channel === "phone" && !ctx.learner.callerIdKnown && input.decision === "granted") {
       throw new DomainError(
         "POLICY_VIOLATION",
         "Caller ID is unavailable. Continue this call in session-only mode and explain that progress cannot be resumed by redialling.",
@@ -303,15 +303,19 @@ const getLessonContext = defineTool({
     const enrollment = await currentEnrollment(ctx);
     let snapshot = await snapshotFor(ctx);
     const state = ctx.session.state;
-    const signals = enrollment
-      ? learningSignals(
-          await evidenceRepo.list(ctx.db, ctx.learner.id, enrollment.id),
-          course,
-          language,
-          ctx.session.id,
-        )
-      : [];
-    const reviewTarget = input.request === "review" ? pickReviewTarget(signals, input) : null;
+    // Evidence is only needed to choose a review question, so it is read only then.
+    const reviewTarget =
+      input.request === "review" && enrollment
+        ? pickReviewTarget(
+            learningSignals(
+              await evidenceRepo.list(ctx.db, ctx.learner.id, enrollment.id),
+              course,
+              language,
+              ctx.session.id,
+            ),
+            input,
+          )
+        : null;
     if (input.request === "review" && !reviewTarget)
       throw new DomainError(
         "POLICY_VIOLATION",

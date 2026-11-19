@@ -1,11 +1,13 @@
 import "server-only";
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { DEFAULT_LANGUAGE, isLanguageCode, type LanguageCode } from "@/lib/languages";
 import { getConfig } from "../config/env";
 import { getDb } from "../db/client";
 import { DomainError } from "../errors";
+import { clientIp } from "../http/client-ip";
+import { rateLimit } from "../security/rate-limit";
 import type { Learner, StaffRole } from "../domain/types";
 import { learnersRepo, staffRepo } from "../repositories/learners";
 import { learnerService } from "../services/learner-service";
@@ -26,6 +28,9 @@ export interface Identity {
 }
 
 export const UI_LANGUAGE_COOKIE = "lc_lang";
+
+export const NEW_LEARNERS_PER_ADDRESS = 100;
+const NEW_LEARNER_WINDOW_MS = 10 * 60_000;
 
 export const getIdentity = cache(async (): Promise<Identity | null> => {
   const config = getConfig();
@@ -59,6 +64,12 @@ export const getCurrentLearner = cache(async (): Promise<Learner | null> => {
   const db = await getDb();
   const existing = await learnersRepo.findByIdentity(db, identity.provider, identity.subject);
   if (existing) return existing;
+  // A browser identity costs nothing to obtain, so cap how many new learners
+  // one address can create. A classroom sharing one connection stays well
+  // under this; a script minting rows does not.
+  if (identity.provider === "browser") {
+    rateLimit(`learner-create:${clientIp(await headers())}`, NEW_LEARNERS_PER_ADDRESS, NEW_LEARNER_WINDOW_MS);
+  }
   const { learner } = await learnerService.resolveOrCreate(db, identity, { preferredLanguage: await getUiLanguage() });
   return learner;
 });
