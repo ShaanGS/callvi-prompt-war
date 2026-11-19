@@ -2,6 +2,8 @@ FROM node:24-bookworm-slim AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1 CALLVI_STANDALONE=1
 COPY package.json package-lock.json ./
+# The local stand-in for the unused native speaker module (see SECURITY.md).
+COPY vendor ./vendor
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build
