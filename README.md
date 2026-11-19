@@ -30,20 +30,22 @@ Callvi turns the phone call itself into the classroom:
 4. **Progress survives the call.** With explicit consent, a checkpoint is saved so the next call resumes at the right idea. Without consent, no progress, goal, preference or answer is saved to her record.
 5. **Educators can see what happened.** A staff area shows learners, sessions, course content and every tool call the agent made.
 
-## How Callvi answers the AI for Education theme
+## Problem statement alignment: AI for Education
 
-The theme asks for learning that is *more accessible, personalized, interactive and effective*, that *adapts to individual learning needs*, *assists educators*, *improves student engagement* and *transforms traditional teaching*. Each phrase maps to working code:
+The problem statement: *"Reimagine education through AI-powered solutions that make learning more accessible, personalized, interactive, and effective. Develop intelligent applications that adapt to individual learning needs, assist educators, improve student engagement, and transform traditional teaching and learning experiences."*
+
+Each phrase maps to working code. Where the AI sits, and what it may not do, is [below](#where-the-ai-is--and-what-it-is-not-allowed-to-do).
 
 | The theme asks for | What Callvi does | Where it lives |
 | --- | --- | --- |
-| **Accessible** | Voice-first and bilingual: no reading or typing is required on a call. The web demo has zero axe-core violations (WCAG 2.2 AA) in both languages, desktop and mobile. | [`agent-setup.ts`](src/server/providers/sarvam/agent-setup.ts), [`e2e/preview/demo.spec.ts`](e2e/preview/demo.spec.ts) |
-| **Personalized** | Her own goal is recorded and matched to a course; language, pace and explanation style are remembered when she consents. | [`recommendation-service.ts`](src/server/services/recommendation-service.ts), [`memory-service.ts`](src/server/services/memory-service.ts) |
-| **Interactive** | A real-time spoken conversation she can interrupt, plus practice she answers out loud or by dictation. | [`use-sarvam-voice.ts`](src/components/room/use-sarvam-voice.ts), [`dictation.tsx`](src/app/%28focus%29/practice/dictation.tsx) |
-| **Effective** | Every exercise has a rubric. Six mastery states separate "practised once" from "mastered" and "carried forward", so one lucky answer does not complete a course. | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts), [`learning-policy.ts`](src/server/agent/learning-policy.ts) |
+| **More accessible** | Voice-first and bilingual: no reading or typing is required on a call. The web demo has zero axe-core violations (WCAG 2.2 AA) in both languages, desktop and mobile. | [`agent-setup.ts`](src/server/providers/sarvam/agent-setup.ts), [`e2e/preview/demo.spec.ts`](e2e/preview/demo.spec.ts) |
+| **More personalized** | Her own goal is recorded and matched to a course; language, pace and explanation style are remembered when she consents. | [`recommendation-service.ts`](src/server/services/recommendation-service.ts), [`memory-service.ts`](src/server/services/memory-service.ts) |
+| **More interactive** | A real-time spoken conversation she can interrupt, plus practice she answers out loud or by dictation. | [`use-sarvam-voice.ts`](src/components/room/use-sarvam-voice.ts), [`dictation.tsx`](src/app/%28focus%29/practice/dictation.tsx) |
+| **More effective** | Every exercise has a rubric. Six mastery states separate "practised once" from "mastered" and "carried forward", so one lucky answer does not complete a course. | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts), [`learning-policy.ts`](src/server/agent/learning-policy.ts) |
 | **Adapts to individual learning needs** | Every concept has two or three authored explanations drawn from five approaches (65 across 22 concepts); feedback branches on correct, partial, needs practice or ungraded, and a partial answer gets asked for the *one* missing detail. | [`schema.ts`](src/content/schema.ts), [`tools.ts`](src/server/agent/tools.ts) |
 | **Assists educators** | Staff dashboard for learners, sessions and courses, plus a trace of every tool the agent called and whether it succeeded, so an educator can check what the AI did. Traces record the shape of each request, never the learner's words. | [`src/app/staff`](src/app/staff), [`staff-service.ts`](src/server/services/staff-service.ts) |
-| **Improves engagement** | Short lessons of one idea at a time, resume where she paused, and each lesson ends with one small real-world action to try. | [`session-service.ts`](src/server/services/session-service.ts), [`src/content/courses`](src/content/courses) |
-| **Transforms traditional teaching** | The interface is a phone call, not an app or a classroom, so it fits around work and needs no screen. | [Phone experience](docs/CALL_FIRST_PRODUCT.md) |
+| **Improves student engagement** | Short lessons of one idea at a time, resume where she paused, and each lesson ends with one small real-world action to try. | [`session-service.ts`](src/server/services/session-service.ts), [`src/content/courses`](src/content/courses) |
+| **Transforms traditional teaching and learning experiences** | The interface is a phone call, not an app or a classroom, so it fits around work and needs no screen. | [Phone experience](docs/CALL_FIRST_PRODUCT.md) |
 
 ## Where the AI is — and what it is not allowed to do
 
@@ -139,6 +141,14 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 | Validation and security | Zod, row-level security, constant-time secret comparison |
 | Testing | Vitest, Playwright, axe-core |
 | Build and deploy | esbuild (preview), Vercel, Docker for Cloud Run, GitHub Actions |
+
+## Code quality
+
+- TypeScript in `strict` mode throughout, with no `any`, no `@ts-ignore`, no `eslint-disable` and no TODOs in `src`.
+- One direction of dependency: route handlers and server actions are thin; they validate, authorise and call [services](src/server/services), which call [repositories](src/server/repositories). The [learning policy](src/server/agent/learning-policy.ts) and [rubric](src/lib/assessment/assessment-service.ts) are pure functions with no I/O, so they are tested directly.
+- Every tool the agent can call is declared once, with a Zod input schema, in [`tools.ts`](src/server/agent/tools.ts); what the agent is told after each call lives apart in [`tool-guidance.ts`](src/server/agent/tool-guidance.ts).
+- Comments explain why, not what; constants that encode a decision, such as rate limits and coverage thresholds, carry their reason beside them.
+- ESLint (Next.js core web vitals and TypeScript rules) and Prettier run on every push; CI fails on either.
 
 ## Security
 
