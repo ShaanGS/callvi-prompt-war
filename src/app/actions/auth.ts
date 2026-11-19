@@ -95,6 +95,9 @@ export async function devSignIn(formData: FormData): Promise<void> {
     maxAge: signed.maxAge,
   });
   const db = await getDb();
+  // Safe to offer only because this whole action is development-only: the
+  // row is for provider "dev", and production can never verify a dev identity
+  // (the config refuses to start with DEV_AUTH_ENABLED set there).
   if (formData.get("staff") === "on") {
     await staffRepo.grant(db, { provider: "dev", subject: sub, role: "admin", emailHint: `dev:${name.data}` });
   }

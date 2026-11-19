@@ -153,11 +153,11 @@ Callvi's learners are often on basic phones and patchy mobile data, so the previ
 
 ## Testing
 
-**319 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
+**320 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
-| Unit, integration and agent scenarios | **253** in 23 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
+| Unit, integration and agent scenarios | **254** in 23 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
 | Deployed preview | **34** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
 | Full app | **32** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every learner screen in English and Tamil, on a phone, in feedback states and across the educator dashboard | `npm run test:e2e` |
 

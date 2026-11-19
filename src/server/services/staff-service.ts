@@ -181,9 +181,14 @@ export async function staffLearners(db: Queryable, limit = 100): Promise<StaffLe
     `select l.id, l.consent_status, l.preferred_language, l.created_at,
             (select array_agg(distinct i.provider) from learner_identities i where i.learner_id = l.id) as providers,
             (select count(*)::int from enrollments e where e.learner_id = l.id) as enrollments,
-            (select count(*)::int from learning_sessions s where s.learner_id = l.id) as sessions,
-            (select max(s.started_at) from learning_sessions s where s.learner_id = l.id) as last_session_at
+            ls.sessions, ls.last_session_at
        from learners l
+       -- One indexed pass over a learner's sessions for both figures, and only
+       -- for the rows the limit keeps.
+       left join lateral (
+         select count(*)::int as sessions, max(s.started_at) as last_session_at
+           from learning_sessions s where s.learner_id = l.id
+       ) ls on true
       order by l.created_at desc
       limit $1`,
     [limit],
@@ -245,10 +250,14 @@ export async function staffLearnerDetail(db: Queryable, learnerId: string): Prom
         needs_practice: col.int,
         enrolled_at: col.date,
       }),
-      `select e.course_id, e.status, e.current_lesson_id, e.enrolled_at,
-              (select count(*)::int from concept_mastery m where m.enrollment_id = e.id and m.state in ('practised','mastered','carried_forward')) as mastered,
-              (select count(*)::int from concept_mastery m where m.enrollment_id = e.id and m.state = 'needs_practice') as needs_practice
-         from enrollments e where e.learner_id = $1 order by e.enrolled_at desc`,
+      `select e.course_id, e.status, e.current_lesson_id, e.enrolled_at, m.mastered, m.needs_practice
+         from enrollments e
+         left join lateral (
+           select count(*) filter (where state in ('practised','mastered','carried_forward'))::int as mastered,
+                  count(*) filter (where state = 'needs_practice')::int as needs_practice
+             from concept_mastery where enrollment_id = e.id
+         ) m on true
+        where e.learner_id = $1 order by e.enrolled_at desc`,
       [learnerId],
     ),
     staffSessions(db, { learnerId, limit: 50 }),
@@ -327,10 +336,13 @@ export async function staffSessions(
       has_checkpoint: col.bool,
     }),
     `select s.id, s.learner_id, s.channel, s.provider, s.status, s.memory_mode, s.language, s.started_at, s.ended_at, s.end_reason,
-            (select count(*)::int from tool_invocations t where t.session_id = s.id) as tool_calls,
-            (select count(*)::int from tool_invocations t where t.session_id = s.id and t.status = 'failed') as tool_failures,
+            tc.tool_calls, tc.tool_failures,
             (s.checkpoint is not null) as has_checkpoint
        from learning_sessions s
+       left join lateral (
+         select count(*)::int as tool_calls, count(*) filter (where t.status = 'failed')::int as tool_failures
+           from tool_invocations t where t.session_id = s.id
+       ) tc on true
       where ($1::uuid is null or s.learner_id = $1::uuid)
       order by s.started_at desc
       limit $2`,

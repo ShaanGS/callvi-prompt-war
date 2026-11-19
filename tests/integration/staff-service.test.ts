@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { runTool } from "@/server/agent/orchestrator";
 import type { Db } from "@/server/db/types";
 import type { Learner, LearningSession } from "@/server/domain/types";
+import { enrollmentsRepo, progressRepo } from "@/server/repositories/learning";
 import { courseService } from "@/server/services/course-service";
 import { deletionService } from "@/server/services/deletion-service";
 import { learnerService } from "@/server/services/learner-service";
@@ -251,6 +252,34 @@ describe("staff learner list and detail", () => {
     expect(detail!.sessions_).toHaveLength(1);
     expect(detail!.sessions_[0]!.learnerId).toBe(second.state.learner.id);
     expect(Object.values(detail!.practiceByResult).reduce((a, b) => a + b, 0)).toBe(1);
+  });
+
+  it("counts each enrolment's mastered and needs-practice concepts from the mastery states", async () => {
+    const fresh = await createTestDb();
+    const learner = await createLearner(fresh, { consent: "granted" });
+    const enrollment = await enrollmentsRepo.create(fresh, {
+      learnerId: learner.id,
+      courseId: "small-business-starter",
+      goalId: null,
+      currentLessonId: "sbs-01",
+      idempotencyKey: null,
+    });
+    const states = ["practised", "mastered", "carried_forward", "needs_practice", "introduced"] as const;
+    for (const [i, state] of states.entries()) {
+      await progressRepo.upsertMastery(fresh, {
+        learnerId: learner.id,
+        enrollmentId: enrollment.id,
+        lessonId: "sbs-01",
+        conceptId: `concept-${i}`,
+        state,
+        lastResult: null,
+        incrementAttempts: false,
+        sourceSessionId: null,
+      });
+    }
+    const detail = await staffLearnerDetail(fresh, learner.id);
+    // practised, mastered and carried forward all count as mastered; introduced counts as neither.
+    expect(detail!.enrollments_).toEqual([expect.objectContaining({ mastered: 3, needsPractice: 1 })]);
   });
 
   it("orders consent history newest first after a revocation", async () => {
