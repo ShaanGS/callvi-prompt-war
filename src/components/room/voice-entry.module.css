@@ -1,6 +1,7 @@
 .landing {
   --landing-ink: #101010;
-  --landing-muted: #817e79;
+  /* #817e79 measured 3.97:1 on the page and 3.62:1 on the panel; WCAG AA needs 4.5:1 for 13px text. Same hue, one step darker. */
+  --landing-muted: #6e6b66;
   background: #f4f3f1;
   color: var(--landing-ink);
   min-height: 100dvh;

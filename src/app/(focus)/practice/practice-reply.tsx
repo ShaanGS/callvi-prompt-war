@@ -1,17 +1,19 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, AudioLines, Check, Phone, RotateCcw } from "lucide-react";
 import { assessAnswer } from "@/server/services/assessment/assessment-service";
 import type { Exercise } from "@/content/schema";
 import type { LanguageCode } from "@/lib/languages";
+import { useDocumentLanguage } from "@/lib/use-document-language";
 import { AudioPrompt } from "./audio-prompt";
 import { Dictation } from "./dictation";
 import "./rehearsal.css";
 
 const words = {
   "en-IN": {
-    back: "Back to Callvi", title: "Practise a clear reply", tailor: "Home tailor",
+    back: "Back to Callvi", title: "Practise a clear reply", tailor: "Home tailor", language: "Language",
+    skill: "Communication", sampleCall: "Hear a live AI call sample",
     fee: "Your fee", time: "Pickup", days: "2 days", customer: "The customer",
     question: "Could you shorten these trousers for forty rupees? I need them tomorrow.",
     listen: "Hear the customer", pause: "Pause audio", audioError: "Audio is unavailable. Read the text above.",
@@ -23,7 +25,8 @@ const words = {
     privacy: "Your written replies stay in this tab.", empty: "Type a reply, or choose one to edit.",
   },
   "ta-IN": {
-    back: "கால்விக்குத் திரும்பு", title: "தெளிவாகப் பதில் சொல்லுங்கள்", tailor: "வீட்டுத் தையல் கலைஞர்",
+    back: "கால்விக்குத் திரும்பு", title: "தெளிவாகப் பதில் சொல்லுங்கள்", tailor: "வீட்டுத் தையல் கலைஞர்", language: "மொழி",
+    skill: "உரையாடல் திறன்கள்", sampleCall: "மாதிரி அழைப்பைக் கேளுங்கள் (ஆங்கிலம்)",
     fee: "உங்கள் கூலி", time: "தர வேண்டிய நேரம்", days: "2 நாட்கள்", customer: "வாடிக்கையாளர்",
     question: "அக்கா, இந்த பேண்ட் கொஞ்சம் நீளம் குறைக்கணும். நாற்பது ரூபாய்க்கு செஞ்சு, நாளைக்குத் தர முடியுமா?",
     listen: "வாடிக்கையாளர் குரலைக் கேளுங்கள்", pause: "ஒலியை நிறுத்து", audioError: "ஒலி கிடைக்கவில்லை. மேலே உள்ள உரையைப் படிக்கலாம்.",
@@ -36,8 +39,15 @@ const words = {
   },
 } as const;
 
-export function PracticeReply({ exercise, language: initialLanguage, assets = "/rehearsal", homeHref }: {
-  exercise: Exercise; language: LanguageCode; assets?: string; homeHref?: string;
+const LANGUAGES = ["ta-IN", "en-IN"] as const;
+
+export function PracticeReply({ exercise, language: initialLanguage, assets = "/rehearsal", homeHref, syncDocument = false }: {
+  exercise: Exercise;
+  language: LanguageCode;
+  assets?: string;
+  homeHref?: string;
+  /** Set by the standalone preview, where no server render sets `<html lang>` per language. */
+  syncDocument?: boolean;
 }) {
   const [language, setLanguage] = useState(initialLanguage);
   const [reply, setReply] = useState("");
@@ -45,77 +55,153 @@ export function PracticeReply({ exercise, language: initialLanguage, assets = "/
   const [dictating, setDictating] = useState(false);
   const audio = useRef<HTMLAudioElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
+
   const text = words[language];
+  const langCode = language === "ta-IN" ? "ta" : "en";
+  const labels = [text.price, text.pickup];
+  useDocumentLanguage(language, `${text.title} · Callvi`, syncDocument);
+
+  // Grading is pure and cheap, so every attempt is re-graded when the language flips and the feedback follows it.
   const graded = useMemo(() => attempts.map((answer, i) => assessAnswer({
     exercise, language, answerText: answer, attemptNumber: i + 1,
   })), [attempts, exercise, language]);
   const latest = graded.at(-1);
-  const labels = [text.price, text.pickup];
-  const langCode = language === "ta-IN" ? "ta" : "en";
+
   function changeLanguage(next: LanguageCode) {
     if (next === language) return;
     setDictating(false);
     audio.current?.pause();
     setLanguage(next);
   }
+
+  /** Only one clip plays at a time: a new one pauses whatever was speaking. */
   function onAudioStart(element: HTMLAudioElement) {
     if (audio.current !== element) audio.current?.pause();
     audio.current = element;
   }
   const audioProps = { disabled: dictating, onStart: onAudioStart, pauseLabel: text.pause, errorLabel: text.audioError };
+
+  /** Picks the recorded coaching clip that matches what the reply was missing. */
   function feedbackClip() {
     if (latest?.result === "correct") return "both";
     if (latest?.result === "partial") return latest.metCriteria.includes("quoted-fee") ? "fee" : "pickup";
     return latest?.result === "ungraded" ? "ungraded" : "retry";
   }
 
-  return <div className="cv-studio" lang={langCode}>
-    <header className="cv-header">
-      <a className="cv-brand" href={homeHref ?? "./"} aria-label="Callvi"><AudioLines aria-hidden />callvi</a>
-      <div className="cv-language" aria-label="Language">
-        {(["ta-IN", "en-IN"] as const).map(code => <button key={code} type="button" lang={code} aria-pressed={code === language} onClick={() => changeLanguage(code)}>{code === "ta-IN" ? "தமிழ்" : "English"}</button>)}
-      </div>
-    </header>
-    <main id="main" className="cv-grid">
-      <section className="cv-brief" aria-labelledby="scenario-title">
-        <div className="cv-brief-text">
-          <span className="cv-role"><Phone size={15} aria-hidden />{language === "ta-IN" ? "உரையாடல் திறன்கள்" : "Communication"}</span>
-          <h1 id="scenario-title">{text.title}</h1>
-          <p>{text.tailor}</p><dl><div><dt>{text.fee}</dt><dd>₹50</dd></div><div><dt>{text.time}</dt><dd>{text.days}</dd></div></dl>
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const answer = reply.trim();
+    if (!answer || dictating) return;
+    setAttempts([...attempts, answer]);
+    setReply("");
+  }
+
+  function startOver() {
+    setAttempts([]);
+    setReply("");
+    input.current?.focus();
+  }
+
+  return (
+    <div className="cv-studio" lang={langCode}>
+      <header className="cv-header">
+        <a className="cv-brand" href={homeHref ?? "./"} aria-label="Callvi"><AudioLines aria-hidden />callvi</a>
+        <div className="cv-language" role="group" aria-label={text.language}>
+          {LANGUAGES.map(code => (
+            <button key={code} type="button" lang={code} aria-pressed={code === language} onClick={() => changeLanguage(code)}>
+              {code === "ta-IN" ? "தமிழ்" : "English"}
+            </button>
+          ))}
         </div>
-      </section>
-      <section className="cv-work">
-        <div className="cv-customer"><p className="cv-kicker">{text.customer}</p>
-          <blockquote>“{text.question}”</blockquote>
-          <AudioPrompt key={langCode} src={assets + "/customer-" + langCode + ".mp3"} label={text.listen} {...audioProps} />
-        </div>
-        <form onSubmit={event => { event.preventDefault(); if (reply.trim() && !dictating) { setAttempts([...attempts, reply.trim()]); setReply(""); } }}>
-          <h2>{text.turn}</h2>
-          <label htmlFor="reply">{text.label}</label>
-          <textarea id="reply" ref={input} value={reply} onChange={event => setReply(event.target.value)} rows={2} maxLength={1000} placeholder={text.empty} required />
-          <Dictation key={language} language={language} active={dictating} onActive={active => {
-            if (active) audio.current?.pause();
-            setDictating(active);
-          }} onWords={words => setReply(previous => [previous.trim(), words].filter(Boolean).join(" ").slice(0, 1000))} />
-          <div className="cv-examples"><span>{text.examples}</span>{text.options.map((option,i) => <button key={i} type="button" onClick={() => { setReply(text.answers[i]); input.current?.focus(); }}>{option}</button>)}</div>
-          <button className="cv-submit" disabled={!reply.trim() || dictating}>{text.check}<ArrowRight size={17} /></button>
-        </form>
-        <div aria-live="polite" aria-atomic="true">
-          {latest && <section className="cv-feedback"><p className="cv-kicker">{text.coach}</p><p>{latest.feedback}</p>
-            {latest.modelAnswer && <p>{latest.modelAnswer}</p>}
-            <AudioPrompt key={langCode + attempts.length} src={assets + "/" + langCode + "-" + feedbackClip() + ".mp3"} label={text.hearTip} {...audioProps} />
-          </section>}
-        </div>
-      </section>
-      {attempts.length > 0 && <section className="cv-history"><div className="cv-history-title"><h2>{text.history}</h2>
-        <button disabled={dictating} onClick={() => { setAttempts([]); setReply(""); input.current?.focus(); }}><RotateCcw size={15} />{text.reset}</button></div>
-        <ol>{attempts.map((answer,i) => <li key={i}>
-          <span className="cv-kicker">{text.attempt} {i+1}</span><q>{answer}</q><div className="cv-checks">
-          {exercise.rubric.criteria.map((criterion,j) => { const met = graded[i].metCriteria.includes(criterion.id);
-            return <span className={met ? "cv-met" : "cv-miss"} key={criterion.id}>{met && <Check size={14} />}{labels[j]} · {met ? text.heard : text.missing}</span>;
-          })}</div></li>)}</ol>
-      </section>}
-    </main>
-    <footer className="cv-foot"><span>{text.privacy}</span>{homeHref ? <a href={homeHref}>{text.back}</a> : <a href="./call-sample.html">{language === "ta-IN" ? "மாதிரி அழைப்பைக் கேளுங்கள் (ஆங்கிலம்)" : "Hear a live AI call sample"}</a>}</footer>
-  </div>;
+      </header>
+
+      <main id="main" className="cv-grid">
+        <section className="cv-brief" aria-labelledby="scenario-title">
+          <div className="cv-brief-text">
+            <span className="cv-role"><Phone size={15} aria-hidden />{text.skill}</span>
+            <h1 id="scenario-title">{text.title}</h1>
+            <p>{text.tailor}</p>
+            <dl>
+              <div><dt>{text.fee}</dt><dd>₹50</dd></div>
+              <div><dt>{text.time}</dt><dd>{text.days}</dd></div>
+            </dl>
+          </div>
+        </section>
+
+        <section className="cv-work" aria-labelledby="turn-heading">
+          <div className="cv-customer">
+            <p className="cv-kicker">{text.customer}</p>
+            <blockquote>“{text.question}”</blockquote>
+            <AudioPrompt key={langCode} src={`${assets}/customer-${langCode}.mp3`} label={text.listen} {...audioProps} />
+          </div>
+
+          <form onSubmit={submit}>
+            <h2 id="turn-heading">{text.turn}</h2>
+            <label htmlFor="reply">{text.label}</label>
+            <textarea id="reply" ref={input} value={reply} onChange={event => setReply(event.target.value)}
+              rows={2} maxLength={1000} placeholder={text.empty} required />
+            <Dictation key={language} language={language} active={dictating}
+              onActive={active => {
+                if (active) audio.current?.pause();
+                setDictating(active);
+              }}
+              onWords={spoken => setReply(previous => [previous.trim(), spoken].filter(Boolean).join(" ").slice(0, 1000))} />
+            <div className="cv-examples">
+              <span>{text.examples}</span>
+              {text.options.map((option, i) => (
+                <button key={option} type="button" onClick={() => { setReply(text.answers[i]); input.current?.focus(); }}>
+                  {option}
+                </button>
+              ))}
+            </div>
+            <button className="cv-submit" disabled={!reply.trim() || dictating}>{text.check}<ArrowRight size={17} aria-hidden /></button>
+          </form>
+
+          <div aria-live="polite" aria-atomic="true">
+            {latest && (
+              <section className="cv-feedback" aria-label={text.coach}>
+                <p className="cv-kicker">{text.coach}</p>
+                <p>{latest.feedback}</p>
+                {latest.modelAnswer && <p>{latest.modelAnswer}</p>}
+                <AudioPrompt key={langCode + attempts.length} src={`${assets}/${langCode}-${feedbackClip()}.mp3`}
+                  label={text.hearTip} {...audioProps} />
+              </section>
+            )}
+          </div>
+        </section>
+
+        {attempts.length > 0 && (
+          <section className="cv-history" aria-labelledby="history-heading">
+            <div className="cv-history-title">
+              <h2 id="history-heading">{text.history}</h2>
+              <button type="button" disabled={dictating} onClick={startOver}><RotateCcw size={15} aria-hidden />{text.reset}</button>
+            </div>
+            <ol>
+              {attempts.map((answer, i) => (
+                <li key={i}>
+                  <span className="cv-kicker">{text.attempt} {i + 1}</span>
+                  <q>{answer}</q>
+                  <div className="cv-checks">
+                    {exercise.rubric.criteria.map((criterion, j) => {
+                      const met = graded[i].metCriteria.includes(criterion.id);
+                      return (
+                        <span className={met ? "cv-met" : "cv-miss"} key={criterion.id}>
+                          {met && <Check size={14} aria-hidden />}{labels[j]} · {met ? text.heard : text.missing}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+      </main>
+
+      <footer className="cv-foot">
+        <span>{text.privacy}</span>
+        {homeHref ? <a href={homeHref}>{text.back}</a> : <a href="./call-sample.html">{text.sampleCall}</a>}
+      </footer>
+    </div>
+  );
 }
