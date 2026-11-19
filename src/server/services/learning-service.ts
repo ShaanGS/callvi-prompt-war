@@ -41,7 +41,11 @@ export interface ProgressSnapshot {
 }
 
 export function snapshotFromSession(state: SessionState): ProgressSnapshot {
-  return { completedLessonIds: new Set(state.sessionCompletedLessons), mastery: { ...state.sessionMastery }, masteryRows: [] };
+  return {
+    completedLessonIds: new Set(state.sessionCompletedLessons),
+    mastery: { ...state.sessionMastery },
+    masteryRows: [],
+  };
 }
 
 export const learningService = {
@@ -56,7 +60,8 @@ export const learningService = {
     },
   ): Promise<{ goal: { id: string | null; text: string }; saved: boolean }> {
     const text = input.goalText.trim().replace(/\s+/g, " ");
-    if (text.length < 3 || text.length > 500) throw new DomainError("VALIDATION", "A goal should be between 3 and 500 characters.");
+    if (text.length < 3 || text.length > 500)
+      throw new DomainError("VALIDATION", "A goal should be between 3 and 500 characters.");
     if (memoryModeFor(input.learner) !== "durable") return { goal: { id: null, text }, saved: false };
 
     if (input.idempotencyKey) {
@@ -72,7 +77,11 @@ export const learningService = {
         idempotencyKey: input.idempotencyKey,
       }),
     );
-    await recordEvent(db, "goal.confirmed", { learnerId: input.learner.id, sessionId: input.sourceSessionId, metadata: { source: input.source } });
+    await recordEvent(db, "goal.confirmed", {
+      learnerId: input.learner.id,
+      sessionId: input.sourceSessionId,
+      metadata: { source: input.source },
+    });
     return { goal: { id: goal.id, text: goal.goalText }, saved: true };
   },
 
@@ -116,7 +125,11 @@ export const learningService = {
       const lesson = input.course.lessons.find((l) => l.id === raced.currentLessonId) ?? first;
       return { enrollment: raced, resumed: true, saved: true, currentLesson: lesson };
     }
-    await recordEvent(db, "course.selected", { learnerId: input.learner.id, sessionId: input.sessionId, metadata: { course: input.course.id } });
+    await recordEvent(db, "course.selected", {
+      learnerId: input.learner.id,
+      sessionId: input.sessionId,
+      metadata: { course: input.course.id },
+    });
     return { enrollment, resumed: false, saved: true, currentLesson: first };
   },
 
@@ -137,7 +150,13 @@ export const learningService = {
   /** Open a lesson for teaching, enforcing course sequence. */
   async openLesson(
     db: Queryable,
-    input: { learner: Learner; enrollment: Enrollment | null; course: StoredCourse; snapshot: ProgressSnapshot; lessonId: string },
+    input: {
+      learner: Learner;
+      enrollment: Enrollment | null;
+      course: StoredCourse;
+      snapshot: ProgressSnapshot;
+      lessonId: string;
+    },
   ): Promise<{ lesson: Lesson; review: boolean }> {
     const access = canOpenLesson(input.course, input.snapshot.completedLessonIds, input.lessonId);
     if (!access.allowed) {
@@ -165,7 +184,14 @@ export const learningService = {
 
   async markIntroduced(
     db: Queryable,
-    input: { learner: Learner; enrollment: Enrollment | null; lessonId: string; conceptId: string; snapshot: ProgressSnapshot; sessionId: string },
+    input: {
+      learner: Learner;
+      enrollment: Enrollment | null;
+      lessonId: string;
+      conceptId: string;
+      snapshot: ProgressSnapshot;
+      sessionId: string;
+    },
   ): Promise<void> {
     if (!input.enrollment || input.snapshot.mastery[input.conceptId]) return;
     await progressRepo.upsertMastery(db, {
@@ -226,12 +252,22 @@ export const learningService = {
       let masteryState = before.mastery[input.exercise.conceptId] ?? "introduced";
       if (created) {
         await evidenceRepo.insert(tx, {
-          attempt_id: attempt.id, learner_id: input.learner.id, enrollment_id: input.enrollment.id,
-          session_id: input.session.id, lesson_id: input.lesson.id, concept_id: input.exercise.conceptId,
-          exercise_id: input.exercise.id, purpose: input.exercise.purpose, result: input.outcome.result,
+          attempt_id: attempt.id,
+          learner_id: input.learner.id,
+          enrollment_id: input.enrollment.id,
+          session_id: input.session.id,
+          lesson_id: input.lesson.id,
+          concept_id: input.exercise.conceptId,
+          exercise_id: input.exercise.id,
+          purpose: input.exercise.purpose,
+          result: input.outcome.result,
           support: input.session.state.practiceSupport[input.exercise.id] ?? "none_recorded",
-          approach: input.exercise.purpose === "review" && !input.session.state.practiceSupport[input.exercise.id] ? null : input.session.state.explanationsUsed[input.exercise.conceptId]?.at(-1) ?? null,
-          met_criteria: input.outcome.metCriteria, missed_criteria: input.outcome.missedCriteria,
+          approach:
+            input.exercise.purpose === "review" && !input.session.state.practiceSupport[input.exercise.id]
+              ? null
+              : (input.session.state.explanationsUsed[input.exercise.conceptId]?.at(-1) ?? null),
+          met_criteria: input.outcome.metCriteria,
+          missed_criteria: input.outcome.missedCriteria,
           rubric_version: input.outcome.rubricVersion,
         });
         masteryState = masteryAfterAttempt(before.mastery[input.exercise.conceptId], input.outcome.result);
@@ -247,17 +283,20 @@ export const learningService = {
         });
       }
       const after = await learningService.progress(tx, input.enrollment.id);
-      const progression = input.exercise.purpose === "review" || before.completedLessonIds.has(input.lesson.id) ? {
-        lessonComplete: after.completedLessonIds.has(input.lesson.id),
-        courseComplete: input.course.lessons.every((l) => after.completedLessonIds.has(l.id)),
-        nextLesson: null,
-      } : await applyProgression(tx, {
-        learner: input.learner,
-        enrollment: input.enrollment,
-        course: input.course,
-        lesson: input.lesson,
-        snapshot: after,
-      });
+      const progression =
+        input.exercise.purpose === "review" || before.completedLessonIds.has(input.lesson.id)
+          ? {
+              lessonComplete: after.completedLessonIds.has(input.lesson.id),
+              courseComplete: input.course.lessons.every((l) => after.completedLessonIds.has(l.id)),
+              nextLesson: null,
+            }
+          : await applyProgression(tx, {
+              learner: input.learner,
+              enrollment: input.enrollment,
+              course: input.course,
+              lesson: input.lesson,
+              snapshot: after,
+            });
       const attemptsOnConcept = await attemptsRepo.countForConcept(tx, input.enrollment.id, input.exercise.conceptId);
       return { attempt, created, masteryState, attemptsOnConcept, ...progression };
     });
@@ -269,7 +308,11 @@ export const learningService = {
         metadata: { exercise: input.exercise.id, result: input.outcome.result },
       });
       if (result.lessonComplete && input.exercise.purpose !== "review") {
-        await recordEvent(db, "lesson.completed", { learnerId: input.learner.id, sessionId: input.session.id, metadata: { lesson: input.lesson.id } });
+        await recordEvent(db, "lesson.completed", {
+          learnerId: input.learner.id,
+          sessionId: input.session.id,
+          metadata: { lesson: input.lesson.id },
+        });
       }
     }
     return result;
@@ -278,7 +321,14 @@ export const learningService = {
   /** Learner chose to move on from a concept they have practised but not mastered. */
   async carryForward(
     db: Db,
-    input: { learner: Learner; session: LearningSession; enrollment: Enrollment; course: StoredCourse; lesson: Lesson; conceptId: string },
+    input: {
+      learner: Learner;
+      session: LearningSession;
+      enrollment: Enrollment;
+      course: StoredCourse;
+      lesson: Lesson;
+      conceptId: string;
+    },
   ): Promise<{ lessonComplete: boolean; courseComplete: boolean; nextLesson: Lesson | null }> {
     return db.transaction(async (tx) => {
       await progressRepo.upsertMastery(tx, {
@@ -292,7 +342,13 @@ export const learningService = {
         sourceSessionId: input.session.id,
       });
       const snapshot = await learningService.progress(tx, input.enrollment.id);
-      return applyProgression(tx, { learner: input.learner, enrollment: input.enrollment, course: input.course, lesson: input.lesson, snapshot });
+      return applyProgression(tx, {
+        learner: input.learner,
+        enrollment: input.enrollment,
+        course: input.course,
+        lesson: input.lesson,
+        snapshot,
+      });
     });
   },
 };
@@ -312,7 +368,9 @@ async function applyProgression(
   });
   const completed = new Set(input.snapshot.completedLessonIds).add(input.lesson.id);
   const courseComplete = input.course.lessons.every((l) => completed.has(l.id));
-  const nextLesson = courseComplete ? null : (nextLessonAfter(input.course, input.lesson.id) ?? frontierLesson(input.course, completed));
+  const nextLesson = courseComplete
+    ? null
+    : (nextLessonAfter(input.course, input.lesson.id) ?? frontierLesson(input.course, completed));
   await enrollmentsRepo.touch(db, input.enrollment.id, {
     status: courseComplete ? "completed" : "active",
     currentLessonId: nextLesson?.id ?? input.lesson.id,

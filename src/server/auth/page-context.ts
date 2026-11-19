@@ -14,7 +14,11 @@ export interface PageContext {
 
 /** Interface language follows the learner's chosen language, else the language cookie. */
 export const getPageContext = cache(async (): Promise<PageContext> => {
-  const [learner, staffRole, cookieLanguage] = await Promise.all([getCurrentLearner(), getStaffRole(), getUiLanguage()]);
+  const [learner, staffRole, cookieLanguage] = await Promise.all([
+    getCurrentLearner(),
+    getStaffRole(),
+    getUiLanguage(),
+  ]);
   const language = learner?.preferredLanguage ?? cookieLanguage;
   return { learner, staffRole, language, t: getMessages(language) };
 });

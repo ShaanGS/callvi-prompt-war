@@ -49,7 +49,10 @@ const envelopeSchema = z
   })
   .loose();
 
-export type CallbackResult = { status: number; body: ToolResponse | { ok: false; error: { code: string; message: string } } };
+export type CallbackResult = {
+  status: number;
+  body: ToolResponse | { ok: false; error: { code: string; message: string } };
+};
 
 /**
  * The HTTP body returned to Sarvam. Besides the structured fields, `result`
@@ -67,7 +70,8 @@ export function toSarvamResponseBody(body: CallbackResult["body"]): CallbackResu
  * body win; query parameters and then headers fill any that are missing.
  */
 export function withCallContext(body: unknown, url: URL, headers: Headers): unknown {
-  const base: Record<string, unknown> = typeof body === "object" && body !== null && !Array.isArray(body) ? { ...body } : {};
+  const base: Record<string, unknown> =
+    typeof body === "object" && body !== null && !Array.isArray(body) ? { ...body } : {};
   for (const key of ["user_identifier", "interaction_id"] as const) {
     const present = typeof base[key] === "string" && String(base[key]).trim() !== "";
     if (present) continue;
@@ -94,7 +98,12 @@ export function authenticateToolCaller(config: AppConfig, authorization: string 
   return null;
 }
 
-async function resolveBrowserCaller(db: Db, config: AppConfig, userIdentifier: string | undefined, interactionId: string): Promise<ResolvedToolCaller> {
+async function resolveBrowserCaller(
+  db: Db,
+  config: AppConfig,
+  userIdentifier: string | undefined,
+  interactionId: string,
+): Promise<ResolvedToolCaller> {
   if (!userIdentifier || !looksLikeVoiceToken(userIdentifier)) {
     throw new DomainError("UNAUTHENTICATED", "This voice session is not linked to a signed-in learner.");
   }
@@ -105,16 +114,34 @@ async function resolveBrowserCaller(db: Db, config: AppConfig, userIdentifier: s
   await sessionService.attachInteraction(db, session, interactionId);
   const learner = await learnersRepo.findById(db, session.learnerId);
   if (!learner) throw new DomainError("NOT_FOUND", "Learner not found.");
-  return { channel: "browser", learner, session: { ...session, providerInteractionId: interactionId }, interactionId, anonymous: false };
+  return {
+    channel: "browser",
+    learner,
+    session: { ...session, providerInteractionId: interactionId },
+    interactionId,
+    anonymous: false,
+  };
 }
 
-async function resolvePhoneCaller(db: Db, config: AppConfig, userIdentifier: string | undefined, interactionId: string): Promise<ResolvedToolCaller> {
+async function resolvePhoneCaller(
+  db: Db,
+  config: AppConfig,
+  userIdentifier: string | undefined,
+  interactionId: string,
+): Promise<ResolvedToolCaller> {
   const existingSession = await sessionsRepo.findByInteractionId(db, interactionId);
   if (existingSession) {
-    if (existingSession.channel !== "phone") throw new DomainError("FORBIDDEN", "Interaction belongs to another channel.");
+    if (existingSession.channel !== "phone")
+      throw new DomainError("FORBIDDEN", "Interaction belongs to another channel.");
     const learner = await learnersRepo.findById(db, existingSession.learnerId);
     if (!learner) throw new DomainError("NOT_FOUND", "Learner not found.");
-    return { channel: "phone", learner, session: existingSession, interactionId, anonymous: learner.phoneLast4 === null };
+    return {
+      channel: "phone",
+      learner,
+      session: existingSession,
+      interactionId,
+      anonymous: learner.phoneLast4 === null,
+    };
   }
 
   const phone = userIdentifier ? normalisePhone(userIdentifier) : null;
@@ -138,7 +165,12 @@ async function resolvePhoneCaller(db: Db, config: AppConfig, userIdentifier: str
   }
   let session: LearningSession;
   try {
-    session = await sessionService.start(db, { learner: current, channel: "phone", provider: "sarvam", providerInteractionId: interactionId });
+    session = await sessionService.start(db, {
+      learner: current,
+      channel: "phone",
+      provider: "sarvam",
+      providerInteractionId: interactionId,
+    });
   } catch (e) {
     // Two hooks raced to create the session for this interaction.
     const raced = await sessionsRepo.findByInteractionId(db, interactionId);
@@ -181,7 +213,8 @@ export async function handleSarvamToolCallback(
     // (identifier, interaction id, transcript, call length) are dropped here and never stored.
     const args: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(envelope.data)) {
-      if (!["user_identifier", "interaction_id", "call_transcript", "transcript", "call_length"].includes(k)) args[k] = v;
+      if (!["user_identifier", "interaction_id", "call_transcript", "transcript", "call_length"].includes(k))
+        args[k] = v;
     }
 
     const result = await runTool({

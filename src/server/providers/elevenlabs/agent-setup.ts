@@ -8,7 +8,12 @@ function parameterSchema(value: unknown, description: string): Record<string, un
     const properties = z.record(z.string(), z.unknown()).parse(schema.properties ?? {});
     return {
       type: "object",
-      properties: Object.fromEntries(Object.entries(properties).map(([name, prop]) => [name, parameterSchema(prop, `The ${name.replaceAll("_", " ")} value.`)])),
+      properties: Object.fromEntries(
+        Object.entries(properties).map(([name, prop]) => [
+          name,
+          parameterSchema(prop, `The ${name.replaceAll("_", " ")} value.`),
+        ]),
+      ),
       required: schema.required ?? [],
     };
   }
@@ -16,7 +21,10 @@ function parameterSchema(value: unknown, description: string): Record<string, un
   const type = schema.type ?? (typeof schema.const === "boolean" ? "boolean" : "string");
   return {
     type,
-    description: typeof schema.description === "string" ? schema.description : `${description}${schema.const !== undefined ? ` Must be ${JSON.stringify(schema.const)}; only after the learner explicitly confirms.` : ""}${schema.enum ? ` Allowed values: ${JSON.stringify(schema.enum)}.` : ""}`,
+    description:
+      typeof schema.description === "string"
+        ? schema.description
+        : `${description}${schema.const !== undefined ? ` Must be ${JSON.stringify(schema.const)}; only after the learner explicitly confirms.` : ""}${schema.enum ? ` Allowed values: ${JSON.stringify(schema.enum)}.` : ""}`,
     ...(Array.isArray(schema.enum) && type === "string" ? { enum: schema.enum } : {}),
   };
 }

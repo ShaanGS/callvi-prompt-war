@@ -1,6 +1,12 @@
 import type { LanguageCode } from "@/lib/languages";
 import type { Queryable } from "../db/types";
-import { isSessionOpen, type Learner, type LearningSession, type MasteryState, type PracticeResult } from "../domain/types";
+import {
+  isSessionOpen,
+  type Learner,
+  type LearningSession,
+  type MasteryState,
+  type PracticeResult,
+} from "../domain/types";
 import { isConceptDone } from "../agent/learning-policy";
 import { enrollmentsRepo, goalsRepo } from "../repositories/learning";
 import { attemptsRepo, checkpointsRepo, sessionsRepo } from "../repositories/sessions";
@@ -37,7 +43,12 @@ export interface EnrollmentView {
   lastCheckpoint: { summary: string; at: Date } | null;
 }
 
-function lessonsView(course: StoredCourse, mastery: Record<string, MasteryState | undefined>, completed: Set<string>, language: LanguageCode) {
+function lessonsView(
+  course: StoredCourse,
+  mastery: Record<string, MasteryState | undefined>,
+  completed: Set<string>,
+  language: LanguageCode,
+) {
   return [...course.lessons]
     .sort((a, b) => a.sequence - b.sequence)
     .map((l) => ({
@@ -45,13 +56,24 @@ function lessonsView(course: StoredCourse, mastery: Record<string, MasteryState 
       sequence: l.sequence,
       title: l.title[language],
       complete: completed.has(l.id),
-      concepts: l.concepts.map((c) => ({ id: c.id, title: c.title[language], state: mastery[c.id] ?? ("not_started" as const) })),
+      concepts: l.concepts.map((c) => ({
+        id: c.id,
+        title: c.title[language],
+        state: mastery[c.id] ?? ("not_started" as const),
+      })),
     }));
 }
 
-export async function enrollmentViews(db: Queryable, learner: Learner, language: LanguageCode): Promise<EnrollmentView[]> {
+export async function enrollmentViews(
+  db: Queryable,
+  learner: Learner,
+  language: LanguageCode,
+): Promise<EnrollmentView[]> {
   if (learner.consentStatus !== "granted") return [];
-  const [enrollments, courses] = await Promise.all([enrollmentsRepo.listForLearner(db, learner.id), courseService.listAll(db)]);
+  const [enrollments, courses] = await Promise.all([
+    enrollmentsRepo.listForLearner(db, learner.id),
+    courseService.listAll(db),
+  ]);
   // Each enrollment's reads are independent of the others, so they run
   // concurrently instead of one round trip after another.
   const views = await Promise.all(
@@ -70,13 +92,17 @@ export async function enrollmentViews(db: Queryable, learner: Learner, language:
         status: e.status,
         enrolledAt: e.enrolledAt,
         lastActivityAt: e.lastActivityAt,
-        currentLesson: lesson ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length } : null,
+        currentLesson: lesson
+          ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length }
+          : null,
         completedConcepts: Object.values(snapshot.mastery).filter((s) => isConceptDone(s)).length,
         totalConcepts: totalConcepts(course),
         completedLessons: course.lessons.filter((l) => snapshot.completedLessonIds.has(l.id)).length,
         evidence: learningSignals(evidence, course, language, "progress-page"),
         lessons: lessonsView(course, snapshot.mastery, snapshot.completedLessonIds, language),
-        lastCheckpoint: checkpoint ? { summary: renderCheckpointSummary(checkpoint, course, language), at: checkpoint.createdAt } : null,
+        lastCheckpoint: checkpoint
+          ? { summary: renderCheckpointSummary(checkpoint, course, language), at: checkpoint.createdAt }
+          : null,
       };
     }),
   );
@@ -179,7 +205,15 @@ export interface SessionView {
   startedAt: string;
   goal: string | null;
   course: { id: string; title: string } | null;
-  lesson: { id: string; title: string; objective: string; sequence: number; of: number; reviewNotes: string[]; realWorldAction: string } | null;
+  lesson: {
+    id: string;
+    title: string;
+    objective: string;
+    sequence: number;
+    of: number;
+    reviewNotes: string[];
+    realWorldAction: string;
+  } | null;
   concept: {
     id: string;
     title: string;
@@ -202,12 +236,16 @@ export async function sessionView(db: Queryable, learner: Learner, session: Lear
   const state = session.state;
   const course = state.courseId ? await courseService.getAvailable(db, state.courseId).catch(() => null) : null;
   const durable = session.memoryMode === "durable" && learner.consentStatus === "granted" && state.enrollmentId;
-  const snapshot = durable && state.enrollmentId ? await learningService.progress(db, state.enrollmentId) : snapshotFromSession(state);
+  const snapshot =
+    durable && state.enrollmentId ? await learningService.progress(db, state.enrollmentId) : snapshotFromSession(state);
   const lesson = course && state.lessonId ? (course.lessons.find((l) => l.id === state.lessonId) ?? null) : null;
   const concept = lesson && state.conceptId ? (lesson.concepts.find((c) => c.id === state.conceptId) ?? null) : null;
   const used = concept ? (state.explanationsUsed[concept.id] ?? []) : [];
-  const explanation = concept ? (concept.explanations.find((e) => e.approach === used[used.length - 1]) ?? concept.explanations[0]) : null;
-  const exercise = lesson && state.pendingExerciseId ? (lesson.practice.find((p) => p.id === state.pendingExerciseId) ?? null) : null;
+  const explanation = concept
+    ? (concept.explanations.find((e) => e.approach === used[used.length - 1]) ?? concept.explanations[0])
+    : null;
+  const exercise =
+    lesson && state.pendingExerciseId ? (lesson.practice.find((p) => p.id === state.pendingExerciseId) ?? null) : null;
 
   return {
     id: session.id,
@@ -243,7 +281,13 @@ export async function sessionView(db: Queryable, learner: Learner, session: Lear
             approachesTotal: concept.explanations.length,
           }
         : null,
-    lessonConcepts: lesson ? lesson.concepts.map((c) => ({ id: c.id, title: c.title[language], state: snapshot.mastery[c.id] ?? "not_started" })) : [],
+    lessonConcepts: lesson
+      ? lesson.concepts.map((c) => ({
+          id: c.id,
+          title: c.title[language],
+          state: snapshot.mastery[c.id] ?? "not_started",
+        }))
+      : [],
     practice: exercise ? { exerciseId: exercise.id, prompt: exercise.prompt[language], kind: exercise.kind } : null,
     attempts: state.attempts.map((a) => ({ exerciseId: a.exerciseId, result: a.result, at: a.at })),
     courseProgress: {

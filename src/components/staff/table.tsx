@@ -15,14 +15,31 @@ export function Table({ caption, children }: { caption: string; children: ReactN
 
 export function Th({ children, className, numeric }: { children: ReactNode; className?: string; numeric?: boolean }) {
   return (
-    <th scope="col" className={clsx("border-b border-line bg-sunken px-3 py-2 text-xs font-semibold text-subtle", numeric && "text-right", className)}>
+    <th
+      scope="col"
+      className={clsx(
+        "border-b border-line bg-sunken px-3 py-2 text-xs font-semibold text-subtle",
+        numeric && "text-right",
+        className,
+      )}
+    >
       {children}
     </th>
   );
 }
 
 export function Td({ children, className, numeric }: { children: ReactNode; className?: string; numeric?: boolean }) {
-  return <td className={clsx("border-b border-line px-3 py-2.5 align-top text-ink", numeric && "text-right tabular-nums", className)}>{children}</td>;
+  return (
+    <td
+      className={clsx(
+        "border-b border-line px-3 py-2.5 align-top text-ink",
+        numeric && "text-right tabular-nums",
+        className,
+      )}
+    >
+      {children}
+    </td>
+  );
 }
 
 export function EmptyRow({ colSpan, children }: { colSpan: number; children: ReactNode }) {
@@ -37,5 +54,11 @@ export function EmptyRow({ colSpan, children }: { colSpan: number; children: Rea
 
 export function formatStaffDate(date: Date | null): string {
   if (!date) return "—";
-  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(date);
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
 }

@@ -11,7 +11,10 @@ const paramsSchema = z.object({ orgId: id, workspaceId: id, appId: id });
 /** The SDK's InteractionType has exactly two values; Callvi only opens voice calls. */
 const querySchema = z.object({
   interaction_type: z.enum(["call", "chat"]).optional(),
-  version: z.string().regex(/^\d{1,6}$/).optional(),
+  version: z
+    .string()
+    .regex(/^\d{1,6}$/)
+    .optional(),
 });
 
 /**

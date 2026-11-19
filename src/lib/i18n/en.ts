@@ -59,9 +59,18 @@ export const en = {
     browse: "See the courses",
     honestTitle: "What to expect",
     honest: [
-      { title: "It is an AI, not a person", body: "The companion says so at the start of every session. It is not a trainer, employer or official." },
-      { title: "It remembers only if you agree", body: "Say yes and it keeps your goal and progress so you can continue later. Say no and you can still learn — nothing is kept." },
-      { title: "You stay in control", body: "See what is saved, correct it, or delete it at any time from the Privacy page." },
+      {
+        title: "It is an AI, not a person",
+        body: "The companion says so at the start of every session. It is not a trainer, employer or official.",
+      },
+      {
+        title: "It remembers only if you agree",
+        body: "Say yes and it keeps your goal and progress so you can continue later. Say no and you can still learn — nothing is kept.",
+      },
+      {
+        title: "You stay in control",
+        body: "See what is saved, correct it, or delete it at any time from the Privacy page.",
+      },
     ],
     howTitle: "How a session works",
     how: [
@@ -84,7 +93,8 @@ export const en = {
       notLive: "Not live yet",
     },
     coursesTitle: "Courses",
-    footer: "Course content is written by the project team and is practical guidance only. It is not a certificate, and it does not promise income or jobs.",
+    footer:
+      "Course content is written by the project team and is practical guidance only. It is not a certificate, and it does not promise income or jobs.",
   },
   signIn: {
     title: "Sign in",
@@ -103,7 +113,8 @@ export const en = {
     rateLimited: "Too many attempts. Please wait a few minutes and try again.",
     sendFailed: "We couldn't send a code just now. Please try again.",
     devTitle: "Development sign-in",
-    devBody: "Only available in local development. It creates a test identity on this machine and cannot be enabled in production.",
+    devBody:
+      "Only available in local development. It creates a test identity on this machine and cannot be enabled in production.",
     devName: "Test name",
     devStaff: "Also give this test identity staff access",
     devSubmit: "Continue as test learner",
@@ -118,9 +129,11 @@ export const en = {
     },
     consent: {
       title: "Before we begin",
-      disclosure: "This is an AI learning companion, not a person. It can make mistakes; the course content is the reference.",
+      disclosure:
+        "This is an AI learning companion, not a person. It can make mistakes; the course content is the reference.",
       question: "Can we remember your progress?",
-      explain: "If you say yes, we save your goal, chosen course, lesson progress, practice results and preferences so you can continue in this browser next time. No sign-in is needed. Clearing browser cookies or using another device starts a new profile.",
+      explain:
+        "If you say yes, we save your goal, chosen course, lesson progress, practice results and preferences so you can continue in this browser next time. No sign-in is needed. Clearing browser cookies or using another device starts a new profile.",
       notSaved: "We never save audio recordings, and we don't ask for bank, ID, health or family details.",
       control: "You can see, correct or delete what is saved at any time.",
       grant: "Yes, remember my progress",
@@ -138,7 +151,11 @@ export const en = {
       body: "Say it in your own words. One sentence is fine.",
       label: "Your goal",
       examplesTitle: "Examples",
-      examples: ["Work out a fair price for the snacks I make", "Keep a simple record of daily sales", "Talk to customers with more confidence"],
+      examples: [
+        "Work out a fair price for the snacks I make",
+        "Keep a simple record of daily sales",
+        "Talk to customers with more confidence",
+      ],
       confirmTitle: "Is this right?",
       confirm: "Yes, that's my goal",
       change: "Change it",
@@ -354,7 +371,13 @@ export const en = {
   progress: {
     title: "Progress",
     lead: "Your practice and progress, saved from your conversations. Finishing a lesson is a step; applying it again shows more.",
-    evidence: { needs_practice: "Worth another try", practised_with_support: "Practised with help", practised: "Practised", checked_again: "Applied in a fresh check on a later day", not_assessed: "Answer needs clarification" },
+    evidence: {
+      needs_practice: "Worth another try",
+      practised_with_support: "Practised with help",
+      practised: "Practised",
+      checked_again: "Applied in a fresh check on a later day",
+      not_assessed: "Answer needs clarification",
+    },
     sessionOnly: "Memory is off, so course progress and practice answers are not kept.",
     courses: "Courses",
     noCourses: "No saved course progress yet.",
@@ -387,7 +410,8 @@ export const en = {
     statusPending: "You haven't chosen yet.",
     turnOn: "Turn memory on",
     turnOff: "Turn memory off and erase",
-    turnOffConfirm: "This erases your saved goal, course progress, practice answers, checkpoints and preferences, and stops saving. Your account stays. Continue?",
+    turnOffConfirm:
+      "This erases your saved goal, course progress, practice answers, checkpoints and preferences, and stops saving. Your account stays. Continue?",
     profile: "Profile",
     name: "Name",
     noName: "Not set",
@@ -421,19 +445,22 @@ export const en = {
     },
     updated: "Updated {date}",
     neverSaved: "Never saved",
-    neverList: "Never saved: audio recordings, bank or card details, ID numbers, passwords or codes, health or family details.",
+    neverList:
+      "Never saved: audio recordings, bank or card details, ID numbers, passwords or codes, health or family details.",
     consentHistory: "Consent history",
     consentDecision: { granted: "Agreed to memory", declined: "Declined memory", revoked: "Turned memory off" },
     delete: "Delete",
     deleteMemory: "Delete saved learning",
-    deleteMemoryBody: "Erases goal, progress, practice answers, checkpoints and preferences. Your account and memory setting stay.",
+    deleteMemoryBody:
+      "Erases goal, progress, practice answers, checkpoints and preferences. Your account and memory setting stay.",
     deleteMemoryConfirm: "Delete all saved learning? This cannot be undone.",
     deleteAccount: "Delete my account",
     deleteAccountBody: "Deletes your account and everything linked to it. You will be signed out.",
     deleteAccountConfirmLabel: "Type DELETE to confirm",
     deleteAccountWord: "DELETE",
     deleted: "Deleted.",
-    authPending: "Your learning account was deleted. Your sign-in email record could not be removed automatically — please contact the team to remove it.",
+    authPending:
+      "Your learning account was deleted. Your sign-in email record could not be removed automatically — please contact the team to remove it.",
     goalUpdated: "Goal updated.",
     sessionOnlyNoEdit: "Memory is off, so there is nothing saved to edit.",
   },
@@ -446,5 +473,9 @@ export const en = {
   },
 };
 
-type Widen<T> = T extends string ? string : T extends readonly (infer U)[] ? readonly Widen<U>[] : { readonly [K in keyof T]: Widen<T[K]> };
+type Widen<T> = T extends string
+  ? string
+  : T extends readonly (infer U)[]
+    ? readonly Widen<U>[]
+    : { readonly [K in keyof T]: Widen<T[K]> };
 export type Messages = Widen<typeof en>;

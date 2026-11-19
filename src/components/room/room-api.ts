@@ -29,7 +29,10 @@ const envelopeSchema = z.object({
   response: toolResponseSchema.optional(),
   // The session view is produced by our own server; it is checked for shape here
   // only loosely and typed by the shared SessionView interface.
-  session: z.custom<SessionView>((v) => typeof v === "object" && v !== null && "id" in v && "status" in v).nullable().optional(),
+  session: z
+    .custom<SessionView>((v) => typeof v === "object" && v !== null && "id" in v && "status" in v)
+    .nullable()
+    .optional(),
   error: z.object({ code: z.string(), message: z.string() }).optional(),
 });
 
@@ -77,7 +80,8 @@ export async function callRoomTool(
   });
   const parsed = envelopeSchema.safeParse(await res.json().catch(() => null));
   if (!parsed.success) throw new RoomApiError("INTERNAL", "Unexpected response");
-  if (!parsed.data.response) throw new RoomApiError(parsed.data.error?.code ?? "INTERNAL", parsed.data.error?.message ?? "Request failed");
+  if (!parsed.data.response)
+    throw new RoomApiError(parsed.data.error?.code ?? "INTERNAL", parsed.data.error?.message ?? "Request failed");
   return { response: parsed.data.response, session: parsed.data.session ?? null };
 }
 

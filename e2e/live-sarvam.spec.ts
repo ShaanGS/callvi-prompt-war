@@ -1,13 +1,20 @@
 import { expect, test } from "@playwright/test";
 import { useEnglish } from "./helpers";
 
-test.skip(process.env.LIVE_SARVAM_TEST !== "1", "Requires a configured Sarvam browser agent and consumes voice credits.");
+test.skip(
+  process.env.LIVE_SARVAM_TEST !== "1",
+  "Requires a configured Sarvam browser agent and consumes voice credits.",
+);
 test.use({
   permissions: ["microphone"],
   launchOptions: { args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] },
 });
 
-test("a live Sarvam browser session reaches the speaking state from the homepage", async ({ context, page, baseURL }) => {
+test("a live Sarvam browser session reaches the speaking state from the homepage", async ({
+  context,
+  page,
+  baseURL,
+}) => {
   await useEnglish(context, baseURL!);
   await page.goto("/");
   await page.getByRole("button", { name: "Call Callvi", exact: true }).click();

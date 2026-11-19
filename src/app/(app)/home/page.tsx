@@ -27,7 +27,14 @@ export default async function HomePage() {
       </header>
 
       {!durable ? (
-        <Notice tone="info" action={<Link href="/privacy" className="text-sm font-medium text-accent underline-offset-4 hover:underline">{t.home.sessionOnlyAction}</Link>}>
+        <Notice
+          tone="info"
+          action={
+            <Link href="/privacy" className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+              {t.home.sessionOnlyAction}
+            </Link>
+          }
+        >
           {t.home.sessionOnly}
         </Notice>
       ) : null}
@@ -37,7 +44,11 @@ export default async function HomePage() {
           tone="info"
           title={t.home.openSession}
           action={
-            <ButtonLink href={`/learn/${view.openSession.id}`} size="sm" icon={<Radio aria-hidden className="size-4" />}>
+            <ButtonLink
+              href={`/learn/${view.openSession.id}`}
+              size="sm"
+              icon={<Radio aria-hidden className="size-4" />}
+            >
               {t.home.rejoin}
             </ButtonLink>
           }
@@ -53,12 +64,19 @@ export default async function HomePage() {
             </ButtonLink>
           }
         >
-          {view.goal ? <p className="max-w-prose border-l-2 border-accent pl-4 text-lg text-ink">{view.goal.text}</p> : <p className="text-muted">{t.home.noGoal}</p>}
+          {view.goal ? (
+            <p className="max-w-prose border-l-2 border-accent pl-4 text-lg text-ink">{view.goal.text}</p>
+          ) : (
+            <p className="text-muted">{t.home.noGoal}</p>
+          )}
         </Section>
       ) : null}
 
       {focus ? (
-        <section aria-labelledby="focus-title" className="grid gap-6 rounded-lg border border-line bg-surface p-5 sm:p-6 md:grid-cols-[1fr_auto] md:items-end">
+        <section
+          aria-labelledby="focus-title"
+          className="grid gap-6 rounded-lg border border-line bg-surface p-5 sm:p-6 md:grid-cols-[1fr_auto] md:items-end"
+        >
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <p id="focus-title" className="text-sm font-medium text-subtle">
@@ -70,7 +88,9 @@ export default async function HomePage() {
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-medium uppercase tracking-wide text-subtle">{t.home.nextUp}</p>
                 <p className="text-ink">
-                  <span className="text-muted">{fmt(t.common.lessonOf, { n: focus.currentLesson.sequence, total: focus.currentLesson.of })} · </span>
+                  <span className="text-muted">
+                    {fmt(t.common.lessonOf, { n: focus.currentLesson.sequence, total: focus.currentLesson.of })} ·{" "}
+                  </span>
                   {focus.currentLesson.title}
                 </p>
               </div>
@@ -90,7 +110,11 @@ export default async function HomePage() {
               label={fmt(t.common.ideasDone, { done: focus.completedConcepts, total: focus.totalConcepts })}
             />
           </div>
-          <ButtonLink href={`/learn?course=${focus.course.id}`} size="lg" icon={<ArrowRight aria-hidden className="size-4" />}>
+          <ButtonLink
+            href={`/learn?course=${focus.course.id}`}
+            size="lg"
+            icon={<ArrowRight aria-hidden className="size-4" />}
+          >
             {t.home.continue}
           </ButtonLink>
         </section>
@@ -117,7 +141,9 @@ export default async function HomePage() {
                     {e.course.title}
                     {e.status === "completed" ? <Tag tone="success">{t.home.completed}</Tag> : null}
                   </span>
-                  <span className="text-sm text-subtle">{fmt(t.common.ideasDone, { done: e.completedConcepts, total: e.totalConcepts })}</span>
+                  <span className="text-sm text-subtle">
+                    {fmt(t.common.ideasDone, { done: e.completedConcepts, total: e.totalConcepts })}
+                  </span>
                 </div>
                 <ButtonLink href={`/learn?course=${e.course.id}`} variant="secondary" size="sm">
                   {t.home.continue}

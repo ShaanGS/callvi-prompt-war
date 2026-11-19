@@ -79,19 +79,30 @@ export async function verifyEmailCode(prev: SignInState, formData: FormData): Pr
  */
 export async function devSignIn(formData: FormData): Promise<void> {
   const config = getConfig();
-  if (!config.auth.devAuthEnabled || config.isProduction) throw new DomainError("FORBIDDEN", "Development sign-in is disabled.");
+  if (!config.auth.devAuthEnabled || config.isProduction)
+    throw new DomainError("FORBIDDEN", "Development sign-in is disabled.");
   const name = z.string().trim().min(1).max(40).safeParse(formData.get("name"));
   if (!name.success) redirect("/sign-in?error=dev_name");
   const hex = sha256Hex(`dev-identity:${name.data.toLowerCase()}`);
   const sub = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
   const signed = signDevIdentity(config, sub, name.data);
   const store = await cookies();
-  store.set(DEV_COOKIE, signed.value, { httpOnly: true, sameSite: "lax", secure: false, path: "/", maxAge: signed.maxAge });
+  store.set(DEV_COOKIE, signed.value, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    path: "/",
+    maxAge: signed.maxAge,
+  });
   const db = await getDb();
   if (formData.get("staff") === "on") {
     await staffRepo.grant(db, { provider: "dev", subject: sub, role: "admin", emailHint: `dev:${name.data}` });
   }
-  const { learner } = await learnerService.resolveOrCreate(db, { provider: "dev", subject: sub }, { preferredLanguage: await getUiLanguage() });
+  const { learner } = await learnerService.resolveOrCreate(
+    db,
+    { provider: "dev", subject: sub },
+    { preferredLanguage: await getUiLanguage() },
+  );
   if (!learner.displayName) await learnerService.updateProfile(db, learner.id, { displayName: name.data });
   redirect(safeNext(formData.get("next")));
 }

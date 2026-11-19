@@ -3,9 +3,22 @@ import { useEnglish } from "./helpers";
 import { writeFile } from "node:fs/promises";
 
 test.skip(process.env.LIVE_VOICE_TEST !== "1", "Opt-in real ElevenLabs test; consumes provider credits.");
-test.use({ permissions: ["microphone"], launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", "--use-file-for-fake-audio-capture=/private/tmp/callvi-silent-microphone.wav"] } });
+test.use({
+  permissions: ["microphone"],
+  launchOptions: {
+    args: [
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+      "--use-file-for-fake-audio-capture=/private/tmp/callvi-silent-microphone.wav",
+    ],
+  },
+});
 
-test("one-tap voice entry handles consent, goal and course entirely in conversation", async ({ page, context, baseURL }) => {
+test("one-tap voice entry handles consent, goal and course entirely in conversation", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   test.setTimeout(180_000);
   await useEnglish(context, baseURL!);
   const tools: string[] = [];
@@ -19,7 +32,9 @@ test("one-tap voice entry handles consent, goal and course entirely in conversat
         if (data.type === "audio") audioChunks++;
         if (data.type === "client_tool_call") tools.push(data.client_tool_call.tool_name);
         if (data.type === "agent_response") messages.push(data.agent_response_event.agent_response);
-      } catch { /* no audio or credentials are logged */ }
+      } catch {
+        /* no audio or credentials are logged */
+      }
     });
   });
   await page.addInitScript(() => {
@@ -33,15 +48,22 @@ test("one-tap voice entry handles consent, goal and course entirely in conversat
   });
   const say = async (text: string) => {
     const count = messages.length;
-    await page.evaluate((message) => Reflect.get(window, "__callviTestSocket").send(JSON.stringify({ type: "user_message", text: message })), text);
+    await page.evaluate(
+      (message) =>
+        Reflect.get(window, "__callviTestSocket").send(JSON.stringify({ type: "user_message", text: message })),
+      text,
+    );
     await expect.poll(() => messages.length, { timeout: 30_000 }).toBeGreaterThan(count);
   };
   await page.goto("/");
   await expect(page.locator("input, textarea")).toHaveCount(0);
-  const created = page.waitForResponse((response) => response.url().endsWith("/api/voice/browser-session") && response.request().method() === "POST");
+  const created = page.waitForResponse(
+    (response) => response.url().endsWith("/api/voice/browser-session") && response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: "Call Callvi", exact: true }).click();
   const sessionId = (await (await created).json()).session.sessionId;
-  if (baseURL === "https://callvi.vercel.app") await writeFile("/private/tmp/callvi-production-smoke-session.json", JSON.stringify({ sessionId }));
+  if (baseURL === "https://callvi.vercel.app")
+    await writeFile("/private/tmp/callvi-production-smoke-session.json", JSON.stringify({ sessionId }));
   await page.screenshot({ path: "/private/tmp/callvi-dialer-desktop.png" });
   await expect.poll(() => audioChunks, { timeout: 45_000 }).toBeGreaterThan(0);
   await expect(page.getByRole("button", { name: "Mute", exact: true })).toBeEnabled();
@@ -59,7 +81,9 @@ test("one-tap voice entry handles consent, goal and course entirely in conversat
   await expect.poll(() => tools, { timeout: 30_000 }).toContain("record_practice_attempt");
   await say("Please save my place and finish our conversation for today.");
   await expect.poll(() => tools, { timeout: 30_000 }).toContain("save_checkpoint");
-  await expect(page.getByText("Your place is saved. Come back whenever you're ready.")).toBeVisible({ timeout: 45_000 });
+  await expect(page.getByText("Your place is saved. Come back whenever you're ready.")).toBeVisible({
+    timeout: 45_000,
+  });
   const view = await (await context.request.get(`${baseURL}/api/learn/sessions/${sessionId}`)).json();
   expect(view.session.open).toBe(false);
   expect(view.session.memoryMode).toBe("durable");
@@ -75,6 +99,8 @@ test("one-tap voice entry handles consent, goal and course entirely in conversat
   await expect.poll(() => tools.slice(previousTools), { timeout: 30_000 }).toContain("get_lesson_context");
   await expect(page.getByText("Who the customer is", { exact: true })).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: "End", exact: true }).click();
-  await expect(page.getByText("Your place is saved. Come back whenever you're ready.")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Your place is saved. Come back whenever you're ready.")).toBeVisible({
+    timeout: 30_000,
+  });
   console.log("Verified voice-only onboarding and learning:", tools.join(", "));
 });

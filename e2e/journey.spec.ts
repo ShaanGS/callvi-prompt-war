@@ -16,7 +16,12 @@ test("learner journey with consent, practice, checkpoint and second-session resu
   await expect(page.getByRole("button", { name: "Call Callvi", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Sign out", exact: true })).toHaveCount(0);
-  await onboard(page, { consent: "grant", name, goal: "I want to price my homemade snacks and sell to neighbours", courseTitle: "Small Business Starter" });
+  await onboard(page, {
+    consent: "grant",
+    name,
+    goal: "I want to price my homemade snacks and sell to neighbours",
+    courseTitle: "Small Business Starter",
+  });
 
   await expect(page.getByText("Your progress will be saved at checkpoints.")).toBeVisible();
   await openStudyRoom(page);
@@ -106,7 +111,11 @@ test("declining memory keeps learning session-only", async ({ browser, baseURL }
   await useEnglish(context, baseURL!);
   const page = await context.newPage();
   await page.goto("/");
-  await onboard(page, { consent: "decline", goal: "Keep a simple record of daily sales", courseTitle: "Digital Basics for a Small Business" });
+  await onboard(page, {
+    consent: "decline",
+    goal: "Keep a simple record of daily sales",
+    courseTitle: "Digital Basics for a Small Business",
+  });
   await expect(page.getByText("Memory is off: this session will not be saved.")).toBeVisible();
   await openStudyRoom(page);
   await expect(page.getByText("Session only — not saved").first()).toBeVisible();

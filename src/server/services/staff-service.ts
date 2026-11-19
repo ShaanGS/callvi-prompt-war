@@ -15,7 +15,13 @@ export function shortId(id: string): string {
 }
 
 export interface StaffOverview {
-  learners: { total: number; consentGranted: number; consentDeclined: number; consentPending: number; consentRevoked: number };
+  learners: {
+    total: number;
+    consentGranted: number;
+    consentDeclined: number;
+    consentPending: number;
+    consentRevoked: number;
+  };
   sessions: { total: number; last7Days: number; open: number; byChannel: Record<string, number> };
   enrollments: { total: number; completed: number };
   practice: { total: number; byResult: Record<string, number> };
@@ -88,7 +94,12 @@ export async function staffOverview(db: Queryable): Promise<StaffOverview> {
     },
     enrollments: { total: totals.enrollments_total, completed: totals.enrollments_completed },
     practice: { total: totals.practice_total, byResult: Object.fromEntries(results.map((r) => [r.k, r.n])) },
-    tools: { total: totals.tools_total, failed: totals.tools_failed, last24h: totals.tools_24h, failedLast24h: totals.tools_failed_24h },
+    tools: {
+      total: totals.tools_total,
+      failed: totals.tools_failed,
+      last24h: totals.tools_24h,
+      failedLast24h: totals.tools_failed_24h,
+    },
     deletions: { total: totals.deletions_total },
   };
 }
@@ -192,7 +203,14 @@ export async function staffLearners(db: Queryable, limit = 100): Promise<StaffLe
 
 export interface StaffLearnerDetail extends StaffLearnerRow {
   consentHistory: Array<{ decision: string; channel: string; version: string; at: Date }>;
-  enrollments_: Array<{ courseId: string; status: string; currentLessonId: string | null; mastered: number; needsPractice: number; enrolledAt: Date }>;
+  enrollments_: Array<{
+    courseId: string;
+    status: string;
+    currentLessonId: string | null;
+    mastered: number;
+    needsPractice: number;
+    enrolledAt: Date;
+  }>;
   sessions_: StaffSessionRow[];
   practiceByResult: Record<string, number>;
 }
@@ -219,7 +237,14 @@ export async function staffLearnerDetail(db: Queryable, learnerId: string): Prom
     ),
     many(
       db,
-      z.object({ course_id: col.text, status: col.text, current_lesson_id: col.nullableText, mastered: col.int, needs_practice: col.int, enrolled_at: col.date }),
+      z.object({
+        course_id: col.text,
+        status: col.text,
+        current_lesson_id: col.nullableText,
+        mastered: col.int,
+        needs_practice: col.int,
+        enrolled_at: col.date,
+      }),
       `select e.course_id, e.status, e.current_lesson_id, e.enrolled_at,
               (select count(*)::int from concept_mastery m where m.enrollment_id = e.id and m.state in ('practised','mastered','carried_forward')) as mastered,
               (select count(*)::int from concept_mastery m where m.enrollment_id = e.id and m.state = 'needs_practice') as needs_practice
@@ -227,7 +252,12 @@ export async function staffLearnerDetail(db: Queryable, learnerId: string): Prom
       [learnerId],
     ),
     staffSessions(db, { learnerId, limit: 50 }),
-    many(db, z.object({ k: col.text, n: col.int }), `select result as k, count(*)::int as n from practice_attempts where learner_id = $1 group by result`, [learnerId]),
+    many(
+      db,
+      z.object({ k: col.text, n: col.int }),
+      `select result as k, count(*)::int as n from practice_attempts where learner_id = $1 group by result`,
+      [learnerId],
+    ),
   ]);
   return {
     id: base.id,
@@ -239,7 +269,12 @@ export async function staffLearnerDetail(db: Queryable, learnerId: string): Prom
     enrollments: base.enrollments,
     sessions: base.sessions,
     lastSessionAt: base.last_session_at,
-    consentHistory: consent.map((c) => ({ decision: c.decision, channel: c.channel, version: c.consent_version, at: c.created_at })),
+    consentHistory: consent.map((c) => ({
+      decision: c.decision,
+      channel: c.channel,
+      version: c.consent_version,
+      at: c.created_at,
+    })),
     enrollments_: enrollments.map((e) => ({
       courseId: e.course_id,
       status: e.status,
@@ -270,7 +305,10 @@ export interface StaffSessionRow {
   hasCheckpoint: boolean;
 }
 
-export async function staffSessions(db: Queryable, opts: { learnerId?: string; limit?: number } = {}): Promise<StaffSessionRow[]> {
+export async function staffSessions(
+  db: Queryable,
+  opts: { learnerId?: string; limit?: number } = {},
+): Promise<StaffSessionRow[]> {
   const rows = await many(
     db,
     z.object({
@@ -329,7 +367,10 @@ export interface StaffTraceRow {
   at: Date;
 }
 
-export async function staffTraces(db: Queryable, opts: { status?: string; limit?: number } = {}): Promise<StaffTraceRow[]> {
+export async function staffTraces(
+  db: Queryable,
+  opts: { status?: string; limit?: number } = {},
+): Promise<StaffTraceRow[]> {
   const rows = await many(
     db,
     z.object({

@@ -15,7 +15,11 @@ function safeNext(value: string | undefined): string {
   return value && /^\/(?!\/)[\w\-/?=&%.]*$/.test(value) ? value : "/home";
 }
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string; error?: string }>;
+}) {
   const params = await searchParams;
   const next = safeNext(params.next);
   // Login remains an operator-only route. Old learner links enter the app.
@@ -41,7 +45,10 @@ export default async function SignInPage({ searchParams }: { searchParams: Promi
       )}
 
       {config.auth.devAuthEnabled && !config.isProduction ? (
-        <section aria-labelledby="dev-title" className="flex flex-col gap-4 rounded-lg border border-dashed border-warning/50 bg-warning-soft/40 p-5">
+        <section
+          aria-labelledby="dev-title"
+          className="flex flex-col gap-4 rounded-lg border border-dashed border-warning/50 bg-warning-soft/40 p-5"
+        >
           <div className="flex items-start gap-3">
             <FlaskConical aria-hidden className="mt-0.5 size-5 text-warning" />
             <div className="flex flex-col gap-1">

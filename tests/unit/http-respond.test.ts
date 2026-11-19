@@ -33,15 +33,18 @@ describe("route handler wrapper", () => {
     expect(res).toBe(original);
   });
 
-  it.each(ERROR_CODES.filter((code) => code !== "INTERNAL"))("maps a %s domain error to its HTTP status and a stable error body", async (code) => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const res = await handle(async () => {
-      throw new DomainError(code, `Readable message for ${code}.`);
-    });
-    expect(res.status).toBe(HTTP_STATUS[code]);
-    expect(res.headers.get("cache-control")).toBe("no-store");
-    expect(await res.json()).toEqual({ ok: false, error: { code, message: `Readable message for ${code}.` } });
-  });
+  it.each(ERROR_CODES.filter((code) => code !== "INTERNAL"))(
+    "maps a %s domain error to its HTTP status and a stable error body",
+    async (code) => {
+      vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const res = await handle(async () => {
+        throw new DomainError(code, `Readable message for ${code}.`);
+      });
+      expect(res.status).toBe(HTTP_STATUS[code]);
+      expect(res.headers.get("cache-control")).toBe("no-store");
+      expect(await res.json()).toEqual({ ok: false, error: { code, message: `Readable message for ${code}.` } });
+    },
+  );
 
   it("does not log expected domain errors", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);

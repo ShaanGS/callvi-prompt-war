@@ -21,9 +21,11 @@ export function browserVoiceConfig(learner: Learner, session: LearningSession): 
 }
 
 export async function createBrowserVoiceSession(db: Db, learner: Learner, courseId: string | null) {
-  if (getConfig().browserVoiceProvider === "sarvam") return sarvamProvider.createBrowserSession(db, learner, { courseId });
+  if (getConfig().browserVoiceProvider === "sarvam")
+    return sarvamProvider.createBrowserSession(db, learner, { courseId });
   const config = getConfig().elevenlabs;
-  if (!config.apiKey || !config.agentId) throw new DomainError("NOT_CONFIGURED", "Voice learning is not configured yet.");
+  if (!config.apiKey || !config.agentId)
+    throw new DomainError("NOT_CONFIGURED", "Voice learning is not configured yet.");
   rateLimit(`voice-session:${learner.id}`, 6, 60_000);
   if (courseId) await courseService.getAvailable(db, courseId);
   const session = await sessionService.start(db, { learner, channel: "browser", provider: "elevenlabs", courseId });

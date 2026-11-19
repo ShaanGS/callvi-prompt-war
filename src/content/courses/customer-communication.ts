@@ -47,8 +47,40 @@ export const customerCommunication: z.input<typeof courseSchema> = {
   contentReview: { status: "team_authored", note: TEAM_AUTHORED_NOTE },
   estimatedMinutes: 45,
   recommendationTerms: terms(
-    ["talk", "speak", "communicat", "customer", "conversation", "sell", "confiden", "convinc", "explain", "polite", "listen", "question", "objection", "negotiat", "shy", "nervous"],
-    ["பேச", "வாடிக்கையாளர்", "தொடர்பு", "உரையாட", "விற்க", "விற்ப", "தன்னம்பிக்கை", "விளக்க", "மரியாதை", "கேள்வி", "கவனித்து", "தயக்க", "கூச்ச", "பயம்"],
+    [
+      "talk",
+      "speak",
+      "communicat",
+      "customer",
+      "conversation",
+      "sell",
+      "confiden",
+      "convinc",
+      "explain",
+      "polite",
+      "listen",
+      "question",
+      "objection",
+      "negotiat",
+      "shy",
+      "nervous",
+    ],
+    [
+      "பேச",
+      "வாடிக்கையாளர்",
+      "தொடர்பு",
+      "உரையாட",
+      "விற்க",
+      "விற்ப",
+      "தன்னம்பிக்கை",
+      "விளக்க",
+      "மரியாதை",
+      "கேள்வி",
+      "கவனித்து",
+      "தயக்க",
+      "கூச்ச",
+      "பயம்",
+    ],
   ),
   lessons: [
     // ---------------------------------------------------------------------
@@ -157,7 +189,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
             "அனிதா வீட்டிலேயே துணிகளை ஆல்டர் செய்து தருகிறார். பெரும்பாலான வேலைகள் இரண்டு நாளில் தயாராகிவிடும்; ஒரு பேண்ட்டின் நீளத்தைக் குறைக்க ₹50. ஒரு புதிய வாடிக்கையாளர் அவர் என்ன செய்கிறார் என்று கேட்கிறார். பொதுவான வார்த்தைகளுக்குப் பதிலாகக் குறிப்பான விவரங்களைப் பயன்படுத்தி, அனிதாவின் சேவையை இரண்டு மூன்று வாக்கியங்களில் அறிமுகப்படுத்துங்கள்.",
           ),
           hints: [
-            L("Use at least one fact: the two days, or the ₹50 price.", "குறைந்தது ஒரு உண்மையைப் பயன்படுத்துங்கள்: இரண்டு நாள், அல்லது ₹50 விலை."),
+            L(
+              "Use at least one fact: the two days, or the ₹50 price.",
+              "குறைந்தது ஒரு உண்மையைப் பயன்படுத்துங்கள்: இரண்டு நாள், அல்லது ₹50 விலை.",
+            ),
           ],
           modelAnswer: L(
             "I do clothing alterations at home — shortening, loosening or fitting your clothes. Most jobs are ready in two days, and shortening a pair of trousers is ₹50.",
@@ -178,7 +213,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               {
                 id: "specific-detail",
                 kind: "terms",
-                description: L("Includes a specific fact (two days or ₹50)", "ஒரு குறிப்பான உண்மையைச் சேர்க்கிறது (இரண்டு நாள் அல்லது ₹50)"),
+                description: L(
+                  "Includes a specific fact (two days or ₹50)",
+                  "ஒரு குறிப்பான உண்மையைச் சேர்க்கிறது (இரண்டு நாள் அல்லது ₹50)",
+                ),
                 terms: terms(
                   ["two days", "2 days", "50", "fifty", "rupee", "days", "ready"],
                   ["இரண்டு நாள்", "2 நாள்", "50", "ஐம்பது", "ரூபாய்", "நாளில்", "தயார்"],
@@ -227,10 +265,39 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               {
                 id: "spots-problem",
                 kind: "terms",
-                description: L("Says the claims can't be proved or could mislead", "அந்தக் கூற்றுகளை நிரூபிக்க முடியாது அல்லது தவறாக வழிநடத்தலாம் என்று சொல்கிறது"),
+                description: L(
+                  "Says the claims can't be proved or could mislead",
+                  "அந்தக் கூற்றுகளை நிரூபிக்க முடியாது அல்லது தவறாக வழிநடத்தலாம் என்று சொல்கிறது",
+                ),
                 terms: terms(
-                  ["prove", "proof", "exaggerat", "not true", "untrue", "false", "lie", "mislead", "overclaim", "promise", "guarantee", "honest", "can't know", "cannot know"],
-                  ["நிரூபிக்க", "ஆதாரம்", "மிகைப்படுத்", "உண்மை இல்லை", "உண்மையில்லை", "பொய்", "தவறாக", "வாக்குறுதி", "நேர்மை", "உறுதியாகச் சொல்ல முடியாது"],
+                  [
+                    "prove",
+                    "proof",
+                    "exaggerat",
+                    "not true",
+                    "untrue",
+                    "false",
+                    "lie",
+                    "mislead",
+                    "overclaim",
+                    "promise",
+                    "guarantee",
+                    "honest",
+                    "can't know",
+                    "cannot know",
+                  ],
+                  [
+                    "நிரூபிக்க",
+                    "ஆதாரம்",
+                    "மிகைப்படுத்",
+                    "உண்மை இல்லை",
+                    "உண்மையில்லை",
+                    "பொய்",
+                    "தவறாக",
+                    "வாக்குறுதி",
+                    "நேர்மை",
+                    "உறுதியாகச் சொல்ல முடியாது",
+                  ],
                 ),
               },
               {
@@ -376,7 +443,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
             "நீங்கள் காய்கறி விற்கிறீர்கள். இவற்றில் எது திறந்த கேள்வி, ஏன்? முதலாவது: 'இன்று கேரட் வேண்டுமா?' இரண்டாவது: 'இந்த வாரம் என்ன சமைக்கப் போகிறீர்கள்?'",
           ),
           hints: [
-            L("Which one can be answered with just 'yes' or 'no'?", "எதற்கு 'ஆமாம்' அல்லது 'இல்லை' என்று மட்டும் பதில் சொல்ல முடியும்?"),
+            L(
+              "Which one can be answered with just 'yes' or 'no'?",
+              "எதற்கு 'ஆமாம்' அல்லது 'இல்லை' என்று மட்டும் பதில் சொல்ல முடியும்?",
+            ),
           ],
           modelAnswer: L(
             "The second one is open. The customer has to explain what they'll cook, so I learn which vegetables they might need. The first can be answered with just yes or no.",
@@ -389,7 +459,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
                 id: "picks-second",
                 kind: "terms",
                 description: L("Chooses the second question", "இரண்டாவது கேள்வியைத் தேர்ந்தெடுக்கிறது"),
-                terms: terms(["second", "cook", "planning", "this week", "what are you"], ["இரண்டாவது", "சமைக்க", "இந்த வாரம்", "என்ன சமை"]),
+                terms: terms(
+                  ["second", "cook", "planning", "this week", "what are you"],
+                  ["இரண்டாவது", "சமைக்க", "இந்த வாரம்", "என்ன சமை"],
+                ),
               },
               {
                 id: "gives-reason",
@@ -400,7 +473,17 @@ export const customerCommunication: z.input<typeof courseSchema> = {
                 ),
                 terms: terms(
                   ["yes or no", "yes/no", "explain", "more", "talk", "detail", "tell", "share", "learn", "not just"],
-                  ["ஆமாம் அல்லது இல்லை", "ஆமாம் இல்லை", "விளக்க", "அதிக", "பேச", "விவர", "சொல்ல", "தெரிந்து", "தெரியும்"],
+                  [
+                    "ஆமாம் அல்லது இல்லை",
+                    "ஆமாம் இல்லை",
+                    "விளக்க",
+                    "அதிக",
+                    "பேச",
+                    "விவர",
+                    "சொல்ல",
+                    "தெரிந்து",
+                    "தெரியும்",
+                  ],
                 ),
               },
             ],
@@ -459,7 +542,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               {
                 id: "checks-understanding",
                 kind: "terms",
-                description: L("Checks they understood (for example, 'Is that right?')", "புரிந்துகொண்டதைச் சரிபார்க்கிறது (உதாரணமாக, 'சரியா?')"),
+                description: L(
+                  "Checks they understood (for example, 'Is that right?')",
+                  "புரிந்துகொண்டதைச் சரிபார்க்கிறது (உதாரணமாக, 'சரியா?')",
+                ),
                 terms: terms(
                   ["right", "correct", "is that", "did i", "understand", "okay", "am i"],
                   ["சரியா", "சரிதானே", "சரி தானே", "புரிந்து", "இல்லையா", "தானே"],
@@ -494,7 +580,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
     {
       id: "cc-03",
       sequence: 3,
-      title: L("Responding to questions, doubts and objections", "கேள்விகள், தயக்கங்கள், மறுப்புகளுக்குப் பதில் சொல்வது"),
+      title: L(
+        "Responding to questions, doubts and objections",
+        "கேள்விகள், தயக்கங்கள், மறுப்புகளுக்குப் பதில் சொல்வது",
+      ),
       objective: L(
         "Respond to 'it's too expensive' and 'I'll think about it' calmly and honestly, without pressure, and practise a short conversation.",
         "'விலை அதிகம்', 'யோசித்துச் சொல்கிறேன்' போன்றவற்றுக்கு அழுத்தம் கொடுக்காமல், அமைதியாகவும் நேர்மையாகவும் பதில் சொல்வது; ஒரு சிறிய உரையாடலைப் பழகுவது.",
@@ -534,7 +623,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               "Acknowledge, explain what's included, offer a real alternative if you have one, and let them decide.",
               "ஏற்றுக்கொள்ளுங்கள், என்ன அடங்கும் என்று விளக்குங்கள், உண்மையான வேறு வாய்ப்பு இருந்தால் சொல்லுங்கள், முடிவை அவர்களிடம் விடுங்கள்.",
             ),
-            L("Never pressure, argue or invent a deadline.", "ஒருபோதும் அழுத்தம் கொடுக்காதீர்கள், வாதம் செய்யாதீர்கள், பொய்யான கெடு சொல்லாதீர்கள்."),
+            L(
+              "Never pressure, argue or invent a deadline.",
+              "ஒருபோதும் அழுத்தம் கொடுக்காதீர்கள், வாதம் செய்யாதீர்கள், பொய்யான கெடு சொல்லாதீர்கள்.",
+            ),
           ],
           checkQuestion: L(
             "What is the first thing to say when a customer says your price is too high?",
@@ -568,7 +660,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("'I'll think about it' is a fair answer. Respect it.", "'யோசித்துச் சொல்கிறேன்' என்பது நியாயமான பதில். அதை மதியுங்கள்."),
+            L(
+              "'I'll think about it' is a fair answer. Respect it.",
+              "'யோசித்துச் சொல்கிறேன்' என்பது நியாயமான பதில். அதை மதியுங்கள்.",
+            ),
             L(
               "Make it easy to come back: share your number, or when you are available.",
               "மீண்டும் வருவதை எளிதாக்குங்கள்: உங்கள் நம்பரை, அல்லது நீங்கள் இருக்கும் நேரத்தைச் சொல்லுங்கள்.",
@@ -626,7 +721,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               {
                 id: "offers-choice",
                 kind: "terms",
-                description: L("Mentions the hands-only option or leaves the choice to her", "கைகளுக்கு மட்டும் உள்ள வாய்ப்பைச் சொல்கிறது அல்லது முடிவை அவரிடம் விடுகிறது"),
+                description: L(
+                  "Mentions the hands-only option or leaves the choice to her",
+                  "கைகளுக்கு மட்டும் உள்ள வாய்ப்பைச் சொல்கிறது அல்லது முடிவை அவரிடம் விடுகிறது",
+                ),
                 terms: terms(
                   ["800", "hands only", "only hands", "only the hands", "choice", "suits you", "up to you", "prefer"],
                   ["800", "கைகளுக்கு மட்டும்", "விருப்ப", "வசதி", "உங்கள் முடிவு"],
@@ -660,7 +758,10 @@ export const customerCommunication: z.input<typeof courseSchema> = {
             "உங்கள் வாராந்திரக் காய்கறி டெலிவரியைப் பற்றி ஒரு பக்கத்து வீட்டுக்காரரிடம் இப்போதுதான் விளக்கினீர்கள். அவர் சொல்கிறார்: 'ம்ம், யோசித்துச் சொல்கிறேன்.' நீங்கள் என்ன சொல்வீர்கள்? சுருக்கமாகச் சொல்லுங்கள்.",
           ),
           hints: [
-            L("Respect her answer, and make it easy for her to come back.", "அவருடைய பதிலை மதியுங்கள்; அவர் மீண்டும் வருவதை எளிதாக்குங்கள்."),
+            L(
+              "Respect her answer, and make it easy for her to come back.",
+              "அவருடைய பதிலை மதியுங்கள்; அவர் மீண்டும் வருவதை எளிதாக்குங்கள்.",
+            ),
           ],
           modelAnswer: L(
             "Of course, take your time. I'll leave my number with you — message me whenever you'd like to try it for a week.",
@@ -672,16 +773,42 @@ export const customerCommunication: z.input<typeof courseSchema> = {
               {
                 id: "respects",
                 kind: "terms",
-                description: L("Respects her decision without pressure", "அழுத்தம் கொடுக்காமல் அவருடைய முடிவை மதிக்கிறது"),
+                description: L(
+                  "Respects her decision without pressure",
+                  "அழுத்தம் கொடுக்காமல் அவருடைய முடிவை மதிக்கிறது",
+                ),
                 terms: terms(
-                  ["of course", "take your time", "no problem", "sure", "okay", "fine", "your choice", "no hurry", "no rush", "whenever"],
-                  ["சரி", "நிதானமாக", "பரவாயில்லை", "தாராளமாக", "உங்கள் விருப்பம்", "அவசரம் இல்லை", "அவசரமில்லை", "எப்போது வேண்டுமானாலும்"],
+                  [
+                    "of course",
+                    "take your time",
+                    "no problem",
+                    "sure",
+                    "okay",
+                    "fine",
+                    "your choice",
+                    "no hurry",
+                    "no rush",
+                    "whenever",
+                  ],
+                  [
+                    "சரி",
+                    "நிதானமாக",
+                    "பரவாயில்லை",
+                    "தாராளமாக",
+                    "உங்கள் விருப்பம்",
+                    "அவசரம் இல்லை",
+                    "அவசரமில்லை",
+                    "எப்போது வேண்டுமானாலும்",
+                  ],
                 ),
               },
               {
                 id: "door-open",
                 kind: "terms",
-                description: L("Makes it easy to come back (number, message, when available)", "மீண்டும் வருவதை எளிதாக்குகிறது (நம்பர், மெசேஜ், இருக்கும் நேரம்)"),
+                description: L(
+                  "Makes it easy to come back (number, message, when available)",
+                  "மீண்டும் வருவதை எளிதாக்குகிறது (நம்பர், மெசேஜ், இருக்கும் நேரம்)",
+                ),
                 terms: terms(
                   ["number", "call", "message", "come back", "any time", "anytime", "contact", "later", "let me know"],
                   ["நம்பர்", "எண்", "அழை", "கூப்பிட", "மெசேஜ்", "தொடர்பு", "பிறகு", "திரும்ப வா"],

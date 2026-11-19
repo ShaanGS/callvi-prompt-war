@@ -9,10 +9,14 @@ const claimsSchema = z.object({ sub: z.string().uuid(), exp: z.number().int() })
 
 /** A separate, signed identity for each browser; it never grants staff access. */
 export function issueBrowserIdentity(secret: string, now = Date.now()): string {
-  const payload = base64url(Buffer.from(JSON.stringify({
-    sub: randomUUID(),
-    exp: Math.floor(now / 1000) + BROWSER_IDENTITY_MAX_AGE,
-  })));
+  const payload = base64url(
+    Buffer.from(
+      JSON.stringify({
+        sub: randomUUID(),
+        exp: Math.floor(now / 1000) + BROWSER_IDENTITY_MAX_AGE,
+      }),
+    ),
+  );
   return `${payload}.${base64url(hmacSha256(secret, `browser:${payload}`))}`;
 }
 

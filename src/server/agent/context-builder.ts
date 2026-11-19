@@ -27,7 +27,13 @@ import { learningSignals, type LearningSignal } from "../services/learning-evide
  */
 
 export interface LearningContext {
-  session: { id: string; channel: LearningSession["channel"]; memory_mode: LearningSession["memoryMode"]; phase: string; learning_ready: boolean };
+  session: {
+    id: string;
+    channel: LearningSession["channel"];
+    memory_mode: LearningSession["memoryMode"];
+    phase: string;
+    learning_ready: boolean;
+  };
   learner: {
     display_name: string | null;
     preferred_language: LanguageCode;
@@ -58,14 +64,20 @@ const GUIDANCE: Record<SuggestedAction, string> = {
   ask_memory_consent:
     "First answer the caller's question and establish what they want from this call. When saving learning becomes relevant, explain what would be saved (goal, course, progress) and ask permission once. If already answered clearly, record that decision without asking again. Consent alone is not permission to start a lesson. Learning works either way.",
   discover_goal: "Ask, one question at a time, what the learner would like to be able to do. Do not assume a goal.",
-  recommend_course: "Use list_courses with the learner's goal, describe at most three options briefly, and let the learner choose.",
-  start_lesson: "Ask what the caller needs today. Only if they explicitly ask to start this course now, call get_lesson_context with learner_ready=true. Choosing a topic to discuss, memory consent and a polite acknowledgement are not automatic permission to launch a lesson.",
+  recommend_course:
+    "Use list_courses with the learner's goal, describe at most three options briefly, and let the learner choose.",
+  start_lesson:
+    "Ask what the caller needs today. Only if they explicitly ask to start this course now, call get_lesson_context with learner_ready=true. Choosing a topic to discuss, memory consent and a polite acknowledgement are not automatic permission to launch a lesson.",
   resume_lesson:
     "Ask what the caller wants today; saved progress does not mean they want a lesson now. If useful, briefly mention the actual stopping point and offer to continue, review or ask a question. If they explicitly choose to continue, call get_lesson_context with request=current and learner_ready=true without asking again. A hello or general yes to an open question is not a choice to learn.",
   review_or_choose_next: "The course is complete. Offer a short review or help the learner choose another course.",
 };
 
-export async function buildLearningContext(db: Queryable, learner: Learner, session: LearningSession): Promise<LearningContext> {
+export async function buildLearningContext(
+  db: Queryable,
+  learner: Learner,
+  session: LearningSession,
+): Promise<LearningContext> {
   const language = session.language;
   const state = session.state;
   const durable = session.memoryMode === "durable" && memoryService.isDurable(learner);
@@ -87,7 +99,9 @@ export async function buildLearningContext(db: Queryable, learner: Learner, sess
     };
     const entries = Object.entries(snapshot.mastery).filter(([id]) => conceptTitle(id) !== null);
     progress = {
-      current_lesson: lesson ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length } : null,
+      current_lesson: lesson
+        ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length }
+        : null,
       current_concept: concept ? { id: concept.id, title: concept.title[language] } : null,
       completed_concepts: entries
         .filter(([, s]) => isConceptDone(s))
@@ -108,7 +122,9 @@ export async function buildLearningContext(db: Queryable, learner: Learner, sess
       ? await checkpointsRepo.latestForEnrollment(db, enrollment.id)
       : await checkpointsRepo.latestForLearner(db, learner.id);
     if (checkpoint && checkpoint.sessionId !== session.id) {
-      const cpCourse = checkpoint.courseId ? await courseService.getAvailable(db, checkpoint.courseId).catch(() => null) : null;
+      const cpCourse = checkpoint.courseId
+        ? await courseService.getAvailable(db, checkpoint.courseId).catch(() => null)
+        : null;
       lastSummary = renderCheckpointSummary(checkpoint, cpCourse, language);
       lastAt = checkpoint.createdAt.toISOString();
     }
@@ -124,12 +140,32 @@ export async function buildLearningContext(db: Queryable, learner: Learner, sess
   });
 
   const preferences = { ...(durable ? await memoryService.getPreferences(db, learner) : {}), ...state.preferences };
-  const evidence = enrollment && course ? learningSignals(await evidenceRepo.list(db, learner.id, enrollment.id), course, language, session.id) : [];
-  if (progress) progress.needs_practice = [...new Set([...progress.needs_practice, ...evidence.filter((s) => s.status === "needs_practice").map((s) => s.title)])].slice(0, MAX_LISTED_CONCEPTS);
-  const review = evidence.filter((s) => s.review_exercise_id).sort((a,b) => Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at))[0] ?? null;
+  const evidence =
+    enrollment && course
+      ? learningSignals(await evidenceRepo.list(db, learner.id, enrollment.id), course, language, session.id)
+      : [];
+  if (progress)
+    progress.needs_practice = [
+      ...new Set([
+        ...progress.needs_practice,
+        ...evidence.filter((s) => s.status === "needs_practice").map((s) => s.title),
+      ]),
+    ].slice(0, MAX_LISTED_CONCEPTS);
+  const review =
+    evidence
+      .filter((s) => s.review_exercise_id)
+      .sort(
+        (a, b) => Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at),
+      )[0] ?? null;
 
   return {
-    session: { id: session.id, channel: session.channel, memory_mode: session.memoryMode, phase: state.phase, learning_ready: state.learningReady },
+    session: {
+      id: session.id,
+      channel: session.channel,
+      memory_mode: session.memoryMode,
+      phase: state.phase,
+      learning_ready: state.learningReady,
+    },
     learner: {
       display_name: learner.displayName,
       preferred_language: language,
@@ -137,7 +173,9 @@ export async function buildLearningContext(db: Queryable, learner: Learner, sess
       supported_languages: SUPPORTED_LANGUAGES,
     },
     active_goal: state.goal?.text ?? null,
-    active_course: course ? { id: course.id, title: course.title[language], lesson_count: course.lessons.length } : null,
+    active_course: course
+      ? { id: course.id, title: course.title[language], lesson_count: course.lessons.length }
+      : null,
     progress,
     last_session_summary: lastSummary,
     last_session_at: lastAt,

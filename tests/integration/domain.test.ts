@@ -37,7 +37,15 @@ function agent(db: Db, learner: Learner, session: LearningSession) {
   return {
     state,
     async call(toolName: string, rawInput: Record<string, unknown> = {}) {
-      const r = await runTool({ db, channel: state.session.channel, learner: state.learner, session: state.session, toolName, rawInput, interactionId: null });
+      const r = await runTool({
+        db,
+        channel: state.session.channel,
+        learner: state.learner,
+        session: state.session,
+        toolName,
+        rawInput,
+        interactionId: null,
+      });
       if (r.session) state.session = r.session;
       if (r.learner) state.learner = r.learner;
       return r.response;
@@ -50,7 +58,10 @@ async function learnSomething(db: Db, learner: Learner) {
   await a.call("set_learning_goal", { goal_text: "Price my homemade snacks", learner_confirmed: true });
   await a.call("start_or_resume_course", { course_id: "small-business-starter", learner_confirmed: true });
   await a.call("get_lesson_context");
-  await a.call("record_practice_attempt", { exercise_id: "sbs-01-offer-sentence", answer_text: "I make murukku for working families on my street" });
+  await a.call("record_practice_attempt", {
+    exercise_id: "sbs-01-offer-sentence",
+    answer_text: "I make murukku for working families on my street",
+  });
   await a.call("update_memory_preference", { key: "pace", value: "slower", learner_confirmed: true });
   await a.call("save_checkpoint");
   return a;
@@ -66,7 +77,14 @@ describe("consent gating and revocation", () => {
     for (const consent of ["pending", "declined"] as const) {
       const learner = await createLearner(db, { consent });
       await learnSomething(db, learner);
-      for (const t of ["learner_goals", "enrollments", "concept_mastery", "learning_checkpoints", "practice_attempts", "learner_memory"]) {
+      for (const t of [
+        "learner_goals",
+        "enrollments",
+        "concept_mastery",
+        "learning_checkpoints",
+        "practice_attempts",
+        "learner_memory",
+      ]) {
         expect(await count(db, t, learner.id), `${consent}: ${t}`).toBe(0);
       }
     }
@@ -78,7 +96,14 @@ describe("consent gating and revocation", () => {
     expect(await count(db, "practice_attempts", learner.id)).toBe(1);
     const revoked = await learnerService.revokeConsent(db, learner.id, "settings");
     expect(revoked.consentStatus).toBe("revoked");
-    for (const t of ["learner_goals", "enrollments", "concept_mastery", "learning_checkpoints", "practice_attempts", "learner_memory"]) {
+    for (const t of [
+      "learner_goals",
+      "enrollments",
+      "concept_mastery",
+      "learning_checkpoints",
+      "practice_attempts",
+      "learner_memory",
+    ]) {
       expect(await count(db, t, learner.id), t).toBe(0);
     }
     const reloaded = await sessionService.getOwned(db, a.state.session.id, learner.id);
@@ -118,7 +143,10 @@ describe("memory provenance and correction", () => {
     expect(summary.activeGoal?.source).toBe("voice_session");
     expect(summary.preferences.find((p) => p.key === "pace")?.sourceSessionId).toBe(a.state.session.id);
 
-    await memoryService.correctGoal(db, a.state.learner, "Sell stitched blouses", { source: "learner_settings", sourceSessionId: null });
+    await memoryService.correctGoal(db, a.state.learner, "Sell stitched blouses", {
+      source: "learner_settings",
+      sourceSessionId: null,
+    });
     summary = await memoryService.getSummary(db, a.state.learner, "en-IN");
     expect(summary.activeGoal?.text).toBe("Sell stitched blouses");
     expect(summary.activeGoal?.source).toBe("settings");
@@ -208,9 +236,19 @@ describe("learner web session surface", () => {
     const learner = await createLearner(db, { consent: "granted" });
     const session = await startSession(db, learner, "browser", "small-business-starter");
     await expect(
-      studyRoom.callTool(db, learner, { sessionId: session.id, tool: "record_practice_attempt", args: {}, idempotencyKey: null }),
+      studyRoom.callTool(db, learner, {
+        sessionId: session.id,
+        tool: "record_practice_attempt",
+        args: {},
+        idempotencyKey: null,
+      }),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
-    const end = await studyRoom.callTool(db, learner, { sessionId: session.id, tool: "close_learning_session", args: { reason: "learner_ended" }, idempotencyKey: null });
+    const end = await studyRoom.callTool(db, learner, {
+      sessionId: session.id,
+      tool: "close_learning_session",
+      args: { reason: "learner_ended" },
+      idempotencyKey: null,
+    });
     expect(end.response.ok).toBe(true);
   });
 

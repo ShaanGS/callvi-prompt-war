@@ -43,5 +43,8 @@ export interface ResolvedToolCaller {
 }
 
 export interface AgentRuntimeToolAdapter {
-  handleToolCallback(request: Request, toolName: string): Promise<{ status: number; body: ToolResponse | { ok: false; error: { code: string; message: string } } }>;
+  handleToolCallback(
+    request: Request,
+    toolName: string,
+  ): Promise<{ status: number; body: ToolResponse | { ok: false; error: { code: string; message: string } } }>;
 }

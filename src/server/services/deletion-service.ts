@@ -41,7 +41,11 @@ async function countRows(db: Db, learnerId: string): Promise<number> {
 }
 
 export const deletionService = {
-  async deleteLearningMemory(db: Db, learnerId: string, channel: "browser" | "phone" | "text" | "settings"): Promise<number> {
+  async deleteLearningMemory(
+    db: Db,
+    learnerId: string,
+    channel: "browser" | "phone" | "text" | "settings",
+  ): Promise<number> {
     const before = await countRows(db, learnerId);
     await db.transaction(async (tx) => {
       await tx.query(`delete from practice_attempts where learner_id = $1`, [learnerId]);

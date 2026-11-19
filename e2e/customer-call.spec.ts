@@ -18,7 +18,11 @@ test("a first-time visitor can rehearse and retry without a microphone", async (
   await expect(page.getByRole("button", { name: "Pause audio" })).toBeVisible();
 });
 
-test("a learner can switch languages, play the Tamil customer and clear the rehearsal", async ({ page, context, baseURL }) => {
+test("a learner can switch languages, play the Tamil customer and clear the rehearsal", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   await useEnglish(context, baseURL!);
   await page.goto("/practice?skill=communication");
   await page.getByRole("button", { name: "Fee only" }).click();
@@ -61,17 +65,21 @@ test("dictation leaves the transcript editable before assessment", async ({ page
   await expect(page.getByRole("listitem")).toHaveCount(1);
 });
 
-test("skill practice explains a cost another way and checks the learner’s calculation", async ({ page, context, baseURL }) => {
+test("skill practice explains a cost another way and checks the learner’s calculation", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   await useEnglish(context, baseURL!);
   await page.goto("/");
-  await page.getByRole("link", {name: /Small business.*cost of one packet/}).click();
+  await page.getByRole("link", { name: /Small business.*cost of one packet/ }).click();
   const concept = page.locator(".cv-concept p");
   const original = await concept.innerText();
-  await page.getByRole("button", {name: "Explain another way"}).click();
+  await page.getByRole("button", { name: "Explain another way" }).click();
   await expect(concept).not.toHaveText(original);
   await page.getByLabel("Your answer").fill("12 rupees");
-  await page.getByRole("button", {name:"Check my answer"}).click();
+  await page.getByRole("button", { name: "Check my answer" }).click();
   await expect(page.locator(".cv-feedback")).toBeVisible();
-  await page.getByRole("button",{name:"தமிழ்"}).click();
+  await page.getByRole("button", { name: "தமிழ்" }).click();
   await expect(page.locator("main")).toContainText("உங்கள் பதில்");
 });

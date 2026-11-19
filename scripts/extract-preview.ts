@@ -19,7 +19,9 @@ const data = { previews, callPractice };
 // Anything JSON cannot carry (a Date, a RegExp, undefined in an array) would
 // arrive in the browser as something else and silently change grading. Refuse.
 if (!isDeepStrictEqual(JSON.parse(JSON.stringify(data)), data)) {
-  throw new Error("Preview content does not survive JSON serialisation; refusing to build a preview that grades differently.");
+  throw new Error(
+    "Preview content does not survive JSON serialisation; refusing to build a preview that grades differently.",
+  );
 }
 for (const [skill, preview] of Object.entries(previews)) {
   if (!preview) throw new Error(`No preview content for "${skill}".`);

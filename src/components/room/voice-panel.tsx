@@ -65,9 +65,17 @@ export function VoicePanel({
   return (
     <>
       {state.phase === "idle" ? (
-        <section aria-label={fmt(call.dialogLabel, { name })} className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+        <section
+          aria-label={fmt(call.dialogLabel, { name })}
+          className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between"
+        >
           <p className="text-sm text-muted sm:max-w-sm">{call.startHint}</p>
-          <Button size="lg" onClick={() => void start()} icon={<Phone aria-hidden className="size-4" />} className="w-full sm:w-auto">
+          <Button
+            size="lg"
+            onClick={() => void start()}
+            icon={<Phone aria-hidden className="size-4" />}
+            className="w-full sm:w-auto"
+          >
             {fmt(call.start, { name })}
           </Button>
         </section>
@@ -131,14 +139,23 @@ function MinimisedCall({
 }) {
   return (
     <div className="sticky top-[4.5rem] z-10 flex items-center gap-2 rounded-lg bg-accent p-2 pl-4 text-on-accent shadow-md">
-      <button type="button" onClick={onReturn} className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 text-left text-sm font-medium">
+      <button
+        type="button"
+        onClick={onReturn}
+        className="flex min-w-0 flex-1 items-center gap-2 rounded-md py-1 text-left text-sm font-medium"
+      >
         <Phone aria-hidden className="size-4 shrink-0" />
         <span className="truncate">
           {name} · {since !== null ? <Elapsed since={since} /> : callingLabel}
         </span>
         <span className="ml-auto hidden text-xs opacity-90 sm:inline">{returnLabel}</span>
       </button>
-      <button type="button" onClick={onEnd} aria-label={endLabel} className="grid size-9 shrink-0 place-items-center rounded-full bg-call-end text-white hover:bg-call-end-hover">
+      <button
+        type="button"
+        onClick={onEnd}
+        aria-label={endLabel}
+        className="grid size-9 shrink-0 place-items-center rounded-full bg-call-end text-white hover:bg-call-end-hover"
+      >
         <PhoneOff aria-hidden className="size-4" />
       </button>
     </div>

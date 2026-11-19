@@ -59,9 +59,7 @@ export const numericCriterionSchema = z.object({
   expected: z.number(),
   tolerance: z.number().min(0),
   /** Known wrong values with a targeted explanation of the likely slip. */
-  commonMistakes: z
-    .array(z.object({ value: z.number(), explanation: localizedSchema }))
-    .default([]),
+  commonMistakes: z.array(z.object({ value: z.number(), explanation: localizedSchema })).default([]),
 });
 
 /** A conceptual criterion: the answer must express one of these ideas. */
@@ -79,28 +77,30 @@ export const termsCriterionSchema = z.object({
 export const criterionSchema = z.discriminatedUnion("kind", [numericCriterionSchema, termsCriterionSchema]);
 export type Criterion = z.infer<typeof criterionSchema>;
 
-export const rubricSchema = z.object({
-  version: z.number().int().positive().default(1),
-  criteria: z.array(criterionSchema).min(1),
-  /** Criterion ids that must all be met for "correct". */
-  requiredForCorrect: z.array(slug).min(1),
-  /**
-   * "auto": the criteria can judge the answer, so an answer that meets none of
-   * them is "needs_practice".
-   * "open": open-ended (e.g. role play). An answer that meets no criterion but
-   * is substantive is "ungraded" rather than wrongly marked incorrect.
-   */
-  mode: z.enum(["auto", "open"]),
-  feedback: z.object({
-    correct: localizedSchema,
-    partial: localizedSchema,
-    needs_practice: localizedSchema,
-    ungraded: localizedSchema,
-  }),
-}).refine(
-  (r) => r.requiredForCorrect.every((id) => r.criteria.some((c) => c.id === id)),
-  "requiredForCorrect must reference criteria defined in this rubric",
-);
+export const rubricSchema = z
+  .object({
+    version: z.number().int().positive().default(1),
+    criteria: z.array(criterionSchema).min(1),
+    /** Criterion ids that must all be met for "correct". */
+    requiredForCorrect: z.array(slug).min(1),
+    /**
+     * "auto": the criteria can judge the answer, so an answer that meets none of
+     * them is "needs_practice".
+     * "open": open-ended (e.g. role play). An answer that meets no criterion but
+     * is substantive is "ungraded" rather than wrongly marked incorrect.
+     */
+    mode: z.enum(["auto", "open"]),
+    feedback: z.object({
+      correct: localizedSchema,
+      partial: localizedSchema,
+      needs_practice: localizedSchema,
+      ungraded: localizedSchema,
+    }),
+  })
+  .refine(
+    (r) => r.requiredForCorrect.every((id) => r.criteria.some((c) => c.id === id)),
+    "requiredForCorrect must reference criteria defined in this rubric",
+  );
 export type Rubric = z.infer<typeof rubricSchema>;
 
 export const exerciseSchema = z.object({

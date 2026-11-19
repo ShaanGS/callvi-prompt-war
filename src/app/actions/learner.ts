@@ -39,7 +39,10 @@ async function actingLearner() {
  * delegates to a domain service; none contains business rules.
  */
 
-const courseIdSchema = z.string().trim().regex(/^[a-z0-9-]{3,64}$/);
+const courseIdSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9-]{3,64}$/);
 
 /* ------------------------------------------------------------- onboarding */
 
@@ -62,7 +65,11 @@ export async function chooseConsent(formData: FormData): Promise<void> {
 
 export async function saveName(formData: FormData): Promise<void> {
   const learner = await actingLearner();
-  const name = z.string().trim().max(80).safeParse(formData.get("name") ?? "");
+  const name = z
+    .string()
+    .trim()
+    .max(80)
+    .safeParse(formData.get("name") ?? "");
   // The display name is a profile field; in session-only mode it is not stored.
   if (name.success && name.data && learner.consentStatus === "granted") {
     await learnerService.updateProfile(await getDb(), learner.id, { displayName: name.data });
@@ -165,7 +172,11 @@ export async function setMemoryConsent(formData: FormData): Promise<void> {
 
 export async function updateProfile(formData: FormData): Promise<void> {
   const learner = await actingLearner();
-  const name = z.string().trim().max(80).safeParse(formData.get("name") ?? "");
+  const name = z
+    .string()
+    .trim()
+    .max(80)
+    .safeParse(formData.get("name") ?? "");
   const language = formData.get("language");
   const db = await getDb();
   await learnerService.updateProfile(db, learner.id, {
@@ -184,7 +195,10 @@ export async function updateGoal(formData: FormData): Promise<void> {
   const learner = await actingLearner();
   const goal = z.string().trim().min(3).max(500).safeParse(formData.get("goal"));
   if (!goal.success) redirect("/privacy?error=goal");
-  await memoryService.correctGoal(await getDb(), learner, goal.data, { source: "learner_settings", sourceSessionId: null });
+  await memoryService.correctGoal(await getDb(), learner, goal.data, {
+    source: "learner_settings",
+    sourceSessionId: null,
+  });
   revalidatePath("/home");
   redirect("/privacy?done=goal");
 }
@@ -195,7 +209,10 @@ export async function updatePreference(formData: FormData): Promise<void> {
   const value = formData.get("value");
   if (!key.success || typeof value !== "string") redirect("/privacy?error=preference");
   try {
-    await memoryService.setPreference(await getDb(), learner, key.data, value, { source: "learner_settings", sourceSessionId: null });
+    await memoryService.setPreference(await getDb(), learner, key.data, value, {
+      source: "learner_settings",
+      sourceSessionId: null,
+    });
   } catch {
     redirect("/privacy?error=preference");
   }

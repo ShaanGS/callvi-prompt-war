@@ -35,7 +35,13 @@ async function violations(page: Page) {
     if (!/Execution context was destroyed/.test(error.message)) throw error;
     return scan();
   });
-  return found.map(v => `${v.id} [${v.impact}]: ${v.nodes.map(n => n.target.join(" ")).slice(0, 3).join(", ")}`);
+  return found.map(
+    (v) =>
+      `${v.id} [${v.impact}]: ${v.nodes
+        .map((n) => n.target.join(" "))
+        .slice(0, 3)
+        .join(", ")}`,
+  );
 }
 
 for (const language of ["en-IN", "ta-IN"] as const) {

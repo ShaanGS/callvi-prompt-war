@@ -36,39 +36,84 @@ describe("rubric outcomes", () => {
   const openIntro = exercise("cc-01-specific-intro");
 
   it("marks a correct calculation correct", () => {
-    expect(assessAnswer({ exercise: unitCost, answerText: "It costs 12 rupees for one", language: "en-IN", attemptNumber: 1 }).result).toBe("correct");
+    expect(
+      assessAnswer({
+        exercise: unitCost,
+        answerText: "It costs 12 rupees for one",
+        language: "en-IN",
+        attemptNumber: 1,
+      }).result,
+    ).toBe("correct");
   });
 
   it.each([
     "It is not 12 rupees. My answer is 120 rupees.",
-    "12 or 120", "120 for ten packets, maybe 12", "-12", "minus twelve", "௧௨ அல்லது ௧௨௦",
+    "12 or 120",
+    "120 for ten packets, maybe 12",
+    "-12",
+    "minus twelve",
+    "௧௨ அல்லது ௧௨௦",
   ])("does not reward a quoted, uncertain or unsupported number: %s", (answerText) => {
-    expect(assessAnswer({ exercise: unitCost, answerText, language: "en-IN", attemptNumber: 1 }).result).not.toBe("correct");
+    expect(assessAnswer({ exercise: unitCost, answerText, language: "en-IN", attemptNumber: 1 }).result).not.toBe(
+      "correct",
+    );
   });
 
-  it.each(["120 divided by 10 equals 12", "12 because 120 divided by 10", "12.0", "Not 120. Twelve rupees.", "ஒரு பாக்கெட்டுக்கு பன்னெண்டு ரூபா", "நூத்தி இருபதை பத்தால வகுத்தா பன்னிரண்டு ரூபா"])('accepts an identifiable final answer: %s', (answerText) => {
-    expect(assessAnswer({ exercise: unitCost, answerText, language: "en-IN", attemptNumber: 1 }).result).toBe("correct");
+  it.each([
+    "120 divided by 10 equals 12",
+    "12 because 120 divided by 10",
+    "12.0",
+    "Not 120. Twelve rupees.",
+    "ஒரு பாக்கெட்டுக்கு பன்னெண்டு ரூபா",
+    "நூத்தி இருபதை பத்தால வகுத்தா பன்னிரண்டு ரூபா",
+  ])("accepts an identifiable final answer: %s", (answerText) => {
+    expect(assessAnswer({ exercise: unitCost, answerText, language: "en-IN", attemptNumber: 1 }).result).toBe(
+      "correct",
+    );
   });
 
   it("clarifies ambiguous arithmetic without giving away the answer", () => {
     const r = assessAnswer({ exercise: unitCost, answerText: "120 and 12", language: "ta-IN", attemptNumber: 3 });
-    expect(r).toMatchObject({ result: "ungraded", score: null, hint: null, modelAnswer: null, clarification: expect.any(String) });
+    expect(r).toMatchObject({
+      result: "ungraded",
+      score: null,
+      hint: null,
+      modelAnswer: null,
+      clarification: expect.any(String),
+    });
   });
 
   it("does not count negated product or customer keywords as a demonstrated offer", () => {
-    for (const answerText of ["I do not sell snacks. I never sell to working families.", "நான் முறுக்கு விக்க மாட்டேன். பக்கத்து குடும்பங்களுக்கு விக்கவே மாட்டேன்."]) {
-      expect(assessAnswer({ exercise: offer, answerText, language: "ta-IN", attemptNumber: 1 }).result).not.toBe("correct");
+    for (const answerText of [
+      "I do not sell snacks. I never sell to working families.",
+      "நான் முறுக்கு விக்க மாட்டேன். பக்கத்து குடும்பங்களுக்கு விக்கவே மாட்டேன்.",
+    ]) {
+      expect(assessAnswer({ exercise: offer, answerText, language: "ta-IN", attemptNumber: 1 }).result).not.toBe(
+        "correct",
+      );
     }
   });
 
   it("still accepts a truthful negative delivery limit", () => {
-    for (const answerText of ["I cannot deliver every day. Only Saturday nearby.", "I can only deliver on Saturdays.", "சனிக்கிழமை மட்டும் தருவேன்."]) {
-      expect(assessAnswer({ exercise: exercise("sbs-03-honest-answer"), answerText, language: "en-IN", attemptNumber: 1 }).result).toBe("correct");
+    for (const answerText of [
+      "I cannot deliver every day. Only Saturday nearby.",
+      "I can only deliver on Saturdays.",
+      "சனிக்கிழமை மட்டும் தருவேன்.",
+    ]) {
+      expect(
+        assessAnswer({ exercise: exercise("sbs-03-honest-answer"), answerText, language: "en-IN", attemptNumber: 1 })
+          .result,
+      ).toBe("correct");
     }
   });
 
   it("does not invent the cause of a wrong answer on a new problem", () => {
-    const outcome = assessAnswer({ exercise: exercise("sbs-02-unit-cost-review"), answerText: "12", language: "ta-IN", attemptNumber: 1 });
+    const outcome = assessAnswer({
+      exercise: exercise("sbs-02-unit-cost-review"),
+      answerText: "12",
+      language: "ta-IN",
+      attemptNumber: 1,
+    });
     expect(outcome.result).toBe("needs_practice");
     expect(outcome.mistakeExplanation).toBeNull();
     expect(outcome.feedback).not.toContain("மொத்தச் செலவை ஒரு packet செலவா");
@@ -76,7 +121,10 @@ describe("rubric outcomes", () => {
 
   it("does not accept a generic inability or a negated Saturday promise as the actual delivery limit", () => {
     for (const answerText of ["I cannot do that", "I cannot deliver on Saturday", "சனிக்கிழமை தர முடியாது"]) {
-      expect(assessAnswer({ exercise: exercise("sbs-03-honest-answer"), answerText, language: "en-IN", attemptNumber: 1 }).result).not.toBe("correct");
+      expect(
+        assessAnswer({ exercise: exercise("sbs-03-honest-answer"), answerText, language: "en-IN", attemptNumber: 1 })
+          .result,
+      ).not.toBe("correct");
     }
   });
 
@@ -101,16 +149,28 @@ describe("rubric outcomes", () => {
   });
 
   it("accepts a Tamil answer", () => {
-    const r = assessAnswer({ exercise: offer, answerText: "நான் தெருவில் உள்ள வேலைக்குப் போகும் குடும்பங்களுக்கு முறுக்கு செய்கிறேன்", language: "ta-IN", attemptNumber: 1 });
+    const r = assessAnswer({
+      exercise: offer,
+      answerText: "நான் தெருவில் உள்ள வேலைக்குப் போகும் குடும்பங்களுக்கு முறுக்கு செய்கிறேன்",
+      language: "ta-IN",
+      attemptNumber: 1,
+    });
     expect(["correct", "partial"]).toContain(r.result);
   });
 
   it("assesses everyday Tamil and code-mixed demo answers without granting missing skills", () => {
-    const assess = (id: string, answerText: string) => assessAnswer({ exercise: exercise(id), answerText, language: "ta-IN", attemptNumber: 1 });
-    expect(assess("sbs-01-offer-sentence", "வீட்டுல முறுக்கு செஞ்சு பக்கத்து குடும்பங்களுக்கு விப்பேன்").result).toBe("correct");
+    const assess = (id: string, answerText: string) =>
+      assessAnswer({ exercise: exercise(id), answerText, language: "ta-IN", attemptNumber: 1 });
+    expect(assess("sbs-01-offer-sentence", "வீட்டுல முறுக்கு செஞ்சு பக்கத்து குடும்பங்களுக்கு விப்பேன்").result).toBe(
+      "correct",
+    );
     expect(assess("sbs-01-offer-sentence", "முறுக்கு செஞ்சு விப்பேன்").result).toBe("partial");
-    expect(assess("sbs-01-first-customer", "எங்க தெருவில வேலைக்குப் போற குடும்பங்கள், காலைல டைம் மிச்சமாகும்").result).toBe("correct");
-    expect(assess("sbs-03-introduce", "வீட்டுல புதுசா முறுக்கு செய்றேன். சனிக்கிழமை வாங்கிக்கலாம்.").result).toBe("correct");
+    expect(
+      assess("sbs-01-first-customer", "எங்க தெருவில வேலைக்குப் போற குடும்பங்கள், காலைல டைம் மிச்சமாகும்").result,
+    ).toBe("correct");
+    expect(assess("sbs-03-introduce", "வீட்டுல புதுசா முறுக்கு செய்றேன். சனிக்கிழமை வாங்கிக்கலாம்.").result).toBe(
+      "correct",
+    );
     expect(assess("sbs-02-unit-cost", "பன்னெண்டு ரூபா").result).toBe("correct");
     expect(assess("sbs-02-unit-cost", "நூத்தி இருபது ரூபா").result).toBe("needs_practice");
   });
@@ -127,18 +187,25 @@ describe("rubric outcomes", () => {
   });
 
   it("treats an empty-ish answer as needing practice", () => {
-    expect(assessAnswer({ exercise: offer, answerText: "hmm", language: "en-IN", attemptNumber: 1 }).result).toBe("needs_practice");
+    expect(assessAnswer({ exercise: offer, answerText: "hmm", language: "en-IN", attemptNumber: 1 }).result).toBe(
+      "needs_practice",
+    );
   });
 });
 
 describe("practice rubric schema", () => {
   it("accepts every exercise in the catalogue", () => {
-    for (const course of COURSE_CATALOGUE) for (const lesson of course.lessons) for (const ex of lesson.practice) expect(exerciseSchema.safeParse(ex).success).toBe(true);
+    for (const course of COURSE_CATALOGUE)
+      for (const lesson of course.lessons)
+        for (const ex of lesson.practice) expect(exerciseSchema.safeParse(ex).success).toBe(true);
   });
 
   it("rejects malformed rubrics", () => {
     const valid = exercise("sbs-02-unit-cost");
-    const missingFeedback = { ...valid, rubric: { ...valid.rubric, feedback: { correct: valid.rubric.feedback.correct } } };
+    const missingFeedback = {
+      ...valid,
+      rubric: { ...valid.rubric, feedback: { correct: valid.rubric.feedback.correct } },
+    };
     expect(exerciseSchema.safeParse(missingFeedback).success).toBe(false);
     const unknownCriterion = { ...valid, rubric: { ...valid.rubric, requiredForCorrect: ["does-not-exist"] } };
     expect(exerciseSchema.safeParse(unknownCriterion).success).toBe(false);

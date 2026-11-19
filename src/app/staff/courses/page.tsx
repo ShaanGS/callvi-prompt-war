@@ -39,7 +39,9 @@ export default async function StaffCoursesPage() {
           </tr>
         </thead>
         <tbody>
-          {courses.length === 0 ? <EmptyRow colSpan={10}>No courses in the database. Run npm run db:seed.</EmptyRow> : null}
+          {courses.length === 0 ? (
+            <EmptyRow colSpan={10}>No courses in the database. Run npm run db:seed.</EmptyRow>
+          ) : null}
           {courses.map((c) => (
             <tr key={c.id}>
               <Td>

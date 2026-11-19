@@ -29,7 +29,12 @@ export type EventName =
 export async function recordEvent(
   db: Queryable,
   name: EventName,
-  input: { learnerId?: string | null; sessionId?: string | null; channel?: string | null; metadata?: Record<string, string | number | boolean | null> } = {},
+  input: {
+    learnerId?: string | null;
+    sessionId?: string | null;
+    channel?: string | null;
+    metadata?: Record<string, string | number | boolean | null>;
+  } = {},
 ): Promise<void> {
   try {
     await eventsRepo.record(db, { name, ...input });

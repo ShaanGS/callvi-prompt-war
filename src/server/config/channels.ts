@@ -29,17 +29,20 @@ export function getChannelReadiness(config: AppConfig): ChannelReadiness {
     !s.toolSecretBrowser && "SARVAM_TOOL_SECRET_BROWSER",
   ].filter((v): v is string => typeof v === "string");
 
-  const browserMissing = config.browserVoiceProvider === "elevenlabs"
-    ? [!config.elevenlabs.apiKey && "ELEVENLABS_API_KEY", !config.elevenlabs.agentId && "ELEVENLABS_AGENT_ID"]
-        .filter((v): v is string => typeof v === "string")
-    : sarvamBrowserMissing;
+  const browserMissing =
+    config.browserVoiceProvider === "elevenlabs"
+      ? [!config.elevenlabs.apiKey && "ELEVENLABS_API_KEY", !config.elevenlabs.agentId && "ELEVENLABS_AGENT_ID"].filter(
+          (v): v is string => typeof v === "string",
+        )
+      : sarvamBrowserMissing;
 
   const phoneMissing = [
     !s.orgId && "SARVAM_ORG_ID",
     !s.workspaceId && "SARVAM_WORKSPACE_ID",
     !s.phoneAppId && "SARVAM_PHONE_APP_ID",
     !s.toolSecretPhone && "SARVAM_TOOL_SECRET_PHONE",
-    !config.phone.verified && "PHONE_CHANNEL_VERIFIED (set only after a real inbound call and second-call resume test pass)",
+    !config.phone.verified &&
+      "PHONE_CHANNEL_VERIFIED (set only after a real inbound call and second-call resume test pass)",
     !config.phone.displayNumber && "PHONE_DISPLAY_NUMBER",
   ].filter((v): v is string => typeof v === "string");
 

@@ -38,7 +38,10 @@ export default async function StaffLayout({ children }: { children: ReactNode })
             <NavLink href="/home">Learner app</NavLink>
           </div>
         </div>
-        <nav aria-label="Staff" className="mx-auto flex w-full max-w-wide gap-1 overflow-x-auto px-4 pb-2 sm:px-6 lg:hidden">
+        <nav
+          aria-label="Staff"
+          className="mx-auto flex w-full max-w-wide gap-1 overflow-x-auto px-4 pb-2 sm:px-6 lg:hidden"
+        >
           {NAV.map((n) => (
             <NavLink key={n.href} href={n.href}>
               {n.label}
@@ -54,7 +57,9 @@ export default async function StaffLayout({ children }: { children: ReactNode })
             </NavLink>
           ))}
           {config.problems.length > 0 ? (
-            <p className="mt-6 border-t border-line pt-4 text-xs text-subtle">{config.problems.length} configuration item(s) need attention — see Setup.</p>
+            <p className="mt-6 border-t border-line pt-4 text-xs text-subtle">
+              {config.problems.length} configuration item(s) need attention — see Setup.
+            </p>
           ) : null}
         </nav>
         <main id="main" className="min-w-0 flex-1">

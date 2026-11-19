@@ -16,21 +16,19 @@ const memoryRow = z
     created_at: col.date,
     updated_at: col.date,
   })
-  .transform(
-    (r): MemoryItem => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      type: r.memory_type,
-      key: r.memory_key,
-      value: r.memory_value,
-      source: r.source,
-      sourceSessionId: r.source_session_id,
-      confidence: r.confidence,
-      userConfirmed: r.user_confirmed,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    }),
-  );
+  .transform((r): MemoryItem => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    type: r.memory_type,
+    key: r.memory_key,
+    value: r.memory_value,
+    source: r.source,
+    sourceSessionId: r.source_session_id,
+    confidence: r.confidence,
+    userConfirmed: r.user_confirmed,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
 const MEMORY_COLUMNS = `id, learner_id, memory_type, memory_key, memory_value, source, source_session_id, confidence,
   user_confirmed, created_at, updated_at`;
 
@@ -82,7 +80,10 @@ export const memoryRepo = {
   },
 
   async deleteById(db: Queryable, learnerId: string, id: string): Promise<number> {
-    const rows = await db.query(`delete from learner_memory where learner_id = $1 and id = $2 returning id`, [learnerId, id]);
+    const rows = await db.query(`delete from learner_memory where learner_id = $1 and id = $2 returning id`, [
+      learnerId,
+      id,
+    ]);
     return rows.length;
   },
 
@@ -92,6 +93,10 @@ export const memoryRepo = {
   },
 
   async deleteKey(db: Queryable, learnerId: string, type: MemoryType, key: string): Promise<void> {
-    await exec(db, `delete from learner_memory where learner_id = $1 and memory_type = $2 and memory_key = $3`, [learnerId, type, key]);
+    await exec(db, `delete from learner_memory where learner_id = $1 and memory_type = $2 and memory_key = $3`, [
+      learnerId,
+      type,
+      key,
+    ]);
   },
 };

@@ -23,12 +23,18 @@ export default async function StaffLearnerPage({ params }: { params: Promise<{ i
       <ButtonLink href="/staff/learners" variant="ghost" size="sm" className="-ml-3 self-start">
         Back to learners
       </ButtonLink>
-      <PageHeader title={`Learner ${d.shortId}`} lead="Operational view. Practice answer text and transcripts are not shown to staff." />
+      <PageHeader
+        title={`Learner ${d.shortId}`}
+        lead="Operational view. Practice answer text and transcripts are not shown to staff."
+      />
 
       <DescriptionList
         items={[
           { term: "Sign-in methods", value: d.providers.join(", ") || "—" },
-          { term: "Memory", value: <Tag tone={d.consentStatus === "granted" ? "accent" : "neutral"}>{d.consentStatus}</Tag> },
+          {
+            term: "Memory",
+            value: <Tag tone={d.consentStatus === "granted" ? "accent" : "neutral"}>{d.consentStatus}</Tag>,
+          },
           { term: "Language", value: d.language },
           { term: "Joined", value: formatStaffDate(d.createdAt) },
           {

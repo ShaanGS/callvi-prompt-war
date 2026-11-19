@@ -49,7 +49,11 @@ function evaluateCriterion(criterion: Criterion, normalised: string, numbers: nu
     return { met, evaluable: numbers.length > 0, mistake };
   }
   const allTerms = [...criterion.terms["en-IN"], ...criterion.terms["ta-IN"]];
-  const matches = allTerms.filter((t) => termMatches(affirmativeText(original), t) || (criterion.acceptsNegation && hasNegation(t) && termMatches(normalised, t))).length;
+  const matches = allTerms.filter(
+    (t) =>
+      termMatches(affirmativeText(original), t) ||
+      (criterion.acceptsNegation && hasNegation(t) && termMatches(normalised, t)),
+  ).length;
   return { met: matches >= criterion.minMatches, evaluable: true, mistake: undefined };
 }
 
@@ -60,7 +64,10 @@ export function assessAnswer(input: AssessInput): AssessmentOutcome {
   const numeric = interpretNumericAnswer(input.answerText);
   const numbers = numeric.value === null ? [] : [numeric.value];
 
-  const evaluations = rubric.criteria.map((c) => ({ criterion: c, ...evaluateCriterion(c, normalised, numbers, input.answerText) }));
+  const evaluations = rubric.criteria.map((c) => ({
+    criterion: c,
+    ...evaluateCriterion(c, normalised, numbers, input.answerText),
+  }));
   const met = evaluations.filter((e) => e.met).map((e) => e.criterion);
   const missed = evaluations.filter((e) => !e.met).map((e) => e.criterion);
   const mistake = evaluations.find((e) => e.mistake)?.mistake ?? null;
@@ -88,7 +95,11 @@ export function assessAnswer(input: AssessInput): AssessmentOutcome {
 
   const score = result === "ungraded" ? null : Math.round((met.length / rubric.criteria.length) * 100) / 100;
 
-  const clarification = numericUnheard ? (language === "ta-IN" ? "கடைசியா ஒரு பாக்கெட்டுக்கு எவ்வளவு ரூபான்னு நினைக்கிறீங்க? அந்த தொகையை மட்டும் சொல்லுங்க." : "What is your final amount for one item? Please say just that amount.") : null;
+  const clarification = numericUnheard
+    ? language === "ta-IN"
+      ? "கடைசியா ஒரு பாக்கெட்டுக்கு எவ்வளவு ரூபான்னு நினைக்கிறீங்க? அந்த தொகையை மட்டும் சொல்லுங்க."
+      : "What is your final amount for one item? Please say just that amount."
+    : null;
   const parts: string[] = [clarification ?? rubric.feedback[result][language]];
   const mistakeExplanation = mistake ? mistake.explanation[language] : null;
   if (mistakeExplanation && result !== "correct") parts.push(mistakeExplanation);
@@ -104,8 +115,12 @@ export function assessAnswer(input: AssessInput): AssessmentOutcome {
 
   const unsuccessful = result !== "correct";
   const hintIndex = Math.min(Math.max(input.attemptNumber - 1, 0), exercise.hints.length - 1);
-  const hint = !clarification && unsuccessful && input.attemptNumber <= exercise.hints.length ? exercise.hints[hintIndex][language] : null;
-  const revealModel = !clarification && ((unsuccessful && input.attemptNumber >= 2) || (result === "ungraded" && rubric.mode === "open"));
+  const hint =
+    !clarification && unsuccessful && input.attemptNumber <= exercise.hints.length
+      ? exercise.hints[hintIndex][language]
+      : null;
+  const revealModel =
+    !clarification && ((unsuccessful && input.attemptNumber >= 2) || (result === "ungraded" && rubric.mode === "open"));
   const modelAnswer = revealModel ? exercise.modelAnswer[language] : null;
 
   return {

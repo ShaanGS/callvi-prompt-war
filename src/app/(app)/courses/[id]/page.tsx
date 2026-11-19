@@ -20,7 +20,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
   const db = await getDb();
   const course = await courseService.getAvailable(db, id).catch(() => null);
   if (!course) notFound();
-  const enrolment = learner && learner.consentStatus === "granted" ? await enrollmentsRepo.findLatestForCourse(db, learner.id, course.id) : null;
+  const enrolment =
+    learner && learner.consentStatus === "granted"
+      ? await enrollmentsRepo.findLatestForCourse(db, learner.id, course.id)
+      : null;
   const onboarded = learner !== null && learner.consentStatus !== "pending" && learner.onboardingCompletedAt !== null;
   const lessons = [...course.lessons].sort((a, b) => a.sequence - b.sequence);
   const openEnrolment = enrolment !== null && (enrolment.status === "active" || enrolment.status === "paused");
@@ -80,7 +83,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3 pt-2">{primaryAction}</div>
-        {onboarded && learner.consentStatus !== "granted" ? <Notice tone="info">{t.courses.sessionOnlyNote}</Notice> : null}
+        {onboarded && learner.consentStatus !== "granted" ? (
+          <Notice tone="info">{t.courses.sessionOnlyNote}</Notice>
+        ) : null}
       </header>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">

@@ -6,7 +6,15 @@ import type { Learner, LearningSession } from "@/server/domain/types";
 import { courseService } from "@/server/services/course-service";
 import { deletionService } from "@/server/services/deletion-service";
 import { learnerService } from "@/server/services/learner-service";
-import { shortId, staffCourses, staffLearnerDetail, staffLearners, staffOverview, staffSessions, staffTraces } from "@/server/services/staff-service";
+import {
+  shortId,
+  staffCourses,
+  staffLearnerDetail,
+  staffLearners,
+  staffOverview,
+  staffSessions,
+  staffTraces,
+} from "@/server/services/staff-service";
 import { createLearner, createTestDb, startSession } from "../support/test-db";
 
 const PRIVATE_ANSWER = "I make murukku for working families on my street";
@@ -18,7 +26,15 @@ function agent(db: Db, learner: Learner, session: LearningSession) {
   return {
     state,
     async call(toolName: string, rawInput: Record<string, unknown> = {}) {
-      const r = await runTool({ db, channel: state.session.channel, learner: state.learner, session: state.session, toolName, rawInput, interactionId: null });
+      const r = await runTool({
+        db,
+        channel: state.session.channel,
+        learner: state.learner,
+        session: state.session,
+        toolName,
+        rawInput,
+        interactionId: null,
+      });
       if (r.session) state.session = r.session;
       if (r.learner) state.learner = r.learner;
       return r.response;
@@ -52,7 +68,13 @@ describe("staff overview counts", () => {
 
   it("starts from zero on an empty database rather than placeholder numbers", async () => {
     const empty = await staffOverview(await createTestDb());
-    expect(empty.learners).toEqual({ total: 0, consentGranted: 0, consentDeclined: 0, consentPending: 0, consentRevoked: 0 });
+    expect(empty.learners).toEqual({
+      total: 0,
+      consentGranted: 0,
+      consentDeclined: 0,
+      consentPending: 0,
+      consentRevoked: 0,
+    });
     expect(empty.sessions).toEqual({ total: 0, last7Days: 0, open: 0, byChannel: {} });
     expect(empty.practice).toEqual({ total: 0, byResult: {} });
     expect(empty.tools).toEqual({ total: 0, failed: 0, last24h: 0, failedLast24h: 0 });
@@ -61,7 +83,13 @@ describe("staff overview counts", () => {
 
   it("breaks learners down by consent status", async () => {
     const o = await staffOverview(db);
-    expect(o.learners).toEqual({ total: 5, consentGranted: 2, consentDeclined: 1, consentPending: 1, consentRevoked: 1 });
+    expect(o.learners).toEqual({
+      total: 5,
+      consentGranted: 2,
+      consentDeclined: 1,
+      consentPending: 1,
+      consentRevoked: 1,
+    });
   });
 
   it("counts sessions in total, by channel and while still open", async () => {
@@ -98,7 +126,9 @@ describe("staff overview counts", () => {
   });
 
   it("drops sessions older than seven days from the weekly count but not the total", async () => {
-    await db.query(`update learning_sessions set started_at = now() - interval '8 days' where id = $1`, [active.state.session.id]);
+    await db.query(`update learning_sessions set started_at = now() - interval '8 days' where id = $1`, [
+      active.state.session.id,
+    ]);
     const o = await staffOverview(db);
     expect(o.sessions.total).toBe(2);
     expect(o.sessions.last7Days).toBe(1);
@@ -172,7 +202,13 @@ describe("staff learner list and detail", () => {
   it("shows each learner's consent, language, sign-in provider and activity counts", async () => {
     const rows = await staffLearners(db);
     const active = rows.find((r) => r.id === second.state.learner.id)!;
-    expect(active).toMatchObject({ consentStatus: "granted", language: "en-IN", providers: ["dev"], enrollments: 1, sessions: 1 });
+    expect(active).toMatchObject({
+      consentStatus: "granted",
+      language: "en-IN",
+      providers: ["dev"],
+      enrollments: 1,
+      sessions: 1,
+    });
     expect(active.lastSessionAt).toBeInstanceOf(Date);
 
     const idle = rows.find((r) => r.id === first.id)!;
@@ -189,7 +225,12 @@ describe("staff learner list and detail", () => {
   // Staff see minimised data: no answers, goals or sign-in subjects, even in the detail view.
   it("never exposes the learner's answers, goal text or sign-in subject", async () => {
     const detail = await staffLearnerDetail(db, second.state.learner.id);
-    const serialised = JSON.stringify([detail, await staffLearners(db), await staffSessions(db), await staffTraces(db)]);
+    const serialised = JSON.stringify([
+      detail,
+      await staffLearners(db),
+      await staffSessions(db),
+      await staffTraces(db),
+    ]);
     expect(serialised).not.toContain("murukku");
     expect(serialised).not.toContain(PRIVATE_GOAL);
     expect(serialised).not.toContain("test-");
@@ -237,7 +278,12 @@ describe("staff session and trace lists", () => {
   it("filters sessions to a single learner when asked", async () => {
     const mine = await staffSessions(db, { learnerId: a.state.learner.id });
     expect(mine).toHaveLength(1);
-    expect(mine[0]).toMatchObject({ learnerId: a.state.learner.id, learnerShortId: a.state.learner.id.slice(0, 8), channel: "simulated", provider: "simulation" });
+    expect(mine[0]).toMatchObject({
+      learnerId: a.state.learner.id,
+      learnerShortId: a.state.learner.id.slice(0, 8),
+      channel: "simulated",
+      provider: "simulation",
+    });
     const theirs = await staffSessions(db, { learnerId: other.id });
     expect(theirs.map((s) => s.channel)).toEqual(["text"]);
   });
@@ -250,7 +296,14 @@ describe("staff session and trace lists", () => {
 
   it("counts tool calls per session and reports whether a checkpoint was saved", async () => {
     let [s] = await staffSessions(db, { learnerId: a.state.learner.id });
-    expect(s).toMatchObject({ toolCalls: 4, toolFailures: 0, hasCheckpoint: false, status: "active", endedAt: null, endReason: null });
+    expect(s).toMatchObject({
+      toolCalls: 4,
+      toolFailures: 0,
+      hasCheckpoint: false,
+      status: "active",
+      endedAt: null,
+      endReason: null,
+    });
 
     await a.call("close_learning_session", { reason: "learner_ended" });
     [s] = await staffSessions(db, { learnerId: a.state.learner.id });
@@ -268,16 +321,26 @@ describe("staff session and trace lists", () => {
     expect([...times].sort((x, y) => y - x)).toEqual(times);
 
     const attempt = traces.find((t) => t.tool === "record_practice_attempt")!;
-    expect(attempt).toMatchObject({ channel: "simulated", status: "succeeded", errorCode: null, replays: 0, sessionId: a.state.session.id });
+    expect(attempt).toMatchObject({
+      channel: "simulated",
+      status: "succeeded",
+      errorCode: null,
+      replays: 0,
+      sessionId: a.state.session.id,
+    });
     expect(attempt.argSummary).toEqual({ exercise_id: "string(21)", answer_text: `string(${PRIVATE_ANSWER.length})` });
     expect(attempt.latencyMs).toBeGreaterThanOrEqual(0);
   });
 
   it("filters traces by status and honours the limit", async () => {
     const [target] = await staffTraces(db, { limit: 1 });
-    await db.query(`update tool_invocations set status = 'failed', error_code = 'PROVIDER_UNAVAILABLE' where id = $1`, [target!.id]);
+    await db.query(`update tool_invocations set status = 'failed', error_code = 'PROVIDER_UNAVAILABLE' where id = $1`, [
+      target!.id,
+    ]);
     const failed = await staffTraces(db, { status: "failed" });
-    expect(failed).toEqual([expect.objectContaining({ id: target!.id, status: "failed", errorCode: "PROVIDER_UNAVAILABLE" })]);
+    expect(failed).toEqual([
+      expect.objectContaining({ id: target!.id, status: "failed", errorCode: "PROVIDER_UNAVAILABLE" }),
+    ]);
     expect(await staffTraces(db, { status: "rejected" })).toEqual([]);
     expect(await staffTraces(db, { limit: 2 })).toHaveLength(2);
 

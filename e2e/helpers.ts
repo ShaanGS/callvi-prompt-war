@@ -10,7 +10,11 @@ export async function useEnglish(context: BrowserContext, baseURL: string): Prom
 }
 
 /** Development-only sign-in (signing in again with the same name returns to the same learner). */
-export async function devSignIn(page: Page, name: string, opts: { staff?: boolean; next?: string } = {}): Promise<void> {
+export async function devSignIn(
+  page: Page,
+  name: string,
+  opts: { staff?: boolean; next?: string } = {},
+): Promise<void> {
   await page.goto("/sign-in?next=/staff");
   await page.locator("#dev-name").fill(name);
   if (opts.staff) await page.getByLabel("Also give this test identity staff access").check();
@@ -18,11 +22,16 @@ export async function devSignIn(page: Page, name: string, opts: { staff?: boolea
   await page.waitForURL((url) => !url.pathname.startsWith("/sign-in"));
 }
 
-export async function onboard(page: Page, opts: { consent: "grant" | "decline"; goal: string; courseTitle: string; name?: string }): Promise<void> {
+export async function onboard(
+  page: Page,
+  opts: { consent: "grant" | "decline"; goal: string; courseTitle: string; name?: string },
+): Promise<void> {
   await page.goto("/onboarding?step=language");
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Before we begin" })).toBeVisible();
-  await page.getByRole("button", { name: opts.consent === "grant" ? "Yes, remember my progress" : "No, only for this session" }).click();
+  await page
+    .getByRole("button", { name: opts.consent === "grant" ? "Yes, remember my progress" : "No, only for this session" })
+    .click();
   await expect(page.getByRole("heading", { name: "What should the companion call you?" })).toBeVisible();
   if (opts.name && opts.consent === "grant") await page.getByLabel("Name", { exact: true }).fill(opts.name);
   await page.getByRole("button", { name: "Continue" }).click();

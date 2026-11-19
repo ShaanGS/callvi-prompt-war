@@ -78,7 +78,8 @@ export function masteryAfterAttempt(previous: MasteryState | undefined, result: 
   }
 }
 
-export type NextStep = "retry" | "offer_move_on" | "self_check" | "next_concept" | "lesson_complete" | "course_complete";
+export type NextStep =
+  "retry" | "offer_move_on" | "self_check" | "next_concept" | "lesson_complete" | "course_complete";
 
 export function nextStepAfterAttempt(input: {
   result: PracticeResult;
@@ -128,7 +129,8 @@ export function chooseExplanation(
 ): ExplanationChoice {
   const all = concept.explanations;
   const unused = all.filter((e) => !used.includes(e.approach));
-  const remainingAfter = (chosen: ExplanationApproach) => all.filter((e) => e.approach !== chosen && !used.includes(e.approach)).length;
+  const remainingAfter = (chosen: ExplanationApproach) =>
+    all.filter((e) => e.approach !== chosen && !used.includes(e.approach)).length;
 
   if (request === "repeat" && used.length > 0) {
     const last = all.find((e) => e.approach === used[used.length - 1]) ?? all[0];

@@ -30,5 +30,7 @@ export function termMatches(normalisedAnswer: string, term: string): boolean {
 }
 
 export function countWords(text: string): number {
-  return normaliseAnswer(text).split(" ").filter((w) => w.length > 0).length;
+  return normaliseAnswer(text)
+    .split(" ")
+    .filter((w) => w.length > 0).length;
 }

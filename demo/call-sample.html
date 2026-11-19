@@ -1,34 +1,104 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#1d3533">
-  <title>Hear the live AI call · Callvi</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23171817%27/%3E%3Cpath d=%27M9 13v6M13 10v12M17 8v16M21 11v10M25 14v4%27 stroke=%27%23fdfdfc%27 stroke-width=%272.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./main.css">
-  <style>
-    main{max-width:720px;margin:35px auto 60px;padding:0 22px}a{color:#294d91;text-decoration:underline;text-underline-offset:4px}
-    header{margin:26px 0;padding:clamp(22px,4vw,40px);border-radius:24px;background:linear-gradient(135deg,#deebeb,#edf0e6 58%,#dce6f0)}
-    header .voice-orb{width:78px}h1{font-size:clamp(32px,5vw,53px);line-height:1.1;letter-spacing:-.055em;font-weight:450;margin:16px 0}
-    h2{font-weight:500;letter-spacing:-.035em}audio{width:100%;display:block;margin-top:20px}dt{font-weight:600;margin-top:16px}dd{margin:4px 0}.note{color:#565f58}
-  </style>
-</head>
-<body><a class="skip-link" href="#main">Skip to content</a><main id="main">
-  <a href="./">← Back to Callvi</a>
-  <header>
-    <div class="voice-orb" aria-hidden="true"><span class="voice-orb-light"></span></div>
-    <div><h1>On the line with Callvi</h1>
-    <p>A learner asks how to find the cost of one snack packet. Hear Callvi teach the calculation and offer a second explanation.</p>
-    <audio controls preload="metadata" aria-label="Call sample in English" src="./rehearsal/live-call.mp3"></audio></div>
-  </header>
-  <h2>Call transcript</h2>
-  <dl>
-    <dt>Callvi</dt><dd>Vanakkam. I am Callvi, an AI learning companion. Shall we continue in Tamil or English?</dd>
-    <dt>Caller</dt><dd>English please. I want to learn how to work out the cost of one snack packet. Could you teach me with a small example?</dd>
-    <dt>Callvi</dt><dd>So, let’s try a simple example. Imagine you buy a bundle of five snack packets for 50 rupees. To find the cost of just one, you divide 50 by five. That makes it 10 rupees per packet. Does that make sense, or should I try another example?</dd>
-  </dl>
-  <p class="note">Captured from a live Sarvam browser call with a synthetic test caller. These excerpts include the opening, the learner’s question and the agent’s worked example later in the same call. The transcript uses standard spelling.</p>
-  <a href="https://github.com/ShaanGS/callvi-prompt-war">View the project on GitHub</a>
-</main></body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1d3533" />
+    <title>Hear the live AI call · Callvi</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23171817%27/%3E%3Cpath d=%27M9 13v6M13 10v12M17 8v16M21 11v10M25 14v4%27 stroke=%27%23fdfdfc%27 stroke-width=%272.4%27 stroke-linecap=%27round%27/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./main.css" />
+    <style>
+      main {
+        max-width: 720px;
+        margin: 35px auto 60px;
+        padding: 0 22px;
+      }
+      a {
+        color: #294d91;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+      header {
+        margin: 26px 0;
+        padding: clamp(22px, 4vw, 40px);
+        border-radius: 24px;
+        background: linear-gradient(135deg, #deebeb, #edf0e6 58%, #dce6f0);
+      }
+      header .voice-orb {
+        width: 78px;
+      }
+      h1 {
+        font-size: clamp(32px, 5vw, 53px);
+        line-height: 1.1;
+        letter-spacing: -0.055em;
+        font-weight: 450;
+        margin: 16px 0;
+      }
+      h2 {
+        font-weight: 500;
+        letter-spacing: -0.035em;
+      }
+      audio {
+        width: 100%;
+        display: block;
+        margin-top: 20px;
+      }
+      dt {
+        font-weight: 600;
+        margin-top: 16px;
+      }
+      dd {
+        margin: 4px 0;
+      }
+      .note {
+        color: #565f58;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <main id="main">
+      <a href="./">← Back to Callvi</a>
+      <header>
+        <div class="voice-orb" aria-hidden="true"><span class="voice-orb-light"></span></div>
+        <div>
+          <h1>On the line with Callvi</h1>
+          <p>
+            A learner asks how to find the cost of one snack packet. Hear Callvi teach the calculation and offer a
+            second explanation.
+          </p>
+          <audio
+            controls
+            preload="metadata"
+            aria-label="Call sample in English"
+            src="./rehearsal/live-call.mp3"
+          ></audio>
+        </div>
+      </header>
+      <h2>Call transcript</h2>
+      <dl>
+        <dt>Callvi</dt>
+        <dd>Vanakkam. I am Callvi, an AI learning companion. Shall we continue in Tamil or English?</dd>
+        <dt>Caller</dt>
+        <dd>
+          English please. I want to learn how to work out the cost of one snack packet. Could you teach me with a small
+          example?
+        </dd>
+        <dt>Callvi</dt>
+        <dd>
+          So, let’s try a simple example. Imagine you buy a bundle of five snack packets for 50 rupees. To find the cost
+          of just one, you divide 50 by five. That makes it 10 rupees per packet. Does that make sense, or should I try
+          another example?
+        </dd>
+      </dl>
+      <p class="note">
+        Captured from a live Sarvam browser call with a synthetic test caller. These excerpts include the opening, the
+        learner’s question and the agent’s worked example later in the same call. The transcript uses standard spelling.
+      </p>
+      <a href="https://github.com/ShaanGS/callvi-prompt-war">View the project on GitHub</a>
+    </main>
+  </body>
 </html>

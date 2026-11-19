@@ -18,7 +18,8 @@ export async function handle(fn: () => Promise<NextResponse | Response>): Promis
     return await fn();
   } catch (e) {
     const err = toDomainError(e);
-    if (err.code === "INTERNAL") log.error("route.failed", { error: e instanceof Error ? `${e.name}: ${e.message}` : "unknown" });
+    if (err.code === "INTERNAL")
+      log.error("route.failed", { error: e instanceof Error ? `${e.name}: ${e.message}` : "unknown" });
     const headers: Record<string, string> = {};
     if (err.code === "RATE_LIMITED" && typeof err.detail?.retryAfterSeconds === "number") {
       headers["Retry-After"] = String(err.detail.retryAfterSeconds);

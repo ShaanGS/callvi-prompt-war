@@ -1,7 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { getConfig } from "./server/config/env";
-import { BROWSER_IDENTITY_COOKIE, BROWSER_IDENTITY_MAX_AGE, issueBrowserIdentity, verifyBrowserIdentity } from "./server/auth/browser-identity";
+import {
+  BROWSER_IDENTITY_COOKIE,
+  BROWSER_IDENTITY_MAX_AGE,
+  issueBrowserIdentity,
+  verifyBrowserIdentity,
+} from "./server/auth/browser-identity";
 
 /**
  * Issues a private browser identity before the first page render and refreshes
@@ -12,16 +17,23 @@ export async function proxy(request: NextRequest) {
   // Forward the cookie into this request too, so the first render can use it.
   const appConfig = getConfig();
   let browserToken: string | null = null;
-  if ((request.method === "GET" || request.method === "HEAD") && !request.nextUrl.pathname.startsWith("/api/") &&
-      !verifyBrowserIdentity(appConfig.signingSecret, request.cookies.get(BROWSER_IDENTITY_COOKIE)?.value)) {
+  if (
+    (request.method === "GET" || request.method === "HEAD") &&
+    !request.nextUrl.pathname.startsWith("/api/") &&
+    !verifyBrowserIdentity(appConfig.signingSecret, request.cookies.get(BROWSER_IDENTITY_COOKIE)?.value)
+  ) {
     browserToken = issueBrowserIdentity(appConfig.signingSecret);
     request.cookies.set(BROWSER_IDENTITY_COOKIE, browserToken);
   }
   const withBrowserCookie = (response: NextResponse) => {
-    if (browserToken) response.cookies.set(BROWSER_IDENTITY_COOKIE, browserToken, {
-      httpOnly: true, sameSite: "lax", secure: appConfig.isProduction,
-      path: "/", maxAge: BROWSER_IDENTITY_MAX_AGE,
-    });
+    if (browserToken)
+      response.cookies.set(BROWSER_IDENTITY_COOKIE, browserToken, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: appConfig.isProduction,
+        path: "/",
+        maxAge: BROWSER_IDENTITY_MAX_AGE,
+      });
     return response;
   };
   const url = appConfig.auth.supabase?.url;

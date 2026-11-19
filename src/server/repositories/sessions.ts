@@ -35,28 +35,26 @@ const sessionRow = z
     last_activity_at: col.date,
     ended_at: col.nullableDate,
   })
-  .transform(
-    (r): LearningSession => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      enrollmentId: r.enrollment_id,
-      channel: r.channel,
-      provider: r.provider,
-      providerInteractionId: r.provider_interaction_id,
-      status: r.status,
-      memoryMode: r.memory_mode,
-      language: r.language,
-      // Tolerate older/partial state documents: unknown keys are dropped, defaults applied.
-      state: sessionStateSchema.catch(sessionStateSchema.parse({})).parse(r.state),
-      stateVersion: r.state_version,
-      summary: r.summary,
-      checkpoint: r.checkpoint,
-      endReason: r.end_reason,
-      startedAt: r.started_at,
-      lastActivityAt: r.last_activity_at,
-      endedAt: r.ended_at,
-    }),
-  );
+  .transform((r): LearningSession => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    enrollmentId: r.enrollment_id,
+    channel: r.channel,
+    provider: r.provider,
+    providerInteractionId: r.provider_interaction_id,
+    status: r.status,
+    memoryMode: r.memory_mode,
+    language: r.language,
+    // Tolerate older/partial state documents: unknown keys are dropped, defaults applied.
+    state: sessionStateSchema.catch(sessionStateSchema.parse({})).parse(r.state),
+    stateVersion: r.state_version,
+    summary: r.summary,
+    checkpoint: r.checkpoint,
+    endReason: r.end_reason,
+    startedAt: r.started_at,
+    lastActivityAt: r.last_activity_at,
+    endedAt: r.ended_at,
+  }));
 const SESSION_COLUMNS = `id, learner_id, enrollment_id, channel, provider, provider_interaction_id, status, memory_mode,
   language, state, state_version, summary, checkpoint, end_reason, started_at, last_activity_at, ended_at`;
 
@@ -76,23 +74,21 @@ const checkpointRow = z
     summary: z.string(),
     created_at: col.date,
   })
-  .transform(
-    (r): Checkpoint => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      enrollmentId: r.enrollment_id,
-      sessionId: r.session_id,
-      goalText: r.goal_text,
-      courseId: r.course_id,
-      lessonId: r.lesson_id,
-      conceptId: r.concept_id,
-      completedPractice: r.completed_practice,
-      unresolvedDifficulty: r.unresolved_difficulty,
-      nextAction: r.next_action,
-      summary: r.summary,
-      createdAt: r.created_at,
-    }),
-  );
+  .transform((r): Checkpoint => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    enrollmentId: r.enrollment_id,
+    sessionId: r.session_id,
+    goalText: r.goal_text,
+    courseId: r.course_id,
+    lessonId: r.lesson_id,
+    conceptId: r.concept_id,
+    completedPractice: r.completed_practice,
+    unresolvedDifficulty: r.unresolved_difficulty,
+    nextAction: r.next_action,
+    summary: r.summary,
+    createdAt: r.created_at,
+  }));
 const CHECKPOINT_COLUMNS = `id, learner_id, enrollment_id, session_id, goal_text, course_id, lesson_id, concept_id,
   completed_practice, unresolved_difficulty, next_action, summary, created_at`;
 
@@ -102,9 +98,12 @@ export const sessionsRepo = {
   },
 
   async findByInteractionId(db: Queryable, interactionId: string): Promise<LearningSession | null> {
-    return maybeOne(db, sessionRow, `select ${SESSION_COLUMNS} from learning_sessions where provider_interaction_id = $1`, [
-      interactionId,
-    ]);
+    return maybeOne(
+      db,
+      sessionRow,
+      `select ${SESSION_COLUMNS} from learning_sessions where provider_interaction_id = $1`,
+      [interactionId],
+    );
   },
 
   async create(
@@ -165,7 +164,14 @@ export const sessionsRepo = {
          last_activity_at = now()
        where id = $1 and state_version = $2
        returning ${SESSION_COLUMNS}`,
-      [id, expectedVersion, jsonParam(patch.state), patch.enrollmentId !== undefined, patch.enrollmentId ?? null, patch.status ?? null],
+      [
+        id,
+        expectedVersion,
+        jsonParam(patch.state),
+        patch.enrollmentId !== undefined,
+        patch.enrollmentId ?? null,
+        patch.status ?? null,
+      ],
     );
   },
 
@@ -185,7 +191,13 @@ export const sessionsRepo = {
   async close(
     db: Queryable,
     id: string,
-    input: { status: "completed" | "interrupted" | "failed"; summary: string | null; checkpoint: unknown; endReason: string; state: SessionState },
+    input: {
+      status: "completed" | "interrupted" | "failed";
+      summary: string | null;
+      checkpoint: unknown;
+      endReason: string;
+      state: SessionState;
+    },
   ): Promise<LearningSession | null> {
     return maybeOne(
       db,
@@ -194,7 +206,14 @@ export const sessionsRepo = {
          state = $6::jsonb, state_version = state_version + 1, ended_at = now(), last_activity_at = now()
        where id = $1 and status in ('started', 'active', 'paused')
        returning ${SESSION_COLUMNS}`,
-      [id, input.status, input.summary, input.checkpoint === null ? null : jsonParam(input.checkpoint), input.endReason, jsonParam(input.state)],
+      [
+        id,
+        input.status,
+        input.summary,
+        input.checkpoint === null ? null : jsonParam(input.checkpoint),
+        input.endReason,
+        jsonParam(input.state),
+      ],
     );
   },
 
@@ -232,7 +251,12 @@ export const sessionsRepo = {
 
 export const checkpointsRepo = {
   async findByIdempotencyKey(db: Queryable, key: string): Promise<Checkpoint | null> {
-    return maybeOne(db, checkpointRow, `select ${CHECKPOINT_COLUMNS} from learning_checkpoints where idempotency_key = $1`, [key]);
+    return maybeOne(
+      db,
+      checkpointRow,
+      `select ${CHECKPOINT_COLUMNS} from learning_checkpoints where idempotency_key = $1`,
+      [key],
+    );
   },
 
   async insert(
@@ -319,22 +343,20 @@ const attemptRow = z
     feedback: z.string(),
     created_at: col.date,
   })
-  .transform(
-    (r): PracticeAttempt => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      enrollmentId: r.enrollment_id,
-      sessionId: r.session_id,
-      lessonId: r.lesson_id,
-      conceptId: r.concept_id,
-      exerciseId: r.exercise_id,
-      answerText: r.answer_text,
-      score: r.score,
-      result: r.result,
-      feedback: r.feedback,
-      createdAt: r.created_at,
-    }),
-  );
+  .transform((r): PracticeAttempt => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    enrollmentId: r.enrollment_id,
+    sessionId: r.session_id,
+    lessonId: r.lesson_id,
+    conceptId: r.concept_id,
+    exerciseId: r.exercise_id,
+    answerText: r.answer_text,
+    score: r.score,
+    result: r.result,
+    feedback: r.feedback,
+    createdAt: r.created_at,
+  }));
 const ATTEMPT_COLUMNS = `id, learner_id, enrollment_id, session_id, lesson_id, concept_id, exercise_id, answer_text, score,
   result, feedback, created_at`;
 
@@ -367,9 +389,12 @@ export const attemptsRepo = {
       ],
     );
     if (inserted) return { attempt: inserted, created: true };
-    const existing = await maybeOne(db, attemptRow, `select ${ATTEMPT_COLUMNS} from practice_attempts where idempotency_key = $1`, [
-      input.idempotencyKey,
-    ]);
+    const existing = await maybeOne(
+      db,
+      attemptRow,
+      `select ${ATTEMPT_COLUMNS} from practice_attempts where idempotency_key = $1`,
+      [input.idempotencyKey],
+    );
     if (!existing) throw new Error("attempt conflict without existing row");
     return { attempt: existing, created: false };
   },
@@ -384,8 +409,12 @@ export const attemptsRepo = {
   },
 
   async countForExercise(db: Queryable, enrollmentId: string, exerciseId: string): Promise<number> {
-    const rows = await many(db, z.object({ n: col.int }),
-      `select count(*)::int as n from practice_attempts where enrollment_id=$1 and exercise_id=$2`, [enrollmentId, exerciseId]);
+    const rows = await many(
+      db,
+      z.object({ n: col.int }),
+      `select count(*)::int as n from practice_attempts where enrollment_id=$1 and exercise_id=$2`,
+      [enrollmentId, exerciseId],
+    );
     return rows[0]?.n ?? 0;
   },
   async countForConcept(db: Queryable, enrollmentId: string, conceptId: string): Promise<number> {

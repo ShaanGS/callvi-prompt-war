@@ -9,26 +9,99 @@
  */
 
 const EN_UNITS: Record<string, number> = {
-  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
-  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
-  seventeen: 17, eighteen: 18, nineteen: 19,
+  zero: 0,
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+  thirteen: 13,
+  fourteen: 14,
+  fifteen: 15,
+  sixteen: 16,
+  seventeen: 17,
+  eighteen: 18,
+  nineteen: 19,
 };
 const EN_TENS: Record<string, number> = {
-  twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+  twenty: 20,
+  thirty: 30,
+  forty: 40,
+  fifty: 50,
+  sixty: 60,
+  seventy: 70,
+  eighty: 80,
+  ninety: 90,
 };
 
 /** Tamil number words (stems), mapped to values. Longer stems are tried first. */
 const TA_WORDS: Array<[string, number]> = [
-  ["தொள்ளாயிர", 900], ["எண்ணூற", 800], ["எழுநூற", 700], ["அறுநூற", 600], ["ஐநூற", 500],
-  ["நானூற", 400], ["முன்னூற", 300], ["இருநூற", 200], ["நூத்தி", 100], ["நூத்து", 100], ["நூற்றி", 100], ["நூற்று", 100], ["நூறு", 100],
+  ["தொள்ளாயிர", 900],
+  ["எண்ணூற", 800],
+  ["எழுநூற", 700],
+  ["அறுநூற", 600],
+  ["ஐநூற", 500],
+  ["நானூற", 400],
+  ["முன்னூற", 300],
+  ["இருநூற", 200],
+  ["நூத்தி", 100],
+  ["நூத்து", 100],
+  ["நூற்றி", 100],
+  ["நூற்று", 100],
+  ["நூறு", 100],
   ["ஆயிர", 1000],
-  ["தொண்ணூற்று", 90], ["தொண்ணூறு", 90], ["எண்பத்து", 80], ["எண்பது", 80], ["எழுபத்து", 70], ["எழுபது", 70],
-  ["அறுபத்து", 60], ["அறுபது", 60], ["ஐம்பத்து", 50], ["ஐம்பது", 50], ["நாற்பத்து", 40], ["நாற்பது", 40],
-  ["முப்பத்து", 30], ["முப்பது", 30], ["இருபத்து", 20], ["இருபது", 20],
-  ["பத்தொன்பது", 19], ["பதினெட்டு", 18], ["பதினேழு", 17], ["பதினாறு", 16], ["பதினைந்து", 15],
-  ["பதினான்கு", 14], ["பதிமூன்று", 13], ["பன்னிரண்டு", 12], ["பன்னிரெண்டு", 12], ["பன்னெண்டு", 12], ["பனிரெண்டு", 12], ["பண்ணிரெண்டு", 12], ["பதினொன்று", 11], ["பத்து", 10],
-  ["ஒன்பது", 9], ["எட்டு", 8], ["ஏழு", 7], ["ஆறு", 6], ["ஐந்து", 5], ["நான்கு", 4], ["நாலு", 4],
-  ["அஞ்சு", 5], ["மூன்று", 3], ["மூனு", 3], ["இரண்டு", 2], ["ரெண்டு", 2], ["ஒன்று", 1], ["ஒண்ணு", 1], ["ஒரு", 1],
+  ["தொண்ணூற்று", 90],
+  ["தொண்ணூறு", 90],
+  ["எண்பத்து", 80],
+  ["எண்பது", 80],
+  ["எழுபத்து", 70],
+  ["எழுபது", 70],
+  ["அறுபத்து", 60],
+  ["அறுபது", 60],
+  ["ஐம்பத்து", 50],
+  ["ஐம்பது", 50],
+  ["நாற்பத்து", 40],
+  ["நாற்பது", 40],
+  ["முப்பத்து", 30],
+  ["முப்பது", 30],
+  ["இருபத்து", 20],
+  ["இருபது", 20],
+  ["பத்தொன்பது", 19],
+  ["பதினெட்டு", 18],
+  ["பதினேழு", 17],
+  ["பதினாறு", 16],
+  ["பதினைந்து", 15],
+  ["பதினான்கு", 14],
+  ["பதிமூன்று", 13],
+  ["பன்னிரண்டு", 12],
+  ["பன்னிரெண்டு", 12],
+  ["பன்னெண்டு", 12],
+  ["பனிரெண்டு", 12],
+  ["பண்ணிரெண்டு", 12],
+  ["பதினொன்று", 11],
+  ["பத்து", 10],
+  ["ஒன்பது", 9],
+  ["எட்டு", 8],
+  ["ஏழு", 7],
+  ["ஆறு", 6],
+  ["ஐந்து", 5],
+  ["நான்கு", 4],
+  ["நாலு", 4],
+  ["அஞ்சு", 5],
+  ["மூன்று", 3],
+  ["மூனு", 3],
+  ["இரண்டு", 2],
+  ["ரெண்டு", 2],
+  ["ஒன்று", 1],
+  ["ஒண்ணு", 1],
+  ["ஒரு", 1],
 ];
 
 function digitNumbers(text: string): number[] {
@@ -42,7 +115,11 @@ function digitNumbers(text: string): number[] {
 }
 
 function englishWordNumbers(text: string): number[] {
-  const tokens = text.toLowerCase().replace(/-/g, " ").split(/[^a-z]+/).filter(Boolean);
+  const tokens = text
+    .toLowerCase()
+    .replace(/-/g, " ")
+    .split(/[^a-z]+/)
+    .filter(Boolean);
   const out: number[] = [];
   let current: number | null = null;
   let total = 0;
@@ -88,8 +165,10 @@ function tamilWordNumbers(text: string): number[] {
   for (const { value: n, tokenIndex } of out) {
     const prev = merged[merged.length - 1];
     const adjacent = tokenIndex === previousTokenIndex + 1;
-    if (adjacent && prev !== undefined && prev >= 100 && prev % 100 === 0 && n < 100) merged[merged.length - 1] = prev + n;
-    else if (adjacent && prev !== undefined && prev >= 10 && prev % 10 === 0 && prev < 100 && n < 10) merged[merged.length - 1] = prev + n;
+    if (adjacent && prev !== undefined && prev >= 100 && prev % 100 === 0 && n < 100)
+      merged[merged.length - 1] = prev + n;
+    else if (adjacent && prev !== undefined && prev >= 10 && prev % 10 === 0 && prev < 100 && n < 10)
+      merged[merged.length - 1] = prev + n;
     else merged.push(n);
     previousTokenIndex = tokenIndex;
   }

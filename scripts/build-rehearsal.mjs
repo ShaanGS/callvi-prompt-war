@@ -21,9 +21,15 @@ const prebuiltContent = {
 
 await mkdir("dist/rehearsal-demo", { recursive: true });
 const result = await build({
-  entryPoints: ["demo/main.tsx"], outdir: "dist/rehearsal-demo",
-  bundle: true, minify: true, format: "esm", jsx: "automatic", target: "es2022",
-  loader: { ".woff2": "file", ".woff": "file" }, assetNames: "fonts/[name]-[hash]",
+  entryPoints: ["demo/main.tsx"],
+  outdir: "dist/rehearsal-demo",
+  bundle: true,
+  minify: true,
+  format: "esm",
+  jsx: "automatic",
+  target: "es2022",
+  loader: { ".woff2": "file", ".woff": "file" },
+  assetNames: "fonts/[name]-[hash]",
   define: { "process.env.NODE_ENV": '"production"' },
   plugins: [prebuiltContent],
   metafile: true,
@@ -32,7 +38,7 @@ const result = await build({
 // The swap only helps if the heavy modules are truly gone. Fail loudly if a
 // future import drags the schema library or a whole course back in.
 const bundled = Object.keys(result.metafile.inputs);
-const leaked = bundled.filter(path => /node_modules\/zod\/|src\/content\/(courses|schema)/.test(path));
+const leaked = bundled.filter((path) => /node_modules\/zod\/|src\/content\/(courses|schema)/.test(path));
 if (leaked.length) throw new Error(`The preview bundle pulled in content it should not ship:\n${leaked.join("\n")}`);
 
 await cp("demo/index.html", "dist/rehearsal-demo/index.html");

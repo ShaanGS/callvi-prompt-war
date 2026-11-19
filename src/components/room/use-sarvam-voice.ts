@@ -60,13 +60,16 @@ export function useSarvamVoice(config: VoiceSdkConfig | null, onEnded: () => voi
   }, []);
 
   /** Tear down a failed attempt without ending the learning session. */
-  const fail = useCallback(async (agent: ConversationAgent | null, error: Parameters<typeof classifyVoiceError>[0] | "timeout") => {
-    failingRef.current = true;
-    agentRef.current = null;
-    if (agent) await agent.stop().catch(() => undefined);
-    failingRef.current = false;
-    dispatch({ type: "failed", error: error === "timeout" ? "timeout" : classifyVoiceError(error) });
-  }, []);
+  const fail = useCallback(
+    async (agent: ConversationAgent | null, error: Parameters<typeof classifyVoiceError>[0] | "timeout") => {
+      failingRef.current = true;
+      agentRef.current = null;
+      if (agent) await agent.stop().catch(() => undefined);
+      failingRef.current = false;
+      dispatch({ type: "failed", error: error === "timeout" ? "timeout" : classifyVoiceError(error) });
+    },
+    [],
+  );
 
   const start = useCallback(async () => {
     if (!config || agentRef.current) return;
@@ -74,7 +77,11 @@ export function useSarvamVoice(config: VoiceSdkConfig | null, onEnded: () => voi
     connectedRef.current = false;
     dispatch({ type: "start_requested" });
 
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof AudioContext === "undefined") {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof AudioContext === "undefined"
+    ) {
       dispatch({ type: "failed", error: "unsupported" });
       return;
     }
