@@ -7,7 +7,7 @@ import { isLanguageCode } from "@/lib/languages";
 import { getConfig } from "@/server/config/env";
 import { getDb } from "@/server/db/client";
 import { DEV_COOKIE, signDevIdentity } from "@/server/auth/dev-identity";
-import { SESSION_GOAL_COOKIE } from "@/server/auth/cookies";
+import { appCookieOptions, SESSION_GOAL_COOKIE } from "@/server/auth/cookies";
 import { BROWSER_IDENTITY_COOKIE } from "@/server/auth/browser-identity";
 import { createSupabaseServerClient } from "@/server/auth/supabase-server";
 import { getCurrentLearner, getUiLanguage, UI_LANGUAGE_COOKIE } from "@/server/auth/actor";
@@ -15,6 +15,7 @@ import { staffRepo } from "@/server/repositories/learners";
 import { learnerService } from "@/server/services/learner-service";
 import { sha256Hex } from "@/server/security/crypto";
 import { rateLimit } from "@/server/security/rate-limit";
+import { clientIp } from "@/server/http/client-ip";
 import { DomainError } from "@/server/errors";
 import { log } from "@/server/observability/log";
 
@@ -29,8 +30,7 @@ function safeNext(value: FormDataEntryValue | null): string {
 }
 
 async function requesterKey(): Promise<string> {
-  const h = await headers();
-  return (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || "local";
+  return clientIp(await headers());
 }
 
 export async function requestEmailCode(_prev: SignInState, formData: FormData): Promise<SignInState> {
@@ -111,7 +111,7 @@ export async function setUiLanguage(formData: FormData): Promise<void> {
   const language = formData.get("language");
   if (typeof language !== "string" || !isLanguageCode(language)) return;
   const store = await cookies();
-  store.set(UI_LANGUAGE_COOKIE, language, { sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365, httpOnly: true });
+  store.set(UI_LANGUAGE_COOKIE, language, appCookieOptions({ persistent: true }));
   const learner = await getCurrentLearner();
   if (learner) await learnerService.updateProfile(await getDb(), learner.id, { preferredLanguage: language });
   redirect(safeNext(formData.get("next")));

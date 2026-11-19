@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { staffLearners } from "@/server/services/staff-service";
 import { PageHeader, Tag } from "@/components/ui/primitives";
@@ -8,6 +9,7 @@ import { EmptyRow, formatStaffDate, Table, Td, Th } from "@/components/staff/tab
 export const metadata: Metadata = { title: "Learners" };
 
 export default async function StaffLearnersPage() {
+  await requireStaffPage();
   const learners = await staffLearners(await getDb(), 200);
   return (
     <div className="flex flex-col gap-8">

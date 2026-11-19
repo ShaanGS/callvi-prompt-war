@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { staffCourses } from "@/server/services/staff-service";
 import { PageHeader, Tag } from "@/components/ui/primitives";
@@ -14,6 +15,7 @@ const REVIEW_LABEL: Record<string, string> = {
 };
 
 export default async function StaffCoursesPage() {
+  await requireStaffPage();
   const courses = await staffCourses(await getDb());
   return (
     <div className="flex flex-col gap-8">

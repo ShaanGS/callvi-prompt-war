@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { HTTP_STATUS, toDomainError } from "../errors";
 import { log } from "../observability/log";
+import { clientIp } from "./client-ip";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
@@ -27,5 +28,5 @@ export async function handle(fn: () => Promise<NextResponse | Response>): Promis
 }
 
 export function clientKey(request: Request): string {
-  return (request.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "local";
+  return clientIp(request.headers);
 }

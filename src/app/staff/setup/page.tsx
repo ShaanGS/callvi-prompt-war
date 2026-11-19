@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CheckCircle2, CircleAlert } from "lucide-react";
 import { getConfig } from "@/server/config/env";
 import { getChannelReadiness } from "@/server/config/channels";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { agentInstructions, sarvamToolSetup } from "@/server/providers/sarvam/agent-setup";
 import { DescriptionList, Notice, PageHeader, Section, Tag } from "@/components/ui/primitives";
@@ -24,6 +25,7 @@ function Ready({ ok, label }: { ok: boolean; label: string }) {
  * Shows names of missing settings only — never secret values.
  */
 export default async function StaffSetupPage() {
+  await requireStaffPage();
   const config = getConfig();
   const readiness = getChannelReadiness(config);
   const db = await getDb();

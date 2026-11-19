@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { clsx } from "clsx";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { staffTraces } from "@/server/services/staff-service";
 import { PageHeader, Tag } from "@/components/ui/primitives";
@@ -11,6 +12,7 @@ export const metadata: Metadata = { title: "Tool traces" };
 const FILTERS = ["all", "failed", "rejected", "succeeded"] as const;
 
 export default async function StaffTracesPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  await requireStaffPage();
   const { status } = await searchParams;
   const filter = FILTERS.find((f) => f === status) ?? "all";
   const traces = await staffTraces(await getDb(), { status: filter === "all" ? undefined : filter, limit: 200 });

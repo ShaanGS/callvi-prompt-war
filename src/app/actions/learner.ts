@@ -9,7 +9,7 @@ import { getDb } from "@/server/db/client";
 import { getIdentity, requireLearnerApi, UI_LANGUAGE_COOKIE } from "@/server/auth/actor";
 import { deleteSupabaseAuthUser } from "@/server/auth/supabase-admin";
 import { DEV_COOKIE } from "@/server/auth/dev-identity";
-import { SESSION_GOAL_COOKIE } from "@/server/auth/cookies";
+import { appCookieOptions, SESSION_GOAL_COOKIE } from "@/server/auth/cookies";
 import { BROWSER_IDENTITY_COOKIE } from "@/server/auth/browser-identity";
 import { createSupabaseServerClient } from "@/server/auth/supabase-server";
 import { toDomainError } from "@/server/errors";
@@ -21,6 +21,18 @@ import { deletionService } from "@/server/services/deletion-service";
 import { courseService } from "@/server/services/course-service";
 import { sessionService } from "@/server/services/session-service";
 import { createBrowserVoiceSession } from "@/server/providers/browser-voice";
+import { rateLimit } from "@/server/security/rate-limit";
+
+/**
+ * Every action here writes. A browser identity costs nothing to obtain, so
+ * writes are capped per learner; 60 a minute is far above what a person
+ * clicking through the app can reach.
+ */
+async function actingLearner() {
+  const learner = await requireLearnerApi();
+  rateLimit(`learner-action:${learner.id}`, 60, 60_000);
+  return learner;
+}
 
 /**
  * Learner server actions. Each re-authenticates, validates its input and
@@ -32,16 +44,16 @@ const courseIdSchema = z.string().trim().regex(/^[a-z0-9-]{3,64}$/);
 /* ------------------------------------------------------------- onboarding */
 
 export async function chooseLanguage(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const language = formData.get("language");
   if (typeof language !== "string" || !isLanguageCode(language)) redirect("/onboarding?step=language");
   await learnerService.updateProfile(await getDb(), learner.id, { preferredLanguage: language });
-  (await cookies()).set(UI_LANGUAGE_COOKIE, language, { sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365, httpOnly: true });
+  (await cookies()).set(UI_LANGUAGE_COOKIE, language, appCookieOptions({ persistent: true }));
   redirect("/onboarding?step=consent");
 }
 
 export async function chooseConsent(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const decision = formData.get("decision");
   if (decision !== "granted" && decision !== "declined") redirect("/onboarding?step=consent");
   await learnerService.recordConsent(await getDb(), learner.id, decision, "browser");
@@ -49,7 +61,7 @@ export async function chooseConsent(formData: FormData): Promise<void> {
 }
 
 export async function saveName(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const name = z.string().trim().max(80).safeParse(formData.get("name") ?? "");
   // The display name is a profile field; in session-only mode it is not stored.
   if (name.success && name.data && learner.consentStatus === "granted") {
@@ -59,15 +71,15 @@ export async function saveName(formData: FormData): Promise<void> {
 }
 
 export async function submitGoal(formData: FormData): Promise<void> {
-  await requireLearnerApi();
+  await actingLearner();
   const goal = z.string().trim().min(3).max(500).safeParse(formData.get("goal"));
   if (!goal.success) redirect("/onboarding?step=goal&error=short");
-  (await cookies()).set(SESSION_GOAL_COOKIE, goal.data, { httpOnly: true, sameSite: "lax", path: "/" });
+  (await cookies()).set(SESSION_GOAL_COOKIE, goal.data, appCookieOptions());
   redirect("/onboarding?step=confirm");
 }
 
 export async function confirmGoal(): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const store = await cookies();
   const goal = store.get(SESSION_GOAL_COOKIE)?.value;
   if (!goal) redirect("/onboarding?step=goal");
@@ -85,7 +97,7 @@ export async function confirmGoal(): Promise<void> {
 }
 
 export async function finishOnboarding(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const db = await getDb();
   await learnerService.completeOnboarding(db, learner.id);
   const courseId = courseIdSchema.safeParse(formData.get("course_id"));
@@ -107,7 +119,7 @@ async function enrolInternal(learnerId: string, courseId: string): Promise<never
 }
 
 export async function enrolInCourse(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const courseId = courseIdSchema.safeParse(formData.get("course_id"));
   if (!courseId.success) redirect("/courses");
   await enrolInternal(learner.id, courseId.data);
@@ -116,7 +128,7 @@ export async function enrolInCourse(formData: FormData): Promise<void> {
 /* ------------------------------------------------------------- sessions */
 
 export async function startSession(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const mode = formData.get("mode");
   const parsedCourse = courseIdSchema.safeParse(formData.get("course_id"));
   const courseId = parsedCourse.success ? parsedCourse.data : null;
@@ -141,7 +153,7 @@ export async function startSession(formData: FormData): Promise<void> {
 /* ------------------------------------------------------------- privacy */
 
 export async function setMemoryConsent(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const db = await getDb();
   const decision = formData.get("decision");
   if (decision === "granted") await learnerService.recordConsent(db, learner.id, "granted", "settings");
@@ -152,7 +164,7 @@ export async function setMemoryConsent(formData: FormData): Promise<void> {
 }
 
 export async function updateProfile(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const name = z.string().trim().max(80).safeParse(formData.get("name") ?? "");
   const language = formData.get("language");
   const db = await getDb();
@@ -162,14 +174,14 @@ export async function updateProfile(formData: FormData): Promise<void> {
     preferredLanguage: typeof language === "string" && isLanguageCode(language) ? language : undefined,
   });
   if (typeof language === "string" && isLanguageCode(language)) {
-    (await cookies()).set(UI_LANGUAGE_COOKIE, language, { sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365, httpOnly: true });
+    (await cookies()).set(UI_LANGUAGE_COOKIE, language, appCookieOptions({ persistent: true }));
   }
   revalidatePath("/", "layout");
   redirect("/privacy?done=profile");
 }
 
 export async function updateGoal(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const goal = z.string().trim().min(3).max(500).safeParse(formData.get("goal"));
   if (!goal.success) redirect("/privacy?error=goal");
   await memoryService.correctGoal(await getDb(), learner, goal.data, { source: "learner_settings", sourceSessionId: null });
@@ -178,7 +190,7 @@ export async function updateGoal(formData: FormData): Promise<void> {
 }
 
 export async function updatePreference(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const key = z.enum(PREFERENCE_KEYS).safeParse(formData.get("key"));
   const value = formData.get("value");
   if (!key.success || typeof value !== "string") redirect("/privacy?error=preference");
@@ -191,14 +203,14 @@ export async function updatePreference(formData: FormData): Promise<void> {
 }
 
 export async function deletePreference(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (id.success) await memoryService.deletePreference(await getDb(), learner, id.data);
   redirect("/privacy?done=deleted");
 }
 
 export async function resetConcept(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   const enrollmentId = z.string().uuid().safeParse(formData.get("enrollment_id"));
   const conceptId = z.string().max(80).safeParse(formData.get("concept_id"));
   if (enrollmentId.success && conceptId.success) {
@@ -209,14 +221,14 @@ export async function resetConcept(formData: FormData): Promise<void> {
 }
 
 export async function deleteLearningMemory(): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   await deletionService.deleteLearningMemory(await getDb(), learner.id, "settings");
   revalidatePath("/", "layout");
   redirect("/privacy?done=deleted");
 }
 
 export async function deleteAccount(formData: FormData): Promise<void> {
-  const learner = await requireLearnerApi();
+  const learner = await actingLearner();
   if (formData.get("confirm") !== "DELETE") redirect("/privacy?error=confirm");
   const identity = await getIdentity();
   const { identities } = await deletionService.deleteAccount(await getDb(), learner.id, "settings");
