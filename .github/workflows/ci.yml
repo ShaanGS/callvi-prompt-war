@@ -26,10 +26,9 @@ jobs:
       - run: npm run typecheck
       - name: Unit, integration and agent tests with coverage thresholds
         run: npm run test:coverage
-      # `speaker` (a native module the Sarvam SDK lists but never loads in the
-      # browser) has a high advisory with no fix; see SECURITY.md. Critical fails.
+      # Fails on any high or critical advisory in runtime dependencies.
       - name: Dependency audit
-        run: npm audit --omit=dev --audit-level=critical
+        run: npm audit --omit=dev --audit-level=high
 
   preview:
     name: Deployed preview — accessibility, security headers and lessons

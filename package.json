@@ -37,6 +37,7 @@
     "react-dom": "19.3.0",
     "sarvam-conv-ai-sdk": "^0.0.42",
     "server-only": "^0.0.1",
+    "speaker": "file:vendor/speaker-stub",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -57,5 +58,8 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "overrides": {
+    "speaker": "$speaker"
   }
 }

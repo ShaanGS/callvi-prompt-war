@@ -1,0 +1,7 @@
+{
+  "name": "speaker",
+  "version": "0.0.0-callvi-stub",
+  "description": "Empty stand-in for the native `speaker` module that sarvam-conv-ai-sdk lists but Callvi never loads. See SECURITY.md.",
+  "main": "index.js",
+  "license": "MIT"
+}
