@@ -24,7 +24,7 @@ import {
 import { enrollmentsRepo, goalsRepo, progressRepo } from "../repositories/learning";
 import { attemptsRepo } from "../repositories/sessions";
 import type { StoredCourse } from "../repositories/courses";
-import type { AssessmentOutcome } from "./assessment/assessment-service";
+import type { AssessmentOutcome } from "@/lib/assessment/assessment-service";
 import { recordEvent } from "./events";
 import { evidenceRepo } from "../repositories/evidence";
 

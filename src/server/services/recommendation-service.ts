@@ -1,6 +1,6 @@
 import type { LanguageCode } from "@/lib/languages";
 import type { StoredCourse } from "../repositories/courses";
-import { normaliseAnswer, termMatches } from "./assessment/text";
+import { normaliseAnswer, termMatches } from "@/lib/assessment/text";
 
 /**
  * Recommend courses for a stated goal by matching the goal against each

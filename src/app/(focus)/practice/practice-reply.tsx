@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, AudioLines, Check, Phone, RotateCcw } from "lucide-react";
-import { assessAnswer } from "@/server/services/assessment/assessment-service";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
 import type { Exercise } from "@/content/schema";
 import type { LanguageCode } from "@/lib/languages";
 import { useDocumentLanguage } from "@/lib/use-document-language";

@@ -8,7 +8,7 @@ import { learnerService } from "../services/learner-service";
 import { sessionService } from "../services/session-service";
 import { sessionsRepo } from "../repositories/sessions";
 import { courseService, findExercise } from "../services/course-service";
-import { assessAnswer } from "../services/assessment/assessment-service";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
 import { handleSarvamToolCallback } from "../providers/sarvam/tool-callback";
 import { agentInstructions } from "../providers/sarvam/agent-setup";
 import { runTool, type ToolResponse } from "./orchestrator";

@@ -9,7 +9,7 @@ import { enrollmentsRepo } from "../repositories/learning";
 import { attemptsRepo, sessionsRepo } from "../repositories/sessions";
 import { evidenceRepo } from "../repositories/evidence";
 import { learningSignals } from "../services/learning-evidence";
-import { assessAnswer } from "../services/assessment/assessment-service";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
 import {
   courseService,
   exerciseForConcept,

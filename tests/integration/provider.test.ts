@@ -34,6 +34,26 @@ describe("tool callback authentication", () => {
     expect((await call(TEST_TOOL_SECRET_BROWSER, "get_learning_context", { interaction_id: "a" })).status).toBe(401);
   });
 
+  // A wrong guess used to cost nothing: the per-IP limit only ran after a valid
+  // secret. Failures are now counted, and the lockout is checked before compare.
+  it("locks out an address after repeated wrong secrets, even if the next guess is right", async () => {
+    const guesser = (authorization: string) =>
+      handleSarvamToolCallback(db, config, { authorization, toolName: "get_learning_context", body: { interaction_id: "g" }, clientKey: "guesser" });
+    for (let i = 0; i < 10; i++) expect((await guesser("Bearer wrong")).status).toBe(401);
+    expect((await guesser("Bearer wrong")).status).toBe(429);
+    expect((await guesser(`Bearer ${TEST_TOOL_SECRET_BROWSER}`)).status).toBe(429);
+  });
+
+  it("does not charge a correct secret against another address's lockout", async () => {
+    for (let i = 0; i < 10; i++) {
+      await handleSarvamToolCallback(db, config, { authorization: "Bearer wrong", toolName: "get_learning_context", body: { interaction_id: "g" }, clientKey: "guesser" });
+    }
+    const honest = await handleSarvamToolCallback(db, config, {
+      authorization: `Bearer ${TEST_TOOL_SECRET_BROWSER}`, toolName: "get_learning_context", body: { nothing: true }, clientKey: "agent",
+    });
+    expect(honest.status).toBe(422);
+  });
+
   it("rejects malformed payloads and unknown tools", async () => {
     expect((await call(`Bearer ${TEST_TOOL_SECRET_BROWSER}`, "get_learning_context", { nothing: true })).status).toBe(422);
     expect((await call(`Bearer ${TEST_TOOL_SECRET_BROWSER}`, "drop_tables", { interaction_id: "a" })).status).toBe(404);

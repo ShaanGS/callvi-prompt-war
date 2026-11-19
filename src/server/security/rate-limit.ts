@@ -31,6 +31,20 @@ export function rateLimit(key: string, limit: number, windowMs: number, now = Da
   }
 }
 
+/**
+ * Rejects without counting. Lets a caller refuse early on a bucket that only
+ * failures fill (for example wrong credentials), so a correct request is never
+ * charged against a lockout meant for guessers.
+ */
+export function assertNotLimited(key: string, limit: number, now = Date.now()): void {
+  const bucket = buckets.get(key);
+  if (bucket && bucket.resetAt > now && bucket.count >= limit) {
+    throw new DomainError("RATE_LIMITED", "Too many requests. Please wait a moment and try again.", {
+      retryAfterSeconds: Math.ceil((bucket.resetAt - now) / 1000),
+    });
+  }
+}
+
 export function resetRateLimitsForTests(): void {
   buckets.clear();
 }

@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Lint, types, tests and coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx next typegen
+      - run: npm run typecheck
+      - name: Unit, integration and agent tests with coverage thresholds
+        run: npm run test:coverage
+      # `speaker` (a native module the Sarvam SDK lists but never loads in the
+      # browser) has a high advisory with no fix; see SECURITY.md. Critical fails.
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=critical
+
+  preview:
+    name: Deployed preview — accessibility, security headers and lessons
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Build the preview and test it under vercel.json's headers
+        run: npm run test:preview

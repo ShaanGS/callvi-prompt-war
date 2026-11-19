@@ -1,6 +1,6 @@
 import type { Criterion, Exercise } from "@/content/schema";
 import type { LanguageCode } from "@/lib/languages";
-import type { PracticeResult } from "../../domain/types";
+import type { PracticeResult } from "@/server/domain/types";
 import { affirmativeText, hasNegation, interpretNumericAnswer } from "./interpretation";
 import { countWords, normaliseAnswer, termMatches } from "./text";
 
