@@ -24,7 +24,17 @@ const LEARNER_PAGES = [
 const STAFF_PAGES = ["/staff", "/staff/learners", "/staff/sessions", "/staff/courses", "/staff/traces", "/staff/setup"];
 
 async function violations(page: Page) {
-  const { violations: found } = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+  // The dev server compiles a route on its first visit and may reload the page
+  // once while it does. Let it settle, and if a reload still lands mid-scan,
+  // scan again: that is a navigation, not an accessibility result.
+  const scan = async () => {
+    await page.waitForLoadState("networkidle");
+    return new AxeBuilder({ page }).withTags(TAGS).analyze();
+  };
+  const { violations: found } = await scan().catch((error: Error) => {
+    if (!/Execution context was destroyed/.test(error.message)) throw error;
+    return scan();
+  });
   return found.map(v => `${v.id} [${v.impact}]: ${v.nodes.map(n => n.target.join(" ")).slice(0, 3).join(", ")}`);
 }
 
