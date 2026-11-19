@@ -231,6 +231,9 @@ export const sessionService = {
 
   async closeStale(db: Db, learner: Learner): Promise<void> {
     const stale = await sessionsRepo.listStaleOpen(db, learner.id, STALE_SESSION_MINUTES);
+    // Sequential on purpose: each close writes a checkpoint and touches the
+    // enrollment, and two stale sessions can share one. There is rarely more
+    // than one, so concurrency would buy nothing and risk racing on that row.
     for (const s of stale) {
       await sessionService.close(db, { session: s, learner, reason: "stale", idempotencyKey: `stale:${s.id}` });
     }
