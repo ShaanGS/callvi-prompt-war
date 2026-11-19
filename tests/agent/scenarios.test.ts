@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { AGENT_SCENARIOS, runScenario, setEvaluationConfig } from "@/server/agent/evaluation";
+import { AGENT_SCENARIOS, runScenario, setEvaluationConfig } from "../../evals/agent";
 import type { Db } from "@/server/db/types";
 import { resetRateLimitsForTests } from "@/server/security/rate-limit";
 import { createTestDb } from "../support/test-db";

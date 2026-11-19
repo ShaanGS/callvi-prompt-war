@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import { conversationCases } from "@/server/agent/evaluation";
+import { conversationCases } from "../evals/agent";
 import { arg } from "./_shared";
 
 /**

@@ -22,12 +22,9 @@ export default defineConfig({
       // The logic a grade or a learner's data depends on. UI components are
       // covered by the Playwright suites instead.
       include: ["src/server/**", "src/content/**", "src/lib/**"],
-      // The agent evaluation harness runs scenarios rather than being one;
-      // counting it would flatter the figure.
-      exclude: ["src/server/agent/evaluation.ts"],
       reporter: ["text-summary", "html"],
       // Set just under the measured figures so coverage can only ratchet up.
-      thresholds: { statements: 83, branches: 77, functions: 84, lines: 85 },
+      thresholds: { statements: 85, branches: 79, functions: 87, lines: 87 },
     },
   },
 });

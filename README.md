@@ -8,7 +8,7 @@
 
 Callvi is an AI learning companion that teaches practical skills **by voice conversation**, in **Tamil or English**, designed to work over an ordinary phone call. A learner says what she wants to be able to do. Callvi picks a short lesson, explains one idea, listens to her try it, and explains it differently when she needs that. With her permission, it remembers where she stopped.
 
-**Prompt War theme: 2 — AI for Education.**
+**Chosen vertical: Prompt War theme 2, AI for Education.**
 
 > **The public link** is a keyless preview: three lessons with the real exercises and rubric, prerecorded lesson audio, and [a recording of a live AI call](https://callvi-prompt-war.vercel.app/call-sample.html). **The full app**, with saved progress and the educator dashboard, runs from this repository with `npm ci && npm run dev`; live voice also needs a Sarvam or ElevenLabs key ([Setup and run](#setup-and-run)).
 
@@ -46,6 +46,26 @@ Each phrase maps to working code. Where the AI sits, and what it may not do, is 
 | **Assists educators** | Staff dashboard for learners, sessions and courses, plus a trace of every tool the agent called and whether it succeeded, so an educator can check what the AI did. Traces record the shape of each request, never the learner's words. | [`src/app/staff`](src/app/staff), [`staff-service.ts`](src/server/services/staff-service.ts) |
 | **Improves student engagement** | Short lessons of one idea at a time, resume where she paused, and each lesson ends with one small real-world action to try. | [`session-service.ts`](src/server/services/session-service.ts), [`src/content/courses`](src/content/courses) |
 | **Transforms traditional teaching and learning experiences** | The interface is a phone call, not an app or a classroom, so it fits around work and needs no screen. | [Phone experience](docs/CALL_FIRST_PRODUCT.md) |
+
+## Approach and logic
+
+Callvi is an assistant that decides what to do next from what it knows about the learner, not from a fixed script. At the start of every call it reads her context through one tool ([`get_learning_context`](src/server/agent/tools/learner.ts)): consent, goal, course, saved checkpoint, preferences and language. Every decision below is made in code from that context, and the voice model only carries it out.
+
+| When the learner… | Callvi decides to… | Decided in |
+| --- | --- | --- |
+| has not said whether progress may be saved | ask for memory consent before anything else | [`suggestNextAction`](src/server/agent/learning-policy.ts) |
+| has no goal and no course | ask what she wants to be able to do, and record it | [`suggestNextAction`](src/server/agent/learning-policy.ts) |
+| has a goal but no course | recommend up to three courses whose terms match her own words, in Tamil or English | [`recommendation-service.ts`](src/server/services/recommendation-service.ts) |
+| has a saved checkpoint | resume at the idea where she stopped, not the start | [`session-service.ts`](src/server/services/session-service.ts) |
+| is on a call but has not chosen to start | wait: no lesson opens until she says she wants to learn now | [`lesson.ts`](src/server/agent/tools/lesson.ts) |
+| does not follow an explanation | switch to an approach she has not heard yet, preferring the style she said suits her | [`chooseExplanation`](src/server/agent/learning-policy.ts) |
+| gives a partly right answer | ask only for the detail that is missing | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts) |
+| gives a wrong answer that matches a known mistake | name that mistake ("you multiplied instead of dividing") | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts) |
+| has two attempts at an idea that were not right | offer another try, a different explanation, or to move on | [`nextStepAfterAttempt`](src/server/agent/learning-policy.ts) |
+| asks to review earlier work | pick an idea she practised before, overdue first, and ask a fresh question without teaching the answer first | [`lesson.ts`](src/server/agent/tools/lesson.ts) |
+| declined memory, or calls without caller ID | teach for this session only and save nothing to her record | [`learner.ts`](src/server/agent/tools/learner.ts) |
+
+The rules are pure functions with no database or network access, so each is unit-tested directly ([`policy-and-content.test.ts`](tests/unit/policy-and-content.test.ts)), and 12 multi-turn scenarios replay whole conversations against them ([`evals/agent`](evals/agent)).
 
 ## Where the AI is — and what it is not allowed to do
 
@@ -103,7 +123,7 @@ Open [localhost:3000](http://localhost:3000) and choose a skill. For live voice,
 | Browser journeys | `npx playwright install chromium` then `npm run test:e2e` |
 | Build the public preview | `npm run build:rehearsal` |
 
-## Architecture
+## How it works
 
 ```
 Learner (phone or browser)
@@ -121,7 +141,8 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 
 | Path | Responsibility |
 | --- | --- |
-| [`src/server/agent`](src/server/agent) | Tool registry, orchestrator, learning policy and evaluation |
+| [`src/server/agent`](src/server/agent) | The 12 tools (one file per area), orchestrator and learning policy |
+| [`evals/agent`](evals/agent) | 12 multi-turn scenarios that replay whole conversations against the real tools and database |
 | [`src/server/services`](src/server/services) | Assessment, sessions, memory, recommendations, staff views, deletion |
 | [`src/server/providers`](src/server/providers) | Sarvam and ElevenLabs adapters behind one interface |
 | [`src/content/courses`](src/content/courses) | Team-authored bilingual curriculum, validated by a Zod schema |
@@ -183,17 +204,27 @@ Callvi's learners are often on basic phones and patchy mobile data, so the previ
 
 ## Testing
 
-**329 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
+**342 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
-| Unit, integration and agent scenarios | **260** in 24 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, that no digit of a caller's number is stored, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
+| Unit, integration and agent scenarios | **273** in 26 files | Rubric grading and misconception feedback, that every interface string has a Tamil translation, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, that no digit of a caller's number is stored, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
 | Deployed preview | **36** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, hashed bundles cached for a year, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
 | Full app | **33** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every screen, from sign-in to the live room and the educator's view of one learner, in English and Tamil, on a phone and in feedback states | `npm run test:e2e` |
 
-Coverage of `src/server`, `src/content` and `src/lib` (excluding the agent evaluation harness, which is itself a test runner) is 83% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
+Coverage of `src/server`, `src/content` and `src/lib` is 85% of statements and 79% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
 
 The tests assert behaviour a learner or educator relies on rather than implementation details. For example: an answer of 120 is told it forgot to divide while 1200 is told it multiplied, wrong agent secrets lock an address out before the secret is compared, and the educator dashboard never shows a learner's answer text.
+
+## Assumptions
+
+- A learner has a phone and a few minutes. Reading, typing and English are not assumed.
+- Course content is written and reviewed by people. The AI teaches from it and never invents curriculum or grades.
+- The voice provider (Sarvam or ElevenLabs) handles speech recognition, the language model and speech; Callvi owns every decision with consequences.
+- Caller ID identifies a phone, not a person, since handsets are often shared. Saved progress belongs to a consented phone identity.
+- Production runs as a single instance, so the in-memory rate limiter is enough; a shared store is needed before scaling out ([SECURITY.md](SECURITY.md)).
+- The public link plays recorded audio so it works without provider keys. Live voice needs a Sarvam or ElevenLabs key.
+- Lessons use fictional details. Callvi is practice, not certified training, and gives no financial, legal or medical advice.
 
 ## Project history
 
