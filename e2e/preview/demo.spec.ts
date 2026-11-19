@@ -78,6 +78,23 @@ test.describe("security", () => {
   });
 });
 
+test.describe("efficiency", () => {
+  test("the script and stylesheet are content-hashed and cached for a year", async ({ page, request }) => {
+    const assets: string[] = [];
+    page.on("response", (r) => {
+      if (/\/assets\/main-[A-Z0-9]+\.(js|css)$/.test(r.url())) assets.push(r.url());
+    });
+    await page.goto("/");
+    await expect(page.locator("h1").first()).toBeVisible();
+    expect(assets).toHaveLength(2);
+    for (const url of assets) {
+      expect((await request.get(url)).headers()["cache-control"]).toBe("public, max-age=31536000, immutable");
+    }
+    // The page itself must still revalidate, or a new build would never reach a phone.
+    expect((await request.get("/")).headers()["cache-control"] ?? "").not.toContain("immutable");
+  });
+});
+
 test.describe("teaching", () => {
   test("feedback names the learner's actual mistake rather than just marking it wrong", async ({ page }) => {
     await page.goto("/?skill=cost");
