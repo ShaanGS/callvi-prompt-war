@@ -112,20 +112,31 @@ describe("route handler wrapper", () => {
 });
 
 describe("rate-limit client key", () => {
-  it("uses the first x-forwarded-for entry, trimmed", () => {
-    expect(clientKey(withForwardedFor("  203.0.113.7 , 10.0.0.1, 10.0.0.2"))).toBe("203.0.113.7");
+  it("prefers the address Vercel's edge sets, which a client cannot override", () => {
+    const req = new Request("http://localhost/api/test", {
+      headers: { "x-vercel-forwarded-for": "203.0.113.7", "x-forwarded-for": "1.2.3.4, 203.0.113.7" },
+    });
+    expect(clientKey(req)).toBe("203.0.113.7");
+  });
+
+  it("ignores a forged left-most x-forwarded-for entry and keys on the hop the proxy appended", () => {
+    // An attacker sending "X-Forwarded-For: <random>" on every request must
+    // still land in the same bucket.
+    expect(clientKey(withForwardedFor("  1.1.1.1 , 198.51.100.4"))).toBe("198.51.100.4");
+    expect(clientKey(withForwardedFor("9.9.9.9, 198.51.100.4"))).toBe("198.51.100.4");
   });
 
   it("uses a single x-forwarded-for value as-is", () => {
     expect(clientKey(withForwardedFor("198.51.100.4"))).toBe("198.51.100.4");
   });
 
-  it("falls back to local when the header is missing", () => {
+  it("falls back to local when no address is present", () => {
     expect(clientKey(withForwardedFor())).toBe("local");
+    expect(clientKey(withForwardedFor(""))).toBe("local");
+    expect(clientKey(withForwardedFor(" , "))).toBe("local");
   });
 
-  it("falls back to local when the first entry is blank", () => {
-    expect(clientKey(withForwardedFor(""))).toBe("local");
-    expect(clientKey(withForwardedFor("   , 10.0.0.1"))).toBe("local");
+  it("skips blank hops instead of keying on an empty string", () => {
+    expect(clientKey(withForwardedFor("198.51.100.4, "))).toBe("198.51.100.4");
   });
 });

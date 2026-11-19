@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { staffOverview } from "@/server/services/staff-service";
 import { PageHeader, Section } from "@/components/ui/primitives";
@@ -17,6 +18,9 @@ function Stat({ label, value, note }: { label: string; value: number; note?: str
 }
 
 export default async function StaffOverviewPage() {
+  // Checked here as well as in the layout: a page's data can be requested
+  // without the layout re-rendering, so each page guards its own reads.
+  await requireStaffPage();
   const o = await staffOverview(await getDb());
   const empty = o.learners.total === 0 && o.sessions.total === 0;
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { requireStaffPage } from "@/server/auth/actor";
 import { getDb } from "@/server/db/client";
 import { staffLearnerDetail } from "@/server/services/staff-service";
 import { ButtonLink } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { SessionRows } from "../../sessions/session-rows";
 export const metadata: Metadata = { title: "Learner" };
 
 export default async function StaffLearnerPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireStaffPage();
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
   const d = await staffLearnerDetail(await getDb(), id);
