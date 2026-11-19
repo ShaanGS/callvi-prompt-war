@@ -56,7 +56,12 @@ export const toolInvocationsRepo = {
   async finish(
     db: Queryable,
     id: string,
-    input: { status: "succeeded" | "failed" | "rejected"; latencyMs: number; errorCode: string | null; response: unknown | null },
+    input: {
+      status: "succeeded" | "failed" | "rejected";
+      latencyMs: number;
+      errorCode: string | null;
+      response: unknown | null;
+    },
   ): Promise<void> {
     await exec(
       db,
@@ -67,12 +72,16 @@ export const toolInvocationsRepo = {
   },
 
   async markReplayed(db: Queryable, idempotencyKey: string): Promise<void> {
-    await exec(db, `update tool_invocations set replay_count = replay_count + 1 where idempotency_key = $1`, [idempotencyKey]);
+    await exec(db, `update tool_invocations set replay_count = replay_count + 1 where idempotency_key = $1`, [
+      idempotencyKey,
+    ]);
   },
 
   /** Allow a failed/abandoned invocation to be retried under the same key. */
   async release(db: Queryable, idempotencyKey: string): Promise<void> {
-    await exec(db, `delete from tool_invocations where idempotency_key = $1 and status in ('failed', 'rejected')`, [idempotencyKey]);
+    await exec(db, `delete from tool_invocations where idempotency_key = $1 and status in ('failed', 'rejected')`, [
+      idempotencyKey,
+    ]);
   },
 
   async deleteForLearner(db: Queryable, learnerId: string): Promise<number> {
@@ -84,12 +93,24 @@ export const toolInvocationsRepo = {
 export const eventsRepo = {
   async record(
     db: Queryable,
-    input: { name: string; learnerId?: string | null; sessionId?: string | null; channel?: string | null; metadata?: Record<string, string | number | boolean | null> },
+    input: {
+      name: string;
+      learnerId?: string | null;
+      sessionId?: string | null;
+      channel?: string | null;
+      metadata?: Record<string, string | number | boolean | null>;
+    },
   ): Promise<void> {
     await exec(
       db,
       `insert into app_events (event_name, learner_id, session_id, channel, metadata) values ($1, $2, $3, $4, $5::jsonb)`,
-      [input.name, input.learnerId ?? null, input.sessionId ?? null, input.channel ?? null, jsonParam(input.metadata ?? {})],
+      [
+        input.name,
+        input.learnerId ?? null,
+        input.sessionId ?? null,
+        input.channel ?? null,
+        jsonParam(input.metadata ?? {}),
+      ],
     );
   },
 
@@ -100,7 +121,10 @@ export const eventsRepo = {
 };
 
 export const deletionReceiptsRepo = {
-  async record(db: Queryable, input: { scope: "learning_memory" | "account"; channel: string; rowsDeleted: number }): Promise<void> {
+  async record(
+    db: Queryable,
+    input: { scope: "learning_memory" | "account"; channel: string; rowsDeleted: number },
+  ): Promise<void> {
     await exec(db, `insert into deletion_receipts (scope, channel, rows_deleted) values ($1, $2, $3)`, [
       input.scope,
       input.channel,

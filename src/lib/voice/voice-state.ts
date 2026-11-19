@@ -5,14 +5,7 @@
  */
 
 export type VoicePhase =
-  | "idle"
-  | "requesting_mic"
-  | "connecting"
-  | "listening"
-  | "agent_speaking"
-  | "learner_speaking"
-  | "ended"
-  | "error";
+  "idle" | "requesting_mic" | "connecting" | "listening" | "agent_speaking" | "learner_speaking" | "ended" | "error";
 
 export type VoiceErrorKind =
   | "mic_denied"
@@ -44,7 +37,15 @@ export interface VoiceState {
   level: number;
 }
 
-export const initialVoiceState: VoiceState = { phase: "idle", error: null, muted: false, transcript: [], nextLineId: 1, connectedAt: null, level: 0 };
+export const initialVoiceState: VoiceState = {
+  phase: "idle",
+  error: null,
+  muted: false,
+  transcript: [],
+  nextLineId: 1,
+  connectedAt: null,
+  level: 0,
+};
 
 export type VoiceAction =
   | { type: "start_requested" }
@@ -79,7 +80,11 @@ export function voiceReducer(state: VoiceState, action: VoiceAction): VoiceState
         case "connected":
           return { ...state, phase: "connecting", connectedAt };
         case "listening":
-          return { ...state, phase: state.phase === "learner_speaking" ? "learner_speaking" : "listening", connectedAt };
+          return {
+            ...state,
+            phase: state.phase === "learner_speaking" ? "learner_speaking" : "listening",
+            connectedAt,
+          };
         case "speaking":
           return { ...state, phase: "agent_speaking", connectedAt };
         case "error":
@@ -92,18 +97,21 @@ export function voiceReducer(state: VoiceState, action: VoiceAction): VoiceState
       if (state.phase !== "listening" && state.phase !== "learner_speaking") return state;
       return { ...state, phase: action.speaking ? "learner_speaking" : "listening" };
     case "transcript": {
-      const role: TranscriptLine["role"] | null = action.role === "user" ? "learner" : action.role === "bot" ? "companion" : null;
+      const role: TranscriptLine["role"] | null =
+        action.role === "user" ? "learner" : action.role === "bot" ? "companion" : null;
       const text = action.text.trim();
       if (!role || !text) return state;
       const transcript = [...state.transcript, { id: state.nextLineId, role, text }].slice(-MAX_LINES);
       return { ...state, transcript, nextLineId: state.nextLineId + 1 };
     }
     case "transcript_corrected": {
-      const index = state.transcript.findLastIndex((line) => line.role === "companion" && line.text === action.original.trim());
+      const index = state.transcript.findLastIndex(
+        (line) => line.role === "companion" && line.text === action.original.trim(),
+      );
       if (index < 0) return state;
       const corrected = action.corrected.trim();
       const transcript = corrected
-        ? state.transcript.map((line, i) => i === index ? { ...line, text: corrected } : line)
+        ? state.transcript.map((line, i) => (i === index ? { ...line, text: corrected } : line))
         : state.transcript.filter((_, i) => i !== index);
       return { ...state, transcript };
     }

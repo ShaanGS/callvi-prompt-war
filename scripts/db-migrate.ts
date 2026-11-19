@@ -7,7 +7,9 @@ run(async () => {
   try {
     // The local shim provides the auth schema and roles that Supabase already has.
     const applied = await migrate(db, { localCompat: config.database.kind === "pglite" });
-    console.log(applied.length ? `Applied ${applied.length} migration(s): ${applied.join(", ")}` : "Database is up to date.");
+    console.log(
+      applied.length ? `Applied ${applied.length} migration(s): ${applied.join(", ")}` : "Database is up to date.",
+    );
   } finally {
     await db.close();
   }

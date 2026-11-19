@@ -66,8 +66,12 @@ describe("progression respects lesson order and completion", () => {
     const lesson = sbs.lessons[0];
     const ids = lesson.concepts.map((c) => c.id);
     expect(isLessonComplete(lesson, { [ids[0]]: "mastered", [ids[1]]: "mastered" })).toBe(false);
-    expect(isLessonComplete(lesson, { [ids[0]]: "mastered", [ids[1]]: "carried_forward", [ids[2]]: "mastered" })).toBe(true);
-    expect(isLessonComplete(lesson, { [ids[0]]: "mastered", [ids[1]]: "practising", [ids[2]]: "mastered" })).toBe(false);
+    expect(isLessonComplete(lesson, { [ids[0]]: "mastered", [ids[1]]: "carried_forward", [ids[2]]: "mastered" })).toBe(
+      true,
+    );
+    expect(isLessonComplete(lesson, { [ids[0]]: "mastered", [ids[1]]: "practising", [ids[2]]: "mastered" })).toBe(
+      false,
+    );
   });
 });
 
@@ -80,10 +84,23 @@ describe("practice policy", () => {
   });
 
   it("offers retry, then a choice to move on; ungraded asks for self-check", () => {
-    expect(nextStepAfterAttempt({ result: "partial", attemptsOnConcept: 1, lessonComplete: false, courseComplete: false })).toBe("retry");
-    expect(nextStepAfterAttempt({ result: "needs_practice", attemptsOnConcept: 2, lessonComplete: false, courseComplete: false })).toBe("offer_move_on");
-    expect(nextStepAfterAttempt({ result: "ungraded", attemptsOnConcept: 1, lessonComplete: false, courseComplete: false })).toBe("self_check");
-    expect(nextStepAfterAttempt({ result: "correct", attemptsOnConcept: 1, lessonComplete: true, courseComplete: false })).toBe("lesson_complete");
+    expect(
+      nextStepAfterAttempt({ result: "partial", attemptsOnConcept: 1, lessonComplete: false, courseComplete: false }),
+    ).toBe("retry");
+    expect(
+      nextStepAfterAttempt({
+        result: "needs_practice",
+        attemptsOnConcept: 2,
+        lessonComplete: false,
+        courseComplete: false,
+      }),
+    ).toBe("offer_move_on");
+    expect(
+      nextStepAfterAttempt({ result: "ungraded", attemptsOnConcept: 1, lessonComplete: false, courseComplete: false }),
+    ).toBe("self_check");
+    expect(
+      nextStepAfterAttempt({ result: "correct", attemptsOnConcept: 1, lessonComplete: true, courseComplete: false }),
+    ).toBe("lesson_complete");
     expect(canCarryForward(0, undefined)).toBe(false);
     expect(canCarryForward(1, "practising")).toBe(true);
     expect(canCarryForward(3, "mastered")).toBe(false);
@@ -110,15 +127,43 @@ describe("practice policy", () => {
 
 describe("next action and recommendations", () => {
   it("asks for consent first, then a goal, then a course", () => {
-    expect(suggestNextAction({ consentStatus: "pending", hasGoal: false, hasActiveCourse: false, courseComplete: false, hasCheckpoint: false })).toBe("ask_memory_consent");
-    expect(suggestNextAction({ consentStatus: "granted", hasGoal: false, hasActiveCourse: false, courseComplete: false, hasCheckpoint: false })).toBe("discover_goal");
-    expect(suggestNextAction({ consentStatus: "declined", hasGoal: true, hasActiveCourse: false, courseComplete: false, hasCheckpoint: false })).toBe("recommend_course");
+    expect(
+      suggestNextAction({
+        consentStatus: "pending",
+        hasGoal: false,
+        hasActiveCourse: false,
+        courseComplete: false,
+        hasCheckpoint: false,
+      }),
+    ).toBe("ask_memory_consent");
+    expect(
+      suggestNextAction({
+        consentStatus: "granted",
+        hasGoal: false,
+        hasActiveCourse: false,
+        courseComplete: false,
+        hasCheckpoint: false,
+      }),
+    ).toBe("discover_goal");
+    expect(
+      suggestNextAction({
+        consentStatus: "declined",
+        hasGoal: true,
+        hasActiveCourse: false,
+        courseComplete: false,
+        hasCheckpoint: false,
+      }),
+    ).toBe("recommend_course");
   });
 
   it("recommends matching courses from English and Tamil goals, and nothing for unrelated goals", () => {
     expect(recommendCourses(stored, "I want to price my homemade snacks")[0]?.courseId).toBe("small-business-starter");
-    expect(recommendCourses(stored, "வீட்டுல முறுக்கு செஞ்சு விக்க கத்துக்கணும்")[0]?.courseId).toBe("small-business-starter");
-    expect(recommendCourses(stored, "keep a record of daily sales in a notebook")[0]?.courseId).toBe("digital-business-basics");
+    expect(recommendCourses(stored, "வீட்டுல முறுக்கு செஞ்சு விக்க கத்துக்கணும்")[0]?.courseId).toBe(
+      "small-business-starter",
+    );
+    expect(recommendCourses(stored, "keep a record of daily sales in a notebook")[0]?.courseId).toBe(
+      "digital-business-basics",
+    );
     expect(recommendCourses(stored, "வாடிக்கையாளர்களிடம் பேச")[0]?.courseId).toBe("customer-communication");
     expect(recommendCourses(stored, "astronomy and telescopes")).toEqual([]);
   });

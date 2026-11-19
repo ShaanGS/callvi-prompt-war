@@ -28,7 +28,8 @@ const signedUrlResponseSchema = z.object({ url: z.string().url(), reference_id: 
 export function browserSessionConfig(learner: Learner, session: LearningSession): BrowserVoiceSessionConfig {
   const config = getConfig();
   const s = config.sarvam;
-  if (!s.orgId || !s.workspaceId || !s.webAppId || !s.apiKey) throw new DomainError("NOT_CONFIGURED", "Voice sessions are not configured yet.");
+  if (!s.orgId || !s.workspaceId || !s.webAppId || !s.apiKey)
+    throw new DomainError("NOT_CONFIGURED", "Voice sessions are not configured yet.");
   if (session.learnerId !== learner.id || session.channel !== "browser" || !isSessionOpen(session)) {
     throw new DomainError("FORBIDDEN", "This session cannot be joined by voice.");
   }
@@ -62,14 +63,19 @@ export function browserSessionConfig(learner: Learner, session: LearningSession)
 export const sarvamProvider: VoiceSessionProvider = {
   name: "sarvam",
 
-  async createBrowserSession(db: Db, learner: Learner, opts: { courseId: string | null }): Promise<BrowserVoiceSessionConfig> {
+  async createBrowserSession(
+    db: Db,
+    learner: Learner,
+    opts: { courseId: string | null },
+  ): Promise<BrowserVoiceSessionConfig> {
     const config = getConfig();
     const readiness = getChannelReadiness(config).browserVoice;
     if (!readiness.available) {
       throw new DomainError("NOT_CONFIGURED", "Voice sessions are not configured yet.", { missing: readiness.missing });
     }
     const s = config.sarvam;
-    if (!s.orgId || !s.workspaceId || !s.webAppId) throw new DomainError("NOT_CONFIGURED", "Voice sessions are not configured yet.");
+    if (!s.orgId || !s.workspaceId || !s.webAppId)
+      throw new DomainError("NOT_CONFIGURED", "Voice sessions are not configured yet.");
     rateLimit(`voice-session:${learner.id}`, 6, 60_000);
 
     const session = await sessionService.start(db, {
@@ -81,7 +87,10 @@ export const sarvamProvider: VoiceSessionProvider = {
     return browserSessionConfig(learner, session);
   },
 
-  async proxySignedUrl(request: Request, params: { orgId: string; workspaceId: string; appId: string }): Promise<Response> {
+  async proxySignedUrl(
+    request: Request,
+    params: { orgId: string; workspaceId: string; appId: string },
+  ): Promise<Response> {
     const config = getConfig();
     const s = config.sarvam;
     if (!s.apiKey || !s.orgId || !s.workspaceId || !s.webAppId) {
@@ -118,13 +127,19 @@ export const sarvamProvider: VoiceSessionProvider = {
       const headers: Record<string, string> = { "Content-Type": "text/plain", "Cache-Control": "no-store" };
       const retry = res.headers.get("x-retry-after");
       if (retry) headers["x-retry-after"] = retry;
-      return new Response(res.status === 401 || res.status === 403 ? "Voice provider rejected the server credentials" : "Voice provider error", {
-        status: res.status,
-        headers,
-      });
+      return new Response(
+        res.status === 401 || res.status === 403
+          ? "Voice provider rejected the server credentials"
+          : "Voice provider error",
+        {
+          status: res.status,
+          headers,
+        },
+      );
     }
     const parsed = signedUrlResponseSchema.safeParse(await res.json().catch(() => null));
-    if (!parsed.success) throw new DomainError("PROVIDER_UNAVAILABLE", "The voice service returned an unexpected response.");
+    if (!parsed.success)
+      throw new DomainError("PROVIDER_UNAVAILABLE", "The voice service returned an unexpected response.");
     return new Response(JSON.stringify({ url: parsed.data.url, reference_id: parsed.data.reference_id }), {
       status: 200,
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },

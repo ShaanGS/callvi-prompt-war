@@ -67,7 +67,11 @@ export function sarvamToolSetup(appUrl: string, channel: "browser" | "phone"): S
   const base = appUrl.replace(/\/$/, "");
   return toolManifest().map((t) => {
     const params =
-      typeof t.parameters === "object" && t.parameters !== null && "properties" in t.parameters && typeof t.parameters.properties === "object" && t.parameters.properties !== null
+      typeof t.parameters === "object" &&
+      t.parameters !== null &&
+      "properties" in t.parameters &&
+      typeof t.parameters.properties === "object" &&
+      t.parameters.properties !== null
         ? Object.keys(t.parameters.properties)
         : [];
     const body: Record<string, string> = {

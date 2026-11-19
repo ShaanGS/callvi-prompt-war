@@ -15,9 +15,15 @@ const port = Number(process.argv[2] ?? process.env.PREVIEW_PORT ?? 4173);
 const { headers: rules = [] } = JSON.parse(readFileSync("vercel.json", "utf8"));
 
 const types = {
-  ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
-  ".mp3": "audio/mpeg", ".mp4": "video/mp4", ".webp": "image/webp",
-  ".woff2": "font/woff2", ".woff": "font/woff", ".svg": "image/svg+xml",
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".mp3": "audio/mpeg",
+  ".mp4": "video/mp4",
+  ".webp": "image/webp",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
+  ".svg": "image/svg+xml",
 };
 
 /** Vercel's `(.*)` wildcard, and nothing more: no other pattern syntax is used in vercel.json. */

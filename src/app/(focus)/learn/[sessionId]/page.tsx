@@ -27,5 +27,12 @@ export default async function LearningRoomPage({ params }: { params: Promise<{ s
   const voiceReady = getChannelReadiness(getConfig()).browserVoice.available;
   const voice = session.channel === "browser" && view.open && voiceReady ? browserVoiceConfig(learner, session) : null;
 
-  return <LearningRoom key={session.id} initialView={view} voice={voice} copy={{ app: t.app, room: t.room, common: t.common }} />;
+  return (
+    <LearningRoom
+      key={session.id}
+      initialView={view}
+      voice={voice}
+      copy={{ app: t.app, room: t.room, common: t.common }}
+    />
+  );
 }

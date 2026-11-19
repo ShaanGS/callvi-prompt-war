@@ -10,11 +10,7 @@ import { attemptsRepo, sessionsRepo } from "../repositories/sessions";
 import { evidenceRepo } from "../repositories/evidence";
 import { learningSignals } from "../services/learning-evidence";
 import { assessAnswer } from "@/lib/assessment/assessment-service";
-import {
-  courseService,
-  exerciseForConcept,
-  findExercise,
-} from "../services/course-service";
+import { courseService, exerciseForConcept, findExercise } from "../services/course-service";
 import { deletionService } from "../services/deletion-service";
 import { recordEvent } from "../services/events";
 import { learnerService } from "../services/learner-service";
@@ -57,16 +53,21 @@ const NOT_SAVED_SESSION_ONLY =
 
 async function snapshotFor(ctx: ToolContext): Promise<ProgressSnapshot> {
   const durable = ctx.session.memoryMode === "durable" && memoryModeFor(ctx.learner) === "durable";
-  if (durable && ctx.session.state.enrollmentId) return learningService.progress(ctx.db, ctx.session.state.enrollmentId);
+  if (durable && ctx.session.state.enrollmentId)
+    return learningService.progress(ctx.db, ctx.session.state.enrollmentId);
   return snapshotFromSession(ctx.session.state);
 }
 
 async function requireCourse(ctx: ToolContext) {
   const courseId = ctx.session.state.courseId;
   if (!courseId) {
-    throw new DomainError("POLICY_VIOLATION", "No course is selected yet. Agree a goal and a course with the learner first.", {
-      required_step: "start_or_resume_course",
-    });
+    throw new DomainError(
+      "POLICY_VIOLATION",
+      "No course is selected yet. Agree a goal and a course with the learner first.",
+      {
+        required_step: "start_or_resume_course",
+      },
+    );
   }
   return courseService.getAvailable(ctx.db, courseId);
 }
@@ -100,7 +101,11 @@ const getLearningContext = defineTool({
   input: z.object({}),
   async handler(ctx) {
     const context = await buildLearningContext(ctx.db, ctx.learner, ctx.session);
-    await recordEvent(ctx.db, "memory.retrieved", { learnerId: ctx.learner.id, sessionId: ctx.session.id, channel: ctx.channel });
+    await recordEvent(ctx.db, "memory.retrieved", {
+      learnerId: ctx.learner.id,
+      sessionId: ctx.session.id,
+      channel: ctx.channel,
+    });
     return {
       data: {
         ...context,
@@ -126,7 +131,10 @@ const setMemoryConsent = defineTool({
   input: z.object({ decision: z.enum(["granted", "declined"]), learner_confirmed: learnerConfirmed }),
   async handler(ctx, input) {
     if (ctx.channel === "phone" && ctx.learner.phoneLast4 === null && input.decision === "granted") {
-      throw new DomainError("POLICY_VIOLATION", "Caller ID is unavailable. Continue this call in session-only mode and explain that progress cannot be resumed by redialling.");
+      throw new DomainError(
+        "POLICY_VIOLATION",
+        "Caller ID is unavailable. Continue this call in session-only mode and explain that progress cannot be resumed by redialling.",
+      );
     }
     const channel = ctx.channel === "text" ? "text" : ctx.channel === "phone" ? "phone" : "browser";
     ctx.learner = await learnerService.recordConsent(ctx.db, ctx.learner.id, input.decision, channel, ctx.session.id);
@@ -245,7 +253,12 @@ const startOrResumeCourse = defineTool({
         course: { id: course.id, title: title(course.title, language) },
         enrollment_id: result.enrollment?.id ?? null,
         resumed: result.resumed,
-        current_lesson: { id: lesson.id, title: title(lesson.title, language), sequence: lesson.sequence, of: course.lessons.length },
+        current_lesson: {
+          id: lesson.id,
+          title: title(lesson.title, language),
+          sequence: lesson.sequence,
+          of: course.lessons.length,
+        },
         current_concept: { id: concept.id, title: title(concept.title, language) },
       },
       guidance: result.saved
@@ -264,41 +277,85 @@ const getLessonContext = defineTool({
     lesson_id: slugSchema.optional(),
     concept_id: slugSchema.optional(),
     request: z.enum(["current", "different_explanation", "repeat", "move_on", "review"]).default("current"),
-    learner_ready: z.boolean().optional().describe("Set true only after the learner explicitly asks to start, continue, review, practise, or discuss this lesson in the current call. A greeting, memory consent, saved course or polite acknowledgement is not readiness."),
+    learner_ready: z
+      .boolean()
+      .optional()
+      .describe(
+        "Set true only after the learner explicitly asks to start, continue, review, practise, or discuss this lesson in the current call. A greeting, memory consent, saved course or polite acknowledgement is not readiness.",
+      ),
   }),
   async handler(ctx, input) {
     const voiceCall = ctx.channel === "browser" || ctx.channel === "phone";
     if (voiceCall && !ctx.session.state.learningReady && input.learner_ready !== true) {
-      throw new DomainError("POLICY_VIOLATION", "Ask what the caller needs today and wait for an explicit choice to start before opening a lesson.", { required_step: "ask_call_intent" });
+      throw new DomainError(
+        "POLICY_VIOLATION",
+        "Ask what the caller needs today and wait for an explicit choice to start before opening a lesson.",
+        { required_step: "ask_call_intent" },
+      );
     }
     const language = contextLanguage(ctx);
     const course = await requireCourse(ctx);
     const enrollment = await currentEnrollment(ctx);
     let snapshot = await snapshotFor(ctx);
     const state = ctx.session.state;
-    const signals = enrollment ? learningSignals(await evidenceRepo.list(ctx.db, ctx.learner.id, enrollment.id), course, language, ctx.session.id) : [];
-    const reviewTarget = input.request === "review" ? signals
-      .filter((s) => s.review_exercise_id && (!input.concept_id || input.concept_id === s.concept_id) && (!input.lesson_id || input.lesson_id === s.lesson_id))
-      .sort((a,b) => Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at))[0] : null;
-    if (input.request === "review" && !reviewTarget) throw new DomainError("POLICY_VIOLATION", "There is no fresh prepared review question for earlier practice yet. Offer to continue learning or discuss the learner's question.");
-    const continuingReview = !!state.reviewReturn && (input.request === "different_explanation" || input.request === "repeat");
+    const signals = enrollment
+      ? learningSignals(
+          await evidenceRepo.list(ctx.db, ctx.learner.id, enrollment.id),
+          course,
+          language,
+          ctx.session.id,
+        )
+      : [];
+    const reviewTarget =
+      input.request === "review"
+        ? signals
+            .filter(
+              (s) =>
+                s.review_exercise_id &&
+                (!input.concept_id || input.concept_id === s.concept_id) &&
+                (!input.lesson_id || input.lesson_id === s.lesson_id),
+            )
+            .sort(
+              (a, b) =>
+                Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at),
+            )[0]
+        : null;
+    if (input.request === "review" && !reviewTarget)
+      throw new DomainError(
+        "POLICY_VIOLATION",
+        "There is no fresh prepared review question for earlier practice yet. Offer to continue learning or discuss the learner's question.",
+      );
+    const continuingReview =
+      !!state.reviewReturn && (input.request === "different_explanation" || input.request === "repeat");
     const isFreshReview = !!reviewTarget || continuingReview;
     const restore = !isFreshReview ? state.reviewReturn : null;
 
     // Resolve the lesson, enforcing sequence.
-    const requestedLessonId = reviewTarget?.lesson_id ?? input.lesson_id ?? restore?.lessonId ?? state.lessonId ?? frontierLesson(course, snapshot.completedLessonIds).id;
-    let opened = enrollment && !isFreshReview
-      ? await learningService.openLesson(ctx.db, { learner: ctx.learner, enrollment, course, snapshot, lessonId: requestedLessonId })
-      : (() => {
-          const access = canOpenLesson(course, snapshot.completedLessonIds, requestedLessonId);
-          if (!access.allowed) {
-            throw new DomainError("POLICY_VIOLATION", "That lesson opens after the earlier lessons are complete.", {
-              reason: access.reason,
-              next_allowed_lesson_id: access.nextAllowedLesson.id,
-            });
-          }
-          return { lesson: access.lesson, review: access.review };
-        })();
+    const requestedLessonId =
+      reviewTarget?.lesson_id ??
+      input.lesson_id ??
+      restore?.lessonId ??
+      state.lessonId ??
+      frontierLesson(course, snapshot.completedLessonIds).id;
+    let opened =
+      enrollment && !isFreshReview
+        ? await learningService.openLesson(ctx.db, {
+            learner: ctx.learner,
+            enrollment,
+            course,
+            snapshot,
+            lessonId: requestedLessonId,
+          })
+        : (() => {
+            const access = canOpenLesson(course, snapshot.completedLessonIds, requestedLessonId);
+            if (!access.allowed) {
+              throw new DomainError("POLICY_VIOLATION", "That lesson opens after the earlier lessons are complete.", {
+                reason: access.reason,
+                next_allowed_lesson_id: access.nextAllowedLesson.id,
+              });
+            }
+            return { lesson: access.lesson, review: access.review };
+          })();
     let lesson = opened.lesson;
     const lessonChanged = lesson.id !== state.lessonId;
 
@@ -362,9 +419,10 @@ const getLessonContext = defineTool({
       prefs.explanation_style,
     );
     const exercise = reviewTarget
-      ? lesson.practice.find((p) => p.id === reviewTarget.review_exercise_id) ?? null
-      : continuingReview ? lesson.practice.find((p) => p.id === state.pendingExerciseId) ?? null
-      : exerciseForConcept(lesson, concept.id);
+      ? (lesson.practice.find((p) => p.id === reviewTarget.review_exercise_id) ?? null)
+      : continuingReview
+        ? (lesson.practice.find((p) => p.id === state.pendingExerciseId) ?? null)
+        : exerciseForConcept(lesson, concept.id);
     const reviewing = isFreshReview || opened.review;
     const helpRequested = input.request === "different_explanation" || input.request === "repeat";
 
@@ -376,11 +434,21 @@ const getLessonContext = defineTool({
         lessonId: lesson.id,
         conceptId: concept.id,
         pendingExerciseId: exercise?.id ?? null,
-        reviewReturn: reviewing ? s.reviewReturn ?? { lessonId: s.lessonId, conceptId: s.conceptId } : null,
-        practiceSupport: exercise && helpRequested && !s.practiceSupport[exercise.id]
-          ? { ...s.practiceSupport, [exercise.id]: "explanation_provided" } : s.practiceSupport,
-        explanationsUsed: isFreshReview && !helpRequested ? s.explanationsUsed : { ...s.explanationsUsed, [concept.id]: prior.includes(choice.approach) ? prior : [...prior, choice.approach] },
-        conceptsCovered: s.conceptsCovered.includes(concept.id) ? s.conceptsCovered : [...s.conceptsCovered, concept.id],
+        reviewReturn: reviewing ? (s.reviewReturn ?? { lessonId: s.lessonId, conceptId: s.conceptId }) : null,
+        practiceSupport:
+          exercise && helpRequested && !s.practiceSupport[exercise.id]
+            ? { ...s.practiceSupport, [exercise.id]: "explanation_provided" }
+            : s.practiceSupport,
+        explanationsUsed:
+          isFreshReview && !helpRequested
+            ? s.explanationsUsed
+            : {
+                ...s.explanationsUsed,
+                [concept.id]: prior.includes(choice.approach) ? prior : [...prior, choice.approach],
+              },
+        conceptsCovered: s.conceptsCovered.includes(concept.id)
+          ? s.conceptsCovered
+          : [...s.conceptsCovered, concept.id],
         sessionMastery: enrollment
           ? s.sessionMastery
           : { ...definedMastery(snapshot.mastery), [concept.id]: snapshot.mastery[concept.id] ?? "introduced" },
@@ -398,7 +466,11 @@ const getLessonContext = defineTool({
       });
     }
     if (lessonChanged) {
-      await recordEvent(ctx.db, "lesson.started", { learnerId: ctx.learner.id, sessionId: ctx.session.id, metadata: { lesson: lesson.id } });
+      await recordEvent(ctx.db, "lesson.started", {
+        learnerId: ctx.learner.id,
+        sessionId: ctx.session.id,
+        metadata: { lesson: lesson.id },
+      });
     }
 
     let guidance =
@@ -407,9 +479,12 @@ const getLessonContext = defineTool({
       guidance =
         "Every prepared explanation for this idea has been used. Ask which part is unclear, or relate the same facts to the learner's own situation, or try the practice question together. Do not invent new facts.";
     } else if (input.request === "different_explanation") {
-      guidance = "This is a different teaching approach. Explain it in two short everyday sentences without repeating your previous wording. Then ask practice.prompt once and wait. Do not submit the learner's request for help as an attempt.";
+      guidance =
+        "This is a different teaching approach. Explain it in two short everyday sentences without repeating your previous wording. Then ask practice.prompt once and wait. Do not submit the learner's request for help as an attempt.";
     }
-    if (isFreshReview && !helpRequested) guidance = "Ask ONLY the fresh practice.prompt and wait. Do not teach, hint, reveal a worked example or supply the answer first. This checks the same useful idea in a new situation. If help is requested, get a different explanation. Assess every answer with record_practice_attempt. Never call this mastery or retention based on one answer.";
+    if (isFreshReview && !helpRequested)
+      guidance =
+        "Ask ONLY the fresh practice.prompt and wait. Do not teach, hint, reveal a worked example or supply the answer first. This checks the same useful idea in a new situation. If help is requested, get a different explanation. Assess every answer with record_practice_attempt. Never call this mastery or retention based on one answer.";
     if (opened.review) guidance = `This lesson is already complete; the learner is reviewing it. ${guidance}`;
 
     return {
@@ -431,8 +506,14 @@ const getLessonContext = defineTool({
           key_points: isFreshReview && !helpRequested ? [] : concept.keyPoints.map((k) => title(k, language)),
           check_question: isFreshReview ? null : title(concept.checkQuestion, language),
         },
-        explanation_status: { approach: choice.approach, alternatives_remaining: choice.remaining, all_used: choice.exhausted },
-        practice: exercise ? { exercise_id: exercise.id, prompt: title(exercise.prompt, language), kind: exercise.kind } : null,
+        explanation_status: {
+          approach: choice.approach,
+          alternatives_remaining: choice.remaining,
+          all_used: choice.exhausted,
+        },
+        practice: exercise
+          ? { exercise_id: exercise.id, prompt: title(exercise.prompt, language), kind: exercise.kind }
+          : null,
         lesson_concepts: lesson.concepts.map((c) => ({
           id: c.id,
           title: title(c.title, language),
@@ -457,10 +538,18 @@ const recordPracticeAttempt = defineTool({
     const { lesson, exercise } = findExercise(course, input.exercise_id);
     const snapshotBefore = await snapshotFor(ctx);
     const access = canOpenLesson(course, snapshotBefore.completedLessonIds, lesson.id);
-    if (!access.allowed) throw new DomainError("POLICY_VIOLATION", "That practice question belongs to a lesson that is not open yet.");
+    if (!access.allowed)
+      throw new DomainError("POLICY_VIOLATION", "That practice question belongs to a lesson that is not open yet.");
 
-    if ((ctx.channel === "browser" || ctx.channel === "phone") && (!ctx.session.state.learningReady || ctx.session.state.pendingExerciseId !== exercise.id)) {
-      throw new DomainError("POLICY_VIOLATION", "Open and ask the selected practice question after the learner chooses to learn before assessing an answer.", { required_step: "get_lesson_context" });
+    if (
+      (ctx.channel === "browser" || ctx.channel === "phone") &&
+      (!ctx.session.state.learningReady || ctx.session.state.pendingExerciseId !== exercise.id)
+    ) {
+      throw new DomainError(
+        "POLICY_VIOLATION",
+        "Open and ask the selected practice question after the learner chooses to learn before assessing an answer.",
+        { required_step: "get_lesson_context" },
+      );
     }
     const reviewing = exercise.purpose === "review" || !!ctx.session.state.reviewReturn || access.review;
     const support = ctx.session.state.practiceSupport[exercise.id] ?? "none_recorded";
@@ -468,7 +557,12 @@ const recordPracticeAttempt = defineTool({
     const previousAttempts = enrollment
       ? await attemptsRepo.countForExercise(ctx.db, enrollment.id, exercise.id)
       : ctx.session.state.attempts.filter((a) => a.exerciseId === exercise.id).length;
-    const outcome = assessAnswer({ exercise, answerText: input.answer_text, language, attemptNumber: previousAttempts + 1 });
+    const outcome = assessAnswer({
+      exercise,
+      answerText: input.answer_text,
+      language,
+      attemptNumber: previousAttempts + 1,
+    });
 
     let masteryState: MasteryState;
     let lessonComplete: boolean;
@@ -504,18 +598,46 @@ const recordPracticeAttempt = defineTool({
       snapshotBefore.completedLessonIds = completed;
     }
 
-    const nextStep = reviewing && outcome.result === "correct" ? "review_complete" : nextStepAfterAttempt({ result: outcome.result, attemptsOnConcept: previousAttempts + 1, lessonComplete: !reviewing && lessonComplete, courseComplete: !reviewing && courseComplete });
-    const masteryNow = enrollment ? (await learningService.progress(ctx.db, enrollment.id)).mastery : snapshotBefore.mastery;
+    const nextStep =
+      reviewing && outcome.result === "correct"
+        ? "review_complete"
+        : nextStepAfterAttempt({
+            result: outcome.result,
+            attemptsOnConcept: previousAttempts + 1,
+            lessonComplete: !reviewing && lessonComplete,
+            courseComplete: !reviewing && courseComplete,
+          });
+    const masteryNow = enrollment
+      ? (await learningService.progress(ctx.db, enrollment.id)).mastery
+      : snapshotBefore.mastery;
     const nextConcept =
-      outcome.result === "correct" && !reviewing && !lessonComplete ? nextConceptAfter(lesson, exercise.conceptId, masteryNow) : null;
+      outcome.result === "correct" && !reviewing && !lessonComplete
+        ? nextConceptAfter(lesson, exercise.conceptId, masteryNow)
+        : null;
 
     ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) => {
       const attempts = created
-        ? [...s.attempts, { exerciseId: exercise.id, conceptId: exercise.conceptId, lessonId: lesson.id, result: outcome.result, at: new Date().toISOString() }].slice(-50)
+        ? [
+            ...s.attempts,
+            {
+              exerciseId: exercise.id,
+              conceptId: exercise.conceptId,
+              lessonId: lesson.id,
+              result: outcome.result,
+              at: new Date().toISOString(),
+            },
+          ].slice(-50)
         : s.attempts;
       const next = { ...s, attempts };
       if (outcome.result !== "correct") {
-        next.practiceSupport = { ...s.practiceSupport, [exercise.id]: outcome.modelAnswer ? "example_provided" : outcome.hint ? "hint_provided" : s.practiceSupport[exercise.id] ?? "none_recorded" };
+        next.practiceSupport = {
+          ...s.practiceSupport,
+          [exercise.id]: outcome.modelAnswer
+            ? "example_provided"
+            : outcome.hint
+              ? "hint_provided"
+              : (s.practiceSupport[exercise.id] ?? "none_recorded"),
+        };
       }
       if (!enrollment) {
         next.sessionMastery = definedMastery(snapshotBefore.mastery);
@@ -546,7 +668,9 @@ const recordPracticeAttempt = defineTool({
     });
 
     const describe = (ids: string[]) =>
-      ids.map((id) => exercise.rubric.criteria.find((c) => c.id === id)?.description[language]).filter((d): d is string => !!d);
+      ids
+        .map((id) => exercise.rubric.criteria.find((c) => c.id === id)?.description[language])
+        .filter((d): d is string => !!d);
 
     return {
       saved,
@@ -559,7 +683,11 @@ const recordPracticeAttempt = defineTool({
         hint: outcome.hint,
         model_answer: outcome.modelAnswer,
         clarification: outcome.clarification,
-        evidence: { support, purpose: exercise.purpose, claim: "Practice observed; this result alone does not establish retained learning." },
+        evidence: {
+          support,
+          purpose: exercise.purpose,
+          claim: "Practice observed; this result alone does not establish retained learning.",
+        },
         mastery: masteryState,
         next_step: nextStep,
         next_concept: nextConcept ? { id: nextConcept.id, title: title(nextConcept.title, language) } : null,
@@ -570,15 +698,31 @@ const recordPracticeAttempt = defineTool({
       },
       guidance: [
         "Share this feedback kindly in your own words. Do not change the result or praise an answer that was not correct. A successful practice is not mastery. When help was provided, recognise the useful step without calling it independent learning.",
-        outcome.clarification ? "Ask ONLY clarification. Do not give the answer or label it wrong. Keep the same exercise open." : "",
-        nextStep === "review_complete" ? "The review is finished. Name the useful idea she just applied in this new situation, then offer to continue from her saved course position or finish. Do not announce the course complete again." : "",
-        outcome.result === "partial" || outcome.result === "needs_practice" ? "This exercise is STILL OPEN. Call record_practice_attempt for EVERY subsequent substantive answer, INCLUDING a word-for-word repeat of the same answer. An unchanged spoken retry is a NEW attempt, not a request to repeat your hint. Never recycle the previous evaluation or promote this result yourself. For a missing-detail reply, append only the caller's exact new words to their exact earlier answer for this same exercise; do not invent or rewrite either part." : "",
-        outcome.modelAnswer === null ? "Do not supply a completed example answer. On partial, ask for just one missing part; do not make the learner repeat the entire answer." : "",
-        nextStep === "next_concept" ? "When the caller chooses to continue, get_lesson_context request=current opens the next idea. Do not use move_on after a correct answer; the server already advanced the position." : "",
+        outcome.clarification
+          ? "Ask ONLY clarification. Do not give the answer or label it wrong. Keep the same exercise open."
+          : "",
+        nextStep === "review_complete"
+          ? "The review is finished. Name the useful idea she just applied in this new situation, then offer to continue from her saved course position or finish. Do not announce the course complete again."
+          : "",
+        outcome.result === "partial" || outcome.result === "needs_practice"
+          ? "This exercise is STILL OPEN. Call record_practice_attempt for EVERY subsequent substantive answer, INCLUDING a word-for-word repeat of the same answer. An unchanged spoken retry is a NEW attempt, not a request to repeat your hint. Never recycle the previous evaluation or promote this result yourself. For a missing-detail reply, append only the caller's exact new words to their exact earlier answer for this same exercise; do not invent or rewrite either part."
+          : "",
+        outcome.modelAnswer === null
+          ? "Do not supply a completed example answer. On partial, ask for just one missing part; do not make the learner repeat the entire answer."
+          : "",
+        nextStep === "next_concept"
+          ? "When the caller chooses to continue, get_lesson_context request=current opens the next idea. Do not use move_on after a correct answer; the server already advanced the position."
+          : "",
         nextStep === "retry" ? "Offer one retry, using the hint if there is one." : "",
-        nextStep === "offer_move_on" ? "Offer a choice: try once more, hear a different explanation, or move on (get_lesson_context request='move_on')." : "",
-        nextStep === "self_check" && !outcome.clarification ? "The rubric could not judge this answer. Compare it with the example answer together; do not call it right or wrong." : "",
-        nextStep === "lesson_complete" ? "The lesson is complete. Mention the real-world action and ask whether to continue or finish." : "",
+        nextStep === "offer_move_on"
+          ? "Offer a choice: try once more, hear a different explanation, or move on (get_lesson_context request='move_on')."
+          : "",
+        nextStep === "self_check" && !outcome.clarification
+          ? "The rubric could not judge this answer. Compare it with the example answer together; do not call it right or wrong."
+          : "",
+        nextStep === "lesson_complete"
+          ? "The lesson is complete. Mention the real-world action and ask whether to continue or finish."
+          : "",
         saved ? "" : NOT_SAVED_SESSION_ONLY,
       ]
         .filter(Boolean)
@@ -599,7 +743,10 @@ const saveCheckpoint = defineTool({
     // Build from the latest persisted state, never from a possibly stale copy.
     ctx.session = (await sessionsRepo.findById(ctx.db, ctx.session.id)) ?? ctx.session;
     if (difficulty !== null) {
-      ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) => ({ ...s, learnerNotedDifficulty: difficulty }));
+      ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) => ({
+        ...s,
+        learnerNotedDifficulty: difficulty,
+      }));
     }
     const { data } = await sessionService.buildCheckpoint(ctx.db, ctx.session, difficulty);
     // Same checkpoint content in the same session => same key => no duplicate.
@@ -629,7 +776,9 @@ const closeLearningSession = defineTool({
   allowOnClosedSession: true,
   description:
     "Finish the session: saves a final checkpoint when the learner has granted memory and marks the session closed. Safe to call more than once.",
-  input: z.object({ reason: z.enum(["learner_ended", "provider_ended", "paused", "interrupted"]).default("provider_ended") }),
+  input: z.object({
+    reason: z.enum(["learner_ended", "provider_ended", "paused", "interrupted"]).default("provider_ended"),
+  }),
   async handler(ctx, input) {
     const result = await sessionService.close(ctx.db, {
       session: ctx.session,
@@ -656,22 +805,39 @@ const getMemorySummary = defineTool({
     const language = contextLanguage(ctx);
     const summary = await memoryService.getSummary(ctx.db, ctx.learner, language);
     const learning = await buildLearningContext(ctx.db, ctx.learner, ctx.session);
-    await recordEvent(ctx.db, "memory.retrieved", { learnerId: ctx.learner.id, sessionId: ctx.session.id, channel: ctx.channel });
+    await recordEvent(ctx.db, "memory.retrieved", {
+      learnerId: ctx.learner.id,
+      sessionId: ctx.session.id,
+      channel: ctx.channel,
+    });
     return {
       data: {
         memory_mode: summary.memoryMode,
         consent_status: summary.consentStatus,
         display_name: summary.profile.displayName,
         preferred_language: summary.profile.preferredLanguage,
-        goal: summary.activeGoal ? { text: summary.activeGoal.text, saved_from: summary.activeGoal.source, updated_at: summary.activeGoal.updatedAt.toISOString() } : null,
+        goal: summary.activeGoal
+          ? {
+              text: summary.activeGoal.text,
+              saved_from: summary.activeGoal.source,
+              updated_at: summary.activeGoal.updatedAt.toISOString(),
+            }
+          : null,
         courses: summary.enrollments.map((e) => ({
           title: e.courseTitle,
           status: e.status,
           current_lesson: e.currentLessonTitle,
           done: e.mastery.filter((m) => isConceptDone(m.state)).map((m) => m.conceptTitle),
-          needs_practice: e.mastery.filter((m) => m.state === "needs_practice" || m.state === "practising").map((m) => m.conceptTitle),
+          needs_practice: e.mastery
+            .filter((m) => m.state === "needs_practice" || m.state === "practising")
+            .map((m) => m.conceptTitle),
         })),
-        preferences: summary.preferences.map((p) => ({ key: p.key, value: p.value, saved_from: p.source, updated_at: p.updatedAt.toISOString() })),
+        preferences: summary.preferences.map((p) => ({
+          key: p.key,
+          value: p.value,
+          saved_from: p.source,
+          updated_at: p.updatedAt.toISOString(),
+        })),
         last_checkpoint: summary.lastCheckpoint?.summary ?? null,
         learning_evidence: learning.learning_evidence,
         review_suggestion: learning.review_suggestion,
@@ -701,7 +867,8 @@ const updateMemoryPreference = defineTool({
     switch (input.key) {
       case "preferred_language": {
         const value = input.value === "Tamil" ? "ta-IN" : input.value === "English" ? "en-IN" : input.value;
-        if (!isLanguageCode(value)) throw new DomainError("VALIDATION", "Only Tamil (ta-IN) and English (en-IN) are supported.");
+        if (!isLanguageCode(value))
+          throw new DomainError("VALIDATION", "Only Tamil (ta-IN) and English (en-IN) are supported.");
         await sessionsRepo.setLanguage(ctx.db, ctx.session.id, value);
         if (durable) {
           ctx.learner = await learnerService.updateProfile(ctx.db, ctx.learner.id, { preferredLanguage: value });
@@ -723,7 +890,9 @@ const updateMemoryPreference = defineTool({
       }
       case "display_name": {
         if (durable) {
-          ctx.learner = await learnerService.updateProfile(ctx.db, ctx.learner.id, { displayName: input.value.slice(0, 80) });
+          ctx.learner = await learnerService.updateProfile(ctx.db, ctx.learner.id, {
+            displayName: input.value.slice(0, 80),
+          });
           saved = true;
         }
         break;
@@ -741,7 +910,9 @@ const updateMemoryPreference = defineTool({
     return {
       saved,
       data: { key: input.key, updated: true },
-      guidance: saved ? "Updated and saved. Confirm the change briefly." : `Updated for this session. ${NOT_SAVED_SESSION_ONLY}`,
+      guidance: saved
+        ? "Updated and saved. Confirm the change briefly."
+        : `Updated for this session. ${NOT_SAVED_SESSION_ONLY}`,
     };
   },
 });

@@ -11,7 +11,14 @@ import { getDb } from "@/server/db/client";
 import { goalsRepo } from "@/server/repositories/learning";
 import { courseService } from "@/server/services/course-service";
 import { describeRecommendationReason, recommendCourses } from "@/server/services/recommendation-service";
-import { chooseConsent, chooseLanguage, confirmGoal, finishOnboarding, saveName, submitGoal } from "@/app/actions/learner";
+import {
+  chooseConsent,
+  chooseLanguage,
+  confirmGoal,
+  finishOnboarding,
+  saveName,
+  submitGoal,
+} from "@/app/actions/learner";
 import { ButtonLink } from "@/components/ui/button";
 import { SubmitButton } from "@/components/ui/form-controls";
 import { Container, FieldError, FieldHint, Input, Label, Notice, Tag, Textarea } from "@/components/ui/primitives";
@@ -24,7 +31,11 @@ type Step = (typeof STEPS)[number];
 /** Steps shown to the learner (confirm is part of the goal step). */
 const VISIBLE: Record<Step, number> = { language: 1, consent: 2, name: 3, goal: 4, confirm: 4, courses: 5 };
 
-export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ step?: string; error?: string; deleted?: string }> }) {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ step?: string; error?: string; deleted?: string }>;
+}) {
   const learner = await requireLearnerPage("/onboarding");
   const { t } = await getPageContext();
   const params = await searchParams;
@@ -44,7 +55,11 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
   return (
     <Container width="prose" className="flex flex-col gap-8 py-10 sm:py-14">
-      {params.deleted ? <Notice tone="success" role="status" title={t.privacy.deleted}>{params.deleted === "auth_pending" ? t.privacy.authPending : null}</Notice> : null}
+      {params.deleted ? (
+        <Notice tone="success" role="status" title={t.privacy.deleted}>
+          {params.deleted === "auth_pending" ? t.privacy.authPending : null}
+        </Notice>
+      ) : null}
       <div className="flex flex-col gap-3">
         <p className="text-sm font-medium text-subtle">{fmt(o.stepOf, { n: VISIBLE[step], total: 5 })}</p>
         <div className="flex gap-1.5" aria-hidden>
@@ -106,10 +121,23 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
             </ul>
           </div>
           <form action={chooseConsent} className="flex flex-col gap-3 sm:flex-row">
-            <SubmitButton name="decision" value="granted" size="lg" pendingLabel={t.common.saving} icon={<Check aria-hidden className="size-4" />}>
+            <SubmitButton
+              name="decision"
+              value="granted"
+              size="lg"
+              pendingLabel={t.common.saving}
+              icon={<Check aria-hidden className="size-4" />}
+            >
               {o.consent.grant}
             </SubmitButton>
-            <SubmitButton name="decision" value="declined" size="lg" variant="secondary" pendingLabel={t.common.saving} icon={<X aria-hidden className="size-4" />}>
+            <SubmitButton
+              name="decision"
+              value="declined"
+              size="lg"
+              variant="secondary"
+              pendingLabel={t.common.saving}
+              icon={<X aria-hidden className="size-4" />}
+            >
               {o.consent.decline}
             </SubmitButton>
           </form>
@@ -130,7 +158,13 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
             {learner.consentStatus === "granted" ? (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="name">{o.name.label}</Label>
-                <Input id="name" name="name" maxLength={80} autoComplete="given-name" defaultValue={learner.displayName ?? ""} />
+                <Input
+                  id="name"
+                  name="name"
+                  maxLength={80}
+                  autoComplete="given-name"
+                  defaultValue={learner.displayName ?? ""}
+                />
               </div>
             ) : null}
             <div className="flex gap-3">
@@ -207,7 +241,11 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
 
       {step !== "language" && step !== "courses" ? (
         <div>
-          <ButtonLink href={`/onboarding?step=${STEPS[Math.max(0, STEPS.indexOf(step) - 1)]}`} variant="ghost" size="sm">
+          <ButtonLink
+            href={`/onboarding?step=${STEPS[Math.max(0, STEPS.indexOf(step) - 1)]}`}
+            variant="ghost"
+            size="sm"
+          >
             {t.common.back}
           </ButtonLink>
         </div>
@@ -221,7 +259,13 @@ async function CoursesStep({ goalText }: { goalText: string | null }) {
   const courses = await courseService.listAvailable(await getDb());
   if (courses.length === 0) redirect("/courses");
   const recs = goalText ? recommendCourses(courses, goalText, 3) : [];
-  const list = recs.length > 0 ? recs.map((r) => ({ course: courses.find((c) => c.id === r.courseId), reason: describeRecommendationReason(r, language) })) : courses.map((c) => ({ course: c, reason: null }));
+  const list =
+    recs.length > 0
+      ? recs.map((r) => ({
+          course: courses.find((c) => c.id === r.courseId),
+          reason: describeRecommendationReason(r, language),
+        }))
+      : courses.map((c) => ({ course: c, reason: null }));
   const o = t.onboarding.courses;
 
   return (
@@ -241,7 +285,8 @@ async function CoursesStep({ goalText }: { goalText: string | null }) {
                 <h2 className="text-lg font-semibold">{course.title[language]}</h2>
                 <p className="text-sm text-muted">{course.summary[language]}</p>
                 <p className="text-xs text-subtle">
-                  {fmt(t.common.lessons, { n: course.lessons.length })} · {fmt(t.common.minutes, { n: course.estimatedMinutes })} · {t.review[course.contentReview.status]}
+                  {fmt(t.common.lessons, { n: course.lessons.length })} ·{" "}
+                  {fmt(t.common.minutes, { n: course.estimatedMinutes })} · {t.review[course.contentReview.status]}
                 </p>
                 {reason ? (
                   <p className="pt-1 text-sm text-accent-ink">

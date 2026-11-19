@@ -92,7 +92,8 @@ function deriveKey(tool: RegisteredTool, call: ToolCall, input: unknown): string
   const scope = call.interactionId ?? call.session.id;
   if (call.idempotencyKey) return `${tool.name}:${call.session.id}:client:${sha256Hex(call.idempotencyKey)}`;
   if (tool.idempotency === "session") return `${tool.name}:${call.session.id}`;
-  if (tool.idempotency === "args") return `${tool.name}:${call.session.id}:${sha256Hex(`${scope}|${canonicalJson(input)}`)}`;
+  if (tool.idempotency === "args")
+    return `${tool.name}:${call.session.id}:${sha256Hex(`${scope}|${canonicalJson(input)}`)}`;
   return `${tool.name}:${call.session.id}:${randomUUID()}`;
 }
 
@@ -115,14 +116,23 @@ function plainObject(value: unknown): Record<string, unknown> {
 
 export async function runTool(call: ToolCall): Promise<ToolCallResult> {
   const started = Date.now();
-  const unchanged = (response: ToolResponse): ToolCallResult => ({ response, session: call.session, learner: call.learner });
+  const unchanged = (response: ToolResponse): ToolCallResult => ({
+    response,
+    session: call.session,
+    learner: call.learner,
+  });
 
   const tool = getTool(call.toolName);
   if (!tool) return unchanged(failure(call.toolName, new DomainError("NOT_FOUND", "Unknown tool.")));
 
   const parsed = tool.parse(call.rawInput ?? {});
   if (!parsed.success) {
-    return unchanged(failure(tool.name, new DomainError("VALIDATION", "Some tool arguments were missing or invalid.", { issues: parsed.issues })));
+    return unchanged(
+      failure(
+        tool.name,
+        new DomainError("VALIDATION", "Some tool arguments were missing or invalid.", { issues: parsed.issues }),
+      ),
+    );
   }
 
   if (!isSessionOpen(call.session) && !tool.allowOnClosedSession) {
@@ -139,7 +149,14 @@ export async function runTool(call: ToolCall): Promise<ToolCallResult> {
       if (stored.success) {
         await toolInvocationsRepo.markReplayed(call.db, key);
         log.info("tool.replayed", { tool: tool.name, channel: call.channel });
-        return unchanged({ ok: true, tool: tool.name, data: stored.data.data, saved: stored.data.saved, guidance: stored.data.guidance, replayed: true });
+        return unchanged({
+          ok: true,
+          tool: tool.name,
+          data: stored.data.data,
+          saved: stored.data.saved,
+          guidance: stored.data.guidance,
+          replayed: true,
+        });
       }
     }
     if (existing?.status === "started") {
@@ -200,12 +217,18 @@ export async function runTool(call: ToolCall): Promise<ToolCallResult> {
     async (e: unknown) => {
       const err = toDomainError(e);
       if (err.code === "INTERNAL") {
-        log.error("tool.failed", { tool: tool.name, error: e instanceof Error ? `${e.name}: ${e.message}` : "unknown" });
+        log.error("tool.failed", {
+          tool: tool.name,
+          error: e instanceof Error ? `${e.name}: ${e.message}` : "unknown",
+        });
       }
       if (invocationId && !ctx.learnerDeleted) {
         await toolInvocationsRepo
           .finish(call.db, invocationId, {
-            status: err.code === "VALIDATION" || err.code === "POLICY_VIOLATION" || err.code === "NOT_FOUND" ? "rejected" : "failed",
+            status:
+              err.code === "VALIDATION" || err.code === "POLICY_VIOLATION" || err.code === "NOT_FOUND"
+                ? "rejected"
+                : "failed",
             latencyMs: Date.now() - started,
             errorCode: err.code,
             response: null,

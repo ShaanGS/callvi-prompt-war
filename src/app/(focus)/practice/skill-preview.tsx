@@ -50,7 +50,11 @@ const copy = {
 
 const LANGUAGES = ["ta-IN", "en-IN"] as const;
 
-export function SkillPreview({ language: initial, skill, standalone = false }: {
+export function SkillPreview({
+  language: initial,
+  skill,
+  standalone = false,
+}: {
   language: LanguageCode;
   skill: string;
   standalone?: boolean;
@@ -68,19 +72,33 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
   const preview = getSkillPreview(skill);
   const isCall = skill === "communication";
   // The communication lesson keeps its own language state, so it owns the document while it is shown.
-  useDocumentLanguage(language, preview ? `${preview.concept.title[language]} · Callvi` : text.title, standalone && !isCall);
+  useDocumentLanguage(
+    language,
+    preview ? `${preview.concept.title[language]} · Callvi` : text.title,
+    standalone && !isCall,
+  );
 
   const assets = standalone ? "./rehearsal" : "/rehearsal";
   const home = homeHref(standalone, tamil);
 
   if (isCall) {
-    return <PracticeReply exercise={callPractice} language={language} assets={assets} homeHref={home} syncDocument={standalone} />;
+    return (
+      <PracticeReply
+        exercise={callPractice}
+        language={language}
+        assets={assets}
+        homeHref={home}
+        syncDocument={standalone}
+      />
+    );
   }
 
-  const lessonHref = (id: string) => (standalone ? "./" : "/practice") + "?skill=" + id + "&lang=" + (tamil ? "ta" : "en");
-  const result = preview && attempt
-    ? assessAnswer({ exercise: preview.exercise, language, answerText: checked, attemptNumber: attempt })
-    : null;
+  const lessonHref = (id: string) =>
+    (standalone ? "./" : "/practice") + "?skill=" + id + "&lang=" + (tamil ? "ta" : "en");
+  const result =
+    preview && attempt
+      ? assessAnswer({ exercise: preview.exercise, language, answerText: checked, attemptNumber: attempt })
+      : null;
 
   function chooseLanguage(code: LanguageCode) {
     playing.current?.pause();
@@ -100,14 +118,20 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
       <div className={styles.pageFrame}>
         <header className={styles.header}>
           <a className={styles.wordmark} href={home} aria-label="Callvi">
-            <AudioLines aria-hidden />callvi
+            <AudioLines aria-hidden />
+            callvi
           </a>
           <div className={styles.headerActions}>
             <div className={styles.languagePill} role="group" aria-label={voice.language}>
-              {LANGUAGES.map(code => (
-                <button key={code} type="button" lang={code === "ta-IN" ? "ta" : "en"}
+              {LANGUAGES.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  lang={code === "ta-IN" ? "ta" : "en"}
                   className={language === code ? styles.selectedLanguage : ""}
-                  aria-pressed={language === code} onClick={() => chooseLanguage(code)}>
+                  aria-pressed={language === code}
+                  onClick={() => chooseLanguage(code)}
+                >
                   {code === "ta-IN" ? "தமிழ்" : "English"}
                 </button>
               ))}
@@ -118,15 +142,20 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
         <main className={styles.main} id="main">
           {preview ? (
             <div className="cv-reader">
-              <a href={home + "#skills"} className="cv-back"><ArrowLeft size={16} aria-hidden />{text.allSkills}</a>
+              <a href={home + "#skills"} className="cv-back">
+                <ArrowLeft size={16} aria-hidden />
+                {text.allSkills}
+              </a>
               <p className="skill-overline">{preview.course[language]}</p>
               <h1>{preview.concept.title[language]}</h1>
 
               <section className="cv-concept" aria-label={preview.concept.title[language]}>
                 {/* Announced when "Explain another way" swaps it, which would otherwise be silent. */}
                 <p aria-live="polite">{preview.concept.explanations[explanation].text[language]}</p>
-                <button type="button"
-                  onClick={() => setExplanation((explanation + 1) % preview.concept.explanations.length)}>
+                <button
+                  type="button"
+                  onClick={() => setExplanation((explanation + 1) % preview.concept.explanations.length)}
+                >
                   {text.explainAgain}
                 </button>
               </section>
@@ -134,14 +163,27 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
               <section className="cv-question" aria-labelledby="question-heading">
                 <h2 id="question-heading">{text.tryIt}</h2>
                 <p>{preview.exercise.prompt[language]}</p>
-                <AudioPrompt key={language} src={`${assets}/${skill}-${tamil ? "ta" : "en"}.mp3`}
-                  label={text.hearQuestion} pauseLabel={text.pauseAudio} errorLabel={text.audioError}
-                  disabled={false} onStart={element => { playing.current = element; }} />
+                <AudioPrompt
+                  key={language}
+                  src={`${assets}/${skill}-${tamil ? "ta" : "en"}.mp3`}
+                  label={text.hearQuestion}
+                  pauseLabel={text.pauseAudio}
+                  errorLabel={text.audioError}
+                  disabled={false}
+                  onStart={(element) => {
+                    playing.current = element;
+                  }}
+                />
 
                 <form onSubmit={submit}>
                   <label htmlFor="skill-answer">{text.answerLabel}</label>
-                  <textarea id="skill-answer" required maxLength={1000} value={reply}
-                    onChange={event => setReply(event.target.value)} />
+                  <textarea
+                    id="skill-answer"
+                    required
+                    maxLength={1000}
+                    value={reply}
+                    onChange={(event) => setReply(event.target.value)}
+                  />
                   <button className="skill-primary" disabled={!reply.trim()}>
                     {text.check} <ArrowRight size={16} aria-hidden />
                   </button>
@@ -161,10 +203,20 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
             </div>
           ) : (
             <SkillHome language={language} lessonHref={lessonHref}>
-              {standalone
-                ? <a className="skill-primary" href="./call-sample.html"><Headphones size={17} aria-hidden />{text.sampleCall}</a>
-                : <a href={home} className="skill-primary">{voice.call}</a>}
-              <a className="skill-secondary" href="#skills">{text.tryLesson}<ArrowRight size={16} aria-hidden /></a>
+              {standalone ? (
+                <a className="skill-primary" href="./call-sample.html">
+                  <Headphones size={17} aria-hidden />
+                  {text.sampleCall}
+                </a>
+              ) : (
+                <a href={home} className="skill-primary">
+                  {voice.call}
+                </a>
+              )}
+              <a className="skill-secondary" href="#skills">
+                {text.tryLesson}
+                <ArrowRight size={16} aria-hidden />
+              </a>
             </SkillHome>
           )}
         </main>

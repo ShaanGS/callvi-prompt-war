@@ -17,7 +17,13 @@
   position: absolute;
   inset: -15%;
   border-radius: 50%;
-  background: radial-gradient(ellipse 75% 18% at 48% 54%, #f9fbff 0%, rgb(244 248 255 / 0.9) 20%, rgb(233 242 255 / 0.15) 65%, transparent 100%);
+  background: radial-gradient(
+    ellipse 75% 18% at 48% 54%,
+    #f9fbff 0%,
+    rgb(244 248 255 / 0.9) 20%,
+    rgb(233 242 255 / 0.15) 65%,
+    transparent 100%
+  );
   transform: rotate(calc(-35deg + var(--voice-level) * 38deg)) translateY(calc(var(--voice-level) * -12px));
   filter: blur(8px);
   transition: transform 120ms linear;

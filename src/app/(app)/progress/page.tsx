@@ -13,7 +13,10 @@ export default async function ProgressPage() {
   const learner = await requireLearnerPage("/progress");
   const { t, language } = await getPageContext();
   const db = await getDb();
-  const [enrollments, history] = await Promise.all([enrollmentViews(db, learner, language), historyView(db, learner, language)]);
+  const [enrollments, history] = await Promise.all([
+    enrollmentViews(db, learner, language),
+    historyView(db, learner, language),
+  ]);
   const durable = learner.consentStatus === "granted";
   const p = t.progress;
 
@@ -34,7 +37,12 @@ export default async function ProgressPage() {
                     <h3 className="text-lg font-semibold">{e.course.title}</h3>
                     {e.status === "completed" ? <Tag tone="success">{t.home.completed}</Tag> : null}
                   </div>
-                  <Meter className="w-full sm:w-64" value={e.completedConcepts} max={e.totalConcepts} label={fmt(t.common.ideasDone, { done: e.completedConcepts, total: e.totalConcepts })} />
+                  <Meter
+                    className="w-full sm:w-64"
+                    value={e.completedConcepts}
+                    max={e.totalConcepts}
+                    label={fmt(t.common.ideasDone, { done: e.completedConcepts, total: e.totalConcepts })}
+                  />
                 </div>
                 <ol className="flex flex-col divide-y divide-line border-y border-line">
                   {e.lessons.map((l) => (
@@ -46,11 +54,15 @@ export default async function ProgressPage() {
                       <ul className="flex flex-wrap gap-x-5 gap-y-2">
                         {l.concepts.map((cpt) => {
                           const signal = e.evidence.find((item) => item.concept_id === cpt.id);
-                          return <li key={cpt.id} className="flex items-center gap-1.5 text-sm">
-                            <StateIcon state={cpt.state} />
-                            <span className="text-ink">{cpt.title}</span>
-                            <span className="text-subtle">· {signal ? p.evidence[signal.status] : t.room.state[cpt.state]}</span>
-                          </li>;
+                          return (
+                            <li key={cpt.id} className="flex items-center gap-1.5 text-sm">
+                              <StateIcon state={cpt.state} />
+                              <span className="text-ink">{cpt.title}</span>
+                              <span className="text-subtle">
+                                · {signal ? p.evidence[signal.status] : t.room.state[cpt.state]}
+                              </span>
+                            </li>
+                          );
                         })}
                       </ul>
                     </li>
@@ -81,8 +93,12 @@ export default async function ProgressPage() {
                   <span className="font-medium text-ink">{formatDate(s.startedAt, language, true)}</span>
                   <span className="text-muted">{p.channel[s.channel]}</span>
                   {s.minutes ? <span className="text-subtle">{fmt(p.duration, { n: s.minutes })}</span> : null}
-                  <Tag tone={s.status === "failed" ? "danger" : s.status === "completed" ? "neutral" : "info"}>{p.status[s.status]}</Tag>
-                  <Tag tone={s.memoryMode === "durable" ? "accent" : "neutral"}>{s.memoryMode === "durable" ? p.savedSession : p.sessionOnlySession}</Tag>
+                  <Tag tone={s.status === "failed" ? "danger" : s.status === "completed" ? "neutral" : "info"}>
+                    {p.status[s.status]}
+                  </Tag>
+                  <Tag tone={s.memoryMode === "durable" ? "accent" : "neutral"}>
+                    {s.memoryMode === "durable" ? p.savedSession : p.sessionOnlySession}
+                  </Tag>
                 </div>
                 {s.summary ? <p className="max-w-prose text-sm text-muted">{s.summary}</p> : null}
               </li>
@@ -100,7 +116,9 @@ export default async function ProgressPage() {
               {history.attempts.map((a) => (
                 <li key={a.id} className="flex flex-col gap-2 py-4">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <Tag tone={a.result === "correct" ? "success" : a.result === "ungraded" ? "info" : "warning"}>{t.room.text.result[a.result]}</Tag>
+                    <Tag tone={a.result === "correct" ? "success" : a.result === "ungraded" ? "info" : "warning"}>
+                      {t.room.text.result[a.result]}
+                    </Tag>
                     <span className="text-ink">{a.concept}</span>
                     <span className="text-subtle">
                       · {a.lesson} · {formatDate(a.at, language)}
@@ -126,8 +144,10 @@ export default async function ProgressPage() {
 }
 
 function StateIcon({ state }: { state: string }) {
-  if (state === "practised" || state === "mastered" || state === "carried_forward") return <Check aria-hidden className="size-4 text-success" />;
-  if (state === "practising" || state === "needs_practice") return <CircleDot aria-hidden className="size-4 text-warning" />;
+  if (state === "practised" || state === "mastered" || state === "carried_forward")
+    return <Check aria-hidden className="size-4 text-success" />;
+  if (state === "practising" || state === "needs_practice")
+    return <CircleDot aria-hidden className="size-4 text-warning" />;
   if (state === "introduced") return <CircleDashed aria-hidden className="size-4 text-accent" />;
   return <Circle aria-hidden className="size-4 text-line-strong" />;
 }

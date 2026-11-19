@@ -27,7 +27,15 @@ export function buttonClasses(variant: ButtonVariant = "primary", size: ButtonSi
 
 type ButtonProps = ComponentProps<"button"> & { variant?: ButtonVariant; size?: ButtonSize; icon?: ReactNode };
 
-export function Button({ variant = "primary", size = "md", icon, className, children, type = "button", ...rest }: ButtonProps) {
+export function Button({
+  variant = "primary",
+  size = "md",
+  icon,
+  className,
+  children,
+  type = "button",
+  ...rest
+}: ButtonProps) {
   return (
     <button type={type} className={buttonClasses(variant, size, className)} {...rest}>
       {icon}

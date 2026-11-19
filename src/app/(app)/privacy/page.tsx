@@ -19,16 +19,34 @@ import {
   updateProfile,
 } from "@/app/actions/learner";
 import { SubmitButton } from "@/components/ui/form-controls";
-import { Container, FieldError, Input, Label, Notice, PageHeader, Section, Select, Tag, Textarea } from "@/components/ui/primitives";
+import {
+  Container,
+  FieldError,
+  Input,
+  Label,
+  Notice,
+  PageHeader,
+  Section,
+  Select,
+  Tag,
+  Textarea,
+} from "@/components/ui/primitives";
 
 export const metadata: Metadata = { title: "Privacy and memory" };
 
-export default async function PrivacyPage({ searchParams }: { searchParams: Promise<{ done?: string; error?: string }> }) {
+export default async function PrivacyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ done?: string; error?: string }>;
+}) {
   const learner = await requireLearnerPage("/privacy");
   const { t, language } = await getPageContext();
   const params = await searchParams;
   const db = await getDb();
-  const [summary, consentHistory] = await Promise.all([memoryService.getSummary(db, learner, language), learnersRepo.listConsentRecords(db, learner.id)]);
+  const [summary, consentHistory] = await Promise.all([
+    memoryService.getSummary(db, learner, language),
+    learnersRepo.listConsentRecords(db, learner.id),
+  ]);
   const p = t.privacy;
   const durable = summary.memoryMode === "durable";
 
@@ -51,12 +69,24 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       <Section title={p.status} id="memory">
         <div className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            {durable ? <Database aria-hidden className="mt-0.5 size-5 text-accent" /> : <Ban aria-hidden className="mt-0.5 size-5 text-subtle" />}
-            <p className="text-ink">{summary.consentStatus === "pending" ? p.statusPending : durable ? p.statusOn : p.statusOff}</p>
+            {durable ? (
+              <Database aria-hidden className="mt-0.5 size-5 text-accent" />
+            ) : (
+              <Ban aria-hidden className="mt-0.5 size-5 text-subtle" />
+            )}
+            <p className="text-ink">
+              {summary.consentStatus === "pending" ? p.statusPending : durable ? p.statusOn : p.statusOff}
+            </p>
           </div>
           <form action={setMemoryConsent}>
             {durable ? (
-              <SubmitButton name="decision" value="revoked" variant="secondary" pendingLabel={t.common.saving} confirmMessage={p.turnOffConfirm}>
+              <SubmitButton
+                name="decision"
+                value="revoked"
+                variant="secondary"
+                pendingLabel={t.common.saving}
+                confirmMessage={p.turnOffConfirm}
+              >
                 {p.turnOff}
               </SubmitButton>
             ) : (
@@ -78,7 +108,13 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           {durable ? (
             <div className="flex flex-col gap-2">
               <Label htmlFor="name">{p.name}</Label>
-              <Input id="name" name="name" maxLength={80} defaultValue={summary.profile.displayName ?? ""} placeholder={p.noName} />
+              <Input
+                id="name"
+                name="name"
+                maxLength={80}
+                defaultValue={summary.profile.displayName ?? ""}
+                placeholder={p.noName}
+              />
             </div>
           ) : null}
           <div className="flex flex-col gap-2">
@@ -107,11 +143,20 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
               <Label htmlFor="goal-text" className="sr-only">
                 {p.goal}
               </Label>
-              <Textarea id="goal-text" name="goal" minLength={3} maxLength={500} required defaultValue={summary.activeGoal?.text ?? ""} placeholder={p.noGoal} />
+              <Textarea
+                id="goal-text"
+                name="goal"
+                minLength={3}
+                maxLength={500}
+                required
+                defaultValue={summary.activeGoal?.text ?? ""}
+                placeholder={p.noGoal}
+              />
               {params.error === "goal" ? <FieldError>{t.onboarding.goal.tooShort}</FieldError> : null}
               {summary.activeGoal ? (
                 <p className="text-xs text-subtle">
-                  {p.source}: {labelFor(p.sources, summary.activeGoal.source)} · {fmt(p.updated, { date: formatDate(summary.activeGoal.updatedAt, language) })}
+                  {p.source}: {labelFor(p.sources, summary.activeGoal.source)} ·{" "}
+                  {fmt(p.updated, { date: formatDate(summary.activeGoal.updatedAt, language) })}
                 </p>
               ) : null}
               <div>
@@ -149,11 +194,17 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
                     {current ? (
                       <div className="flex flex-wrap items-center gap-2 text-xs text-subtle">
                         <span>
-                          {p.source}: {labelFor(p.sources, current.source)} · {fmt(p.updated, { date: formatDate(current.updatedAt, language) })}
+                          {p.source}: {labelFor(p.sources, current.source)} ·{" "}
+                          {fmt(p.updated, { date: formatDate(current.updatedAt, language) })}
                         </span>
                         <form action={deletePreference}>
                           <input type="hidden" name="id" value={current.id} />
-                          <SubmitButton variant="ghost" size="sm" pendingLabel={t.common.saving} icon={<Trash2 aria-hidden className="size-3.5" />}>
+                          <SubmitButton
+                            variant="ghost"
+                            size="sm"
+                            pendingLabel={t.common.saving}
+                            icon={<Trash2 aria-hidden className="size-3.5" />}
+                          >
                             {t.common.remove}
                           </SubmitButton>
                         </form>
@@ -188,7 +239,13 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
                             <form action={resetConcept}>
                               <input type="hidden" name="enrollment_id" value={e.id} />
                               <input type="hidden" name="concept_id" value={m.conceptId} />
-                              <SubmitButton variant="ghost" size="sm" pendingLabel={t.common.saving} confirmMessage={p.resetConfirm} icon={<RotateCcw aria-hidden className="size-3.5" />}>
+                              <SubmitButton
+                                variant="ghost"
+                                size="sm"
+                                pendingLabel={t.common.saving}
+                                confirmMessage={p.resetConfirm}
+                                icon={<RotateCcw aria-hidden className="size-3.5" />}
+                              >
                                 {p.resetIdea}
                               </SubmitButton>
                             </form>
@@ -218,7 +275,10 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
       <Section title={p.consentHistory} id="consent">
         <ul className="flex flex-col divide-y divide-line border-y border-line text-sm">
           {consentHistory.map((c) => (
-            <li key={`${c.created_at.toISOString()}-${c.decision}`} className="flex flex-wrap justify-between gap-2 py-2">
+            <li
+              key={`${c.created_at.toISOString()}-${c.decision}`}
+              className="flex flex-wrap justify-between gap-2 py-2"
+            >
               <span className="text-ink">{labelFor(p.consentDecision, c.decision)}</span>
               <span className="text-subtle">{formatDate(c.created_at, language, true)}</span>
             </li>
@@ -233,7 +293,12 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
             <h3 className="font-semibold">{p.deleteMemory}</h3>
             <p className="text-sm text-muted">{p.deleteMemoryBody}</p>
             <form action={deleteLearningMemory}>
-              <SubmitButton variant="secondary" pendingLabel={t.common.saving} confirmMessage={p.deleteMemoryConfirm} icon={<Trash2 aria-hidden className="size-4" />}>
+              <SubmitButton
+                variant="secondary"
+                pendingLabel={t.common.saving}
+                confirmMessage={p.deleteMemoryConfirm}
+                icon={<Trash2 aria-hidden className="size-4" />}
+              >
                 {p.deleteMemory}
               </SubmitButton>
             </form>
@@ -243,10 +308,21 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
             <p className="text-sm text-muted">{p.deleteAccountBody}</p>
             <form action={deleteAccount} className="flex max-w-md flex-col gap-3">
               <Label htmlFor="confirm-delete">{p.deleteAccountConfirmLabel}</Label>
-              <Input id="confirm-delete" name="confirm" autoComplete="off" required pattern="DELETE" className="font-mono" />
+              <Input
+                id="confirm-delete"
+                name="confirm"
+                autoComplete="off"
+                required
+                pattern="DELETE"
+                className="font-mono"
+              />
               {params.error === "confirm" ? <FieldError>{p.deleteAccountConfirmLabel}</FieldError> : null}
               <div>
-                <SubmitButton variant="danger" pendingLabel={t.common.saving} icon={<Trash2 aria-hidden className="size-4" />}>
+                <SubmitButton
+                  variant="danger"
+                  pendingLabel={t.common.saving}
+                  icon={<Trash2 aria-hidden className="size-4" />}
+                >
                   {p.deleteAccount}
                 </SubmitButton>
               </div>
@@ -254,7 +330,6 @@ export default async function PrivacyPage({ searchParams }: { searchParams: Prom
           </div>
         </div>
       </Section>
-
     </Container>
   );
 }

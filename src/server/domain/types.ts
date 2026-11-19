@@ -18,7 +18,14 @@ export type MemoryMode = "durable" | "session_only";
 export const PRACTICE_RESULTS = ["correct", "partial", "needs_practice", "ungraded"] as const;
 export type PracticeResult = (typeof PRACTICE_RESULTS)[number];
 
-export const MASTERY_STATES = ["introduced", "practising", "needs_practice", "practised", "mastered", "carried_forward"] as const;
+export const MASTERY_STATES = [
+  "introduced",
+  "practising",
+  "needs_practice",
+  "practised",
+  "mastered",
+  "carried_forward",
+] as const;
 export type MasteryState = (typeof MASTERY_STATES)[number];
 
 export interface Learner {
@@ -118,8 +125,13 @@ export const sessionStateSchema = z.object({
   /** conceptId -> explanation approaches already used in this session. */
   explanationsUsed: z.record(z.string(), z.array(explanationApproachSchema)).default({}),
   pendingExerciseId: z.string().nullable().default(null),
-  practiceSupport: z.record(z.string(), z.enum(["none_recorded", "explanation_provided", "hint_provided", "example_provided"])).default({}),
-  reviewReturn: z.object({ lessonId: z.string().nullable(), conceptId: z.string().nullable() }).nullable().default(null),
+  practiceSupport: z
+    .record(z.string(), z.enum(["none_recorded", "explanation_provided", "hint_provided", "example_provided"]))
+    .default({}),
+  reviewReturn: z
+    .object({ lessonId: z.string().nullable(), conceptId: z.string().nullable() })
+    .nullable()
+    .default(null),
   attempts: z.array(sessionAttemptSchema).default([]),
   /** Session-only mastery for learners without durable-memory consent. */
   sessionMastery: z.record(z.string(), z.enum(MASTERY_STATES)).default({}),

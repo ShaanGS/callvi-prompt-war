@@ -39,7 +39,8 @@ export function learnerMayCall(channel: Channel, tool: string, provider?: string
 
 export const studyRoom = {
   async startTextSession(db: Db, learner: Learner, courseId: string | null): Promise<SessionView> {
-    if (learner.consentStatus === "pending") throw new DomainError("CONSENT_REQUIRED", "Please choose a memory setting first.");
+    if (learner.consentStatus === "pending")
+      throw new DomainError("CONSENT_REQUIRED", "Please choose a memory setting first.");
     if (courseId) await courseService.getAvailable(db, courseId);
     const session = await sessionService.start(db, { learner, channel: "text", provider: "none", courseId });
     return sessionView(db, learner, session);
@@ -69,7 +70,12 @@ export const studyRoom = {
       interactionId: null,
       idempotencyKey: input.idempotencyKey,
     });
-    if (session.provider === "elevenlabs" && input.tool === "start_or_resume_course" && result.response.ok && result.learner) {
+    if (
+      session.provider === "elevenlabs" &&
+      input.tool === "start_or_resume_course" &&
+      result.response.ok &&
+      result.learner
+    ) {
       await learnerService.completeOnboarding(db, result.learner.id);
     }
     const view = result.session && result.learner ? await sessionView(db, result.learner, result.session) : null;

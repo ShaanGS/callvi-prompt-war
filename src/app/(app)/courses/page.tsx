@@ -15,7 +15,8 @@ export default async function CoursesPage() {
   const { t, language, learner } = await getPageContext();
   const db = await getDb();
   const courses = await courseService.listAvailable(db);
-  const enrolled = learner && learner.consentStatus === "granted" ? await enrollmentsRepo.listForLearner(db, learner.id) : [];
+  const enrolled =
+    learner && learner.consentStatus === "granted" ? await enrollmentsRepo.listForLearner(db, learner.id) : [];
 
   return (
     <Container className="flex flex-col gap-8 py-10">
@@ -28,11 +29,18 @@ export default async function CoursesPage() {
             const enrolment = enrolled.find((e) => e.courseId === c.id);
             return (
               <li key={c.id}>
-                <Link href={`/courses/${c.id}`} className="group grid gap-4 py-6 md:grid-cols-[1fr_auto] md:items-start">
+                <Link
+                  href={`/courses/${c.id}`}
+                  className="group grid gap-4 py-6 md:grid-cols-[1fr_auto] md:items-start"
+                >
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-xl font-semibold text-ink group-hover:text-accent">{c.title[language]}</h2>
-                      {enrolment ? <Tag tone="accent">{enrolment.status === "completed" ? t.home.completed : t.courses.enrolled}</Tag> : null}
+                      {enrolment ? (
+                        <Tag tone="accent">
+                          {enrolment.status === "completed" ? t.home.completed : t.courses.enrolled}
+                        </Tag>
+                      ) : null}
                     </div>
                     <p className="max-w-prose text-muted">{c.summary[language]}</p>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 text-sm text-subtle">

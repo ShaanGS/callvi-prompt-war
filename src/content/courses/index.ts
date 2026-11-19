@@ -10,6 +10,11 @@ import { withBusinessReviews } from "./business-reviews";
  * `courses` and `course_lessons` tables; at runtime the services read course
  * knowledge from the database.
  */
-export const COURSE_CATALOGUE: readonly Course[] = [smallBusinessStarter, digitalBusinessBasics, customerCommunication, customerCall].map(
-  (course) => courseSchema.parse(course.id === "small-business-starter" ? withBusinessReviews(courseSchema.parse(course)) : course),
+export const COURSE_CATALOGUE: readonly Course[] = [
+  smallBusinessStarter,
+  digitalBusinessBasics,
+  customerCommunication,
+  customerCall,
+].map((course) =>
+  courseSchema.parse(course.id === "small-business-starter" ? withBusinessReviews(courseSchema.parse(course)) : course),
 );

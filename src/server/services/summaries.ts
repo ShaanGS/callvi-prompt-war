@@ -26,7 +26,10 @@ const NEXT_ACTION_TEXT: Record<NextAction, Record<LanguageCode, string>> = {
   continue_lesson: { "en-IN": "continue the lesson", "ta-IN": "பாடத்தைத் தொடர்வது" },
   practise_again: { "en-IN": "practise the same idea again", "ta-IN": "அதே கருத்தை மீண்டும் பயிற்சி செய்வது" },
   start_next_lesson: { "en-IN": "start the next lesson", "ta-IN": "அடுத்த பாடத்தைத் தொடங்குவது" },
-  review_course: { "en-IN": "review the course or choose another", "ta-IN": "பாடநெறியை மீண்டும் பார்ப்பது அல்லது வேறொன்றைத் தேர்வது" },
+  review_course: {
+    "en-IN": "review the course or choose another",
+    "ta-IN": "பாடநெறியை மீண்டும் பார்ப்பது அல்லது வேறொன்றைத் தேர்வது",
+  },
 };
 
 export function isNextAction(value: string): value is NextAction {
@@ -37,7 +40,11 @@ export function describeNextAction(action: string, language: LanguageCode): stri
   return isNextAction(action) ? NEXT_ACTION_TEXT[action][language] : action;
 }
 
-export function renderCheckpointSummary(data: CheckpointData, course: StoredCourse | null, language: LanguageCode): string {
+export function renderCheckpointSummary(
+  data: CheckpointData,
+  course: StoredCourse | null,
+  language: LanguageCode,
+): string {
   const ta = language === "ta-IN";
   const lesson = course && data.lessonId ? course.lessons.find((l) => l.id === data.lessonId) : undefined;
   const concept = lesson && data.conceptId ? lesson.concepts.find((c) => c.id === data.conceptId) : undefined;
@@ -51,15 +58,28 @@ export function renderCheckpointSummary(data: CheckpointData, course: StoredCour
   } else if (data.goalText) {
     parts.push(ta ? `இலக்கு: ${data.goalText}.` : `Goal: ${data.goalText}.`);
   }
-  if (concept) parts.push(ta ? `கடைசியாகப் பார்த்த கருத்து: ${concept.title[language]}.` : `Last idea covered: ${concept.title[language]}.`);
+  if (concept)
+    parts.push(
+      ta ? `கடைசியாகப் பார்த்த கருத்து: ${concept.title[language]}.` : `Last idea covered: ${concept.title[language]}.`,
+    );
   const n = data.completedPractice.length;
   if (n > 0) {
     const correct = data.completedPractice.filter((p) => p.result === "correct").length;
-    parts.push(ta ? `${n} பயிற்சிக் கேள்விகள் (${correct} சரி).` : `${n} practice question${n === 1 ? "" : "s"} (${correct} correct).`);
+    parts.push(
+      ta
+        ? `${n} பயிற்சிக் கேள்விகள் (${correct} சரி).`
+        : `${n} practice question${n === 1 ? "" : "s"} (${correct} correct).`,
+    );
   }
   if (data.unresolvedDifficulty) {
-    parts.push(ta ? `கடினமாக இருந்தது: ${data.unresolvedDifficulty}.` : `Found difficult: ${data.unresolvedDifficulty}.`);
+    parts.push(
+      ta ? `கடினமாக இருந்தது: ${data.unresolvedDifficulty}.` : `Found difficult: ${data.unresolvedDifficulty}.`,
+    );
   }
-  parts.push(ta ? `அடுத்து: ${describeNextAction(data.nextAction, language)}.` : `Next: ${describeNextAction(data.nextAction, language)}.`);
+  parts.push(
+    ta
+      ? `அடுத்து: ${describeNextAction(data.nextAction, language)}.`
+      : `Next: ${describeNextAction(data.nextAction, language)}.`,
+  );
   return parts.join(" ");
 }

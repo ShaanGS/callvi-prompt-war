@@ -16,7 +16,11 @@ export const metadata: Metadata = { title: "Start a session" };
 
 const KNOWN_ERRORS = ["NOT_CONFIGURED", "RATE_LIMITED", "CONSENT_REQUIRED", "NOT_FOUND"] as const;
 
-export default async function LearnStartPage({ searchParams }: { searchParams: Promise<{ course?: string; error?: string }> }) {
+export default async function LearnStartPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ course?: string; error?: string }>;
+}) {
   const learner = await requireOnboardedLearnerPage("/learn");
   const { t, language } = await getPageContext();
   const params = await searchParams;
@@ -54,7 +58,10 @@ export default async function LearnStartPage({ searchParams }: { searchParams: P
       </p>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <form action={startSession} className="flex flex-col justify-between gap-6 rounded-lg border border-line bg-surface p-5">
+        <form
+          action={startSession}
+          className="flex flex-col justify-between gap-6 rounded-lg border border-line bg-surface p-5"
+        >
           <input type="hidden" name="mode" value="voice" />
           {course ? <input type="hidden" name="course_id" value={course.id} /> : null}
           <div className="flex flex-col gap-2">
@@ -63,13 +70,21 @@ export default async function LearnStartPage({ searchParams }: { searchParams: P
             <p className="text-sm text-muted">{readiness.browserVoice.available ? l.voiceBody : l.voiceUnavailable}</p>
           </div>
           <div>
-            <SubmitButton size="lg" pendingLabel={t.common.loading} disabled={!readiness.browserVoice.available} icon={<Mic aria-hidden className="size-4" />}>
+            <SubmitButton
+              size="lg"
+              pendingLabel={t.common.loading}
+              disabled={!readiness.browserVoice.available}
+              icon={<Mic aria-hidden className="size-4" />}
+            >
               {l.voiceStart}
             </SubmitButton>
           </div>
         </form>
 
-        <form action={startSession} className="flex flex-col justify-between gap-6 rounded-lg border border-line bg-surface p-5">
+        <form
+          action={startSession}
+          className="flex flex-col justify-between gap-6 rounded-lg border border-line bg-surface p-5"
+        >
           <input type="hidden" name="mode" value="text" />
           {course ? <input type="hidden" name="course_id" value={course.id} /> : null}
           <div className="flex flex-col gap-2">
@@ -78,7 +93,12 @@ export default async function LearnStartPage({ searchParams }: { searchParams: P
             <p className="text-sm text-muted">{l.textBody}</p>
           </div>
           <div>
-            <SubmitButton size="lg" variant={readiness.browserVoice.available ? "secondary" : "primary"} pendingLabel={t.common.loading} icon={<Keyboard aria-hidden className="size-4" />}>
+            <SubmitButton
+              size="lg"
+              variant={readiness.browserVoice.available ? "secondary" : "primary"}
+              pendingLabel={t.common.loading}
+              icon={<Keyboard aria-hidden className="size-4" />}
+            >
               {l.textStart}
             </SubmitButton>
           </div>
@@ -88,7 +108,10 @@ export default async function LearnStartPage({ searchParams }: { searchParams: P
       <div className="flex items-start gap-3 border-t border-line pt-6 text-sm">
         <Phone aria-hidden className="mt-0.5 size-4 text-subtle" />
         {readiness.phone.available && readiness.phone.displayNumber ? (
-          <a href={`tel:${readiness.phone.displayNumber.replace(/[^\d+]/g, "")}`} className="font-medium text-accent underline-offset-4 hover:underline">
+          <a
+            href={`tel:${readiness.phone.displayNumber.replace(/[^\d+]/g, "")}`}
+            className="font-medium text-accent underline-offset-4 hover:underline"
+          >
             {fmt(l.phoneCall, { number: readiness.phone.displayNumber })}
           </a>
         ) : (

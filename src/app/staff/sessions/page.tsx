@@ -12,7 +12,10 @@ export default async function StaffSessionsPage() {
   const sessions = await staffSessions(await getDb(), { limit: 200 });
   return (
     <div className="flex flex-col gap-8">
-      <PageHeader title="Sessions" lead="The most recent 200 learning sessions across all channels. Transcripts and audio are not stored." />
+      <PageHeader
+        title="Sessions"
+        lead="The most recent 200 learning sessions across all channels. Transcripts and audio are not stored."
+      />
       <SessionRows sessions={sessions} showLearner />
     </div>
   );

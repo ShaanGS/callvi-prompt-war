@@ -73,9 +73,7 @@ export interface AppConfig {
   isProduction: boolean;
   isTest: boolean;
   appUrl: string | undefined;
-  database:
-    | { kind: "postgres"; url: string }
-    | { kind: "pglite"; dataDir: string | undefined };
+  database: { kind: "postgres"; url: string } | { kind: "pglite"; dataDir: string | undefined };
   auth: {
     supabase: { url: string; anonKey: string } | null;
     /** Server-only admin key, used solely to delete Auth users on account deletion. */
@@ -112,9 +110,7 @@ export class ConfigurationError extends Error {
 export function buildConfig(source: Record<string, string | undefined>): AppConfig {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
-    throw new ConfigurationError(
-      parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`),
-    );
+    throw new ConfigurationError(parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`));
   }
   const env = parsed.data;
   const isProduction = env.NODE_ENV === "production" || env.VERCEL_ENV === "production";
@@ -144,7 +140,8 @@ export function buildConfig(source: Record<string, string | undefined>): AppConf
   // explicitly enabled or when no real identity provider is configured.
   const devAuthEnabled = !isProduction && (env.DEV_AUTH_ENABLED || supabase === null);
 
-  if (!supabase) problems.push("Supabase Auth is not configured (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)");
+  if (!supabase)
+    problems.push("Supabase Auth is not configured (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)");
   if (!env.DATABASE_URL) problems.push("DATABASE_URL is not set; using the embedded local development database");
 
   return {

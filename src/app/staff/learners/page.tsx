@@ -35,7 +35,10 @@ export default async function StaffLearnersPage() {
           {learners.map((l) => (
             <tr key={l.id}>
               <Td>
-                <Link href={`/staff/learners/${l.id}`} className="font-mono text-accent underline-offset-4 hover:underline">
+                <Link
+                  href={`/staff/learners/${l.id}`}
+                  className="font-mono text-accent underline-offset-4 hover:underline"
+                >
                   {l.shortId}
                 </Link>
               </Td>

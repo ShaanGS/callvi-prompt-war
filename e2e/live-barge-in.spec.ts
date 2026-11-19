@@ -1,14 +1,31 @@
 import { expect, test } from "@playwright/test";
 
-test.skip(process.env.LIVE_BARGE_IN_TEST !== "1", "Opt-in real speech interruption check; needs the synthetic Tamil microphone WAV.");
-test.use({ permissions: ["microphone"], launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", "--use-file-for-fake-audio-capture=/private/tmp/callvi-barge-in-microphone.wav"] } });
+test.skip(
+  process.env.LIVE_BARGE_IN_TEST !== "1",
+  "Opt-in real speech interruption check; needs the synthetic Tamil microphone WAV.",
+);
+test.use({
+  permissions: ["microphone"],
+  launchOptions: {
+    args: [
+      "--use-fake-device-for-media-stream",
+      "--use-fake-ui-for-media-stream",
+      "--use-file-for-fake-audio-capture=/private/tmp/callvi-barge-in-microphone.wav",
+    ],
+  },
+});
 
-test("Tamil speech interrupts the greeting and is not assessed as a practice answer", async ({ page, context, baseURL }) => {
+test("Tamil speech interrupts the greeting and is not assessed as a practice answer", async ({
+  page,
+  context,
+  baseURL,
+}) => {
   test.setTimeout(90_000);
   await context.addCookies([{ name: "lc_lang", value: "ta-IN", url: baseURL! }]);
   const transcripts: string[] = [];
   const tools: string[] = [];
-  let interruptions = 0, audioChunks = 0;
+  let interruptions = 0,
+    audioChunks = 0;
   page.on("websocket", (socket) => {
     if (!socket.url().includes("api.elevenlabs.io")) return;
     socket.on("framereceived", ({ payload }) => {
@@ -18,7 +35,9 @@ test("Tamil speech interrupts the greeting and is not assessed as a practice ans
         if (data.type === "interruption") interruptions++;
         if (data.type === "user_transcript") transcripts.push(data.user_transcription_event.user_transcript);
         if (data.type === "client_tool_call") tools.push(data.client_tool_call.tool_name);
-      } catch { /* Provider audio and connection details stay private. */ }
+      } catch {
+        /* Provider audio and connection details stay private. */
+      }
     });
   });
   await page.goto("/");

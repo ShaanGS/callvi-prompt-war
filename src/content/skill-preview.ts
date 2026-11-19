@@ -19,10 +19,14 @@ export interface SkillPreviewContent {
   concept: Concept;
 }
 
-function selectPractice(course: typeof smallBusinessStarter, lessonId: string, exerciseId: string): SkillPreviewContent {
-  const lesson = course.lessons.find(item => item.id === lessonId);
-  const exercise = exerciseSchema.parse(lesson?.practice.find(item => item.id === exerciseId));
-  const concept = conceptSchema.parse(lesson?.concepts.find(item => item.id === exercise.conceptId));
+function selectPractice(
+  course: typeof smallBusinessStarter,
+  lessonId: string,
+  exerciseId: string,
+): SkillPreviewContent {
+  const lesson = course.lessons.find((item) => item.id === lessonId);
+  const exercise = exerciseSchema.parse(lesson?.practice.find((item) => item.id === exerciseId));
+  const concept = conceptSchema.parse(lesson?.concepts.find((item) => item.id === exercise.conceptId));
   return { course: course.title, exercise, concept };
 }
 

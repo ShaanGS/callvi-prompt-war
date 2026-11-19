@@ -8,7 +8,11 @@ describe("skill preview content", () => {
     const preview = getSkillPreview("cost");
     expect(preview).not.toBeNull();
     expect(preview?.course["en-IN"]).toBe("Small Business Starter");
-    expect(preview?.exercise).toMatchObject({ id: "sbs-02-unit-cost", conceptId: "sbs-unit-cost", kind: "calculation" });
+    expect(preview?.exercise).toMatchObject({
+      id: "sbs-02-unit-cost",
+      conceptId: "sbs-unit-cost",
+      kind: "calculation",
+    });
     expect(preview?.concept.id).toBe("sbs-unit-cost");
   });
 
@@ -16,7 +20,11 @@ describe("skill preview content", () => {
     const preview = getSkillPreview("digital");
     expect(preview).not.toBeNull();
     expect(preview?.course["en-IN"]).toBe("Digital Basics for a Small Business");
-    expect(preview?.exercise).toMatchObject({ id: "dbb-02-screenshot", conceptId: "dbb-confirm-payment", kind: "decide" });
+    expect(preview?.exercise).toMatchObject({
+      id: "dbb-02-screenshot",
+      conceptId: "dbb-confirm-payment",
+      kind: "decide",
+    });
     expect(preview?.concept.id).toBe("dbb-confirm-payment");
   });
 
@@ -25,19 +33,23 @@ describe("skill preview content", () => {
     expect(preview?.concept.id).toBe(preview?.exercise.conceptId);
   });
 
-  it.each(["cost", "digital"])("gives the %s preview course title, prompt and every explanation in English and Tamil", (skill) => {
-    const preview = getSkillPreview(skill);
-    expect(preview?.concept.explanations.length).toBeGreaterThanOrEqual(2);
-    for (const language of LANGUAGES) {
-      expect(preview?.course[language].trim()).not.toBe("");
-      expect(preview?.exercise.prompt[language].trim()).not.toBe("");
-      expect(preview?.concept.title[language].trim()).not.toBe("");
-      for (const explanation of preview?.concept.explanations ?? []) expect(explanation.text[language].trim()).not.toBe("");
-    }
-    // The Tamil text is a real translation, not the English copied across.
-    expect(preview?.course["ta-IN"]).not.toBe(preview?.course["en-IN"]);
-    expect(preview?.course["ta-IN"]).toMatch(/[஀-௿]/);
-  });
+  it.each(["cost", "digital"])(
+    "gives the %s preview course title, prompt and every explanation in English and Tamil",
+    (skill) => {
+      const preview = getSkillPreview(skill);
+      expect(preview?.concept.explanations.length).toBeGreaterThanOrEqual(2);
+      for (const language of LANGUAGES) {
+        expect(preview?.course[language].trim()).not.toBe("");
+        expect(preview?.exercise.prompt[language].trim()).not.toBe("");
+        expect(preview?.concept.title[language].trim()).not.toBe("");
+        for (const explanation of preview?.concept.explanations ?? [])
+          expect(explanation.text[language].trim()).not.toBe("");
+      }
+      // The Tamil text is a real translation, not the English copied across.
+      expect(preview?.course["ta-IN"]).not.toBe(preview?.course["en-IN"]);
+      expect(preview?.course["ta-IN"]).toMatch(/[஀-௿]/);
+    },
+  );
 
   it("offers each explanation through a distinct teaching approach", () => {
     for (const skill of ["cost", "digital"]) {

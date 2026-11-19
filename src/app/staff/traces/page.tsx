@@ -52,14 +52,28 @@ export default async function StaffTracesPage({ searchParams }: { searchParams: 
           </tr>
         </thead>
         <tbody>
-          {traces.length === 0 ? <EmptyRow colSpan={8}>No tool calls recorded{filter === "all" ? "" : ` with status “${filter}”`}.</EmptyRow> : null}
+          {traces.length === 0 ? (
+            <EmptyRow colSpan={8}>No tool calls recorded{filter === "all" ? "" : ` with status “${filter}”`}.</EmptyRow>
+          ) : null}
           {traces.map((t) => (
             <tr key={t.id}>
               <Td>{formatStaffDate(t.at)}</Td>
               <Td className="font-mono text-xs">{t.tool}</Td>
               <Td>{t.channel}</Td>
               <Td>
-                <Tag tone={t.status === "succeeded" ? "success" : t.status === "failed" ? "danger" : t.status === "rejected" ? "warning" : "info"}>{t.status}</Tag>
+                <Tag
+                  tone={
+                    t.status === "succeeded"
+                      ? "success"
+                      : t.status === "failed"
+                        ? "danger"
+                        : t.status === "rejected"
+                          ? "warning"
+                          : "info"
+                  }
+                >
+                  {t.status}
+                </Tag>
               </Td>
               <Td className="font-mono text-xs">{t.errorCode ?? "—"}</Td>
               <Td numeric>{t.latencyMs === null ? "—" : `${t.latencyMs} ms`}</Td>

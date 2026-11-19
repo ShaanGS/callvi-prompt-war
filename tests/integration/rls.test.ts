@@ -9,7 +9,12 @@ import { createTestDb } from "../support/test-db";
  * Supabase-compatible shim (auth.uid() reads request.jwt.claim.sub).
  * Each probe runs in its own transaction because a permission error aborts it.
  */
-async function as<T>(db: Db, role: "anon" | "authenticated", sub: string | null, fn: (tx: Queryable) => Promise<T>): Promise<T | "denied"> {
+async function as<T>(
+  db: Db,
+  role: "anon" | "authenticated",
+  sub: string | null,
+  fn: (tx: Queryable) => Promise<T>,
+): Promise<T | "denied"> {
   return db
     .transaction(async (tx) => {
       if (sub) await tx.query(`select set_config('request.jwt.claim.sub', $1, true)`, [sub]);
@@ -31,8 +36,14 @@ describe("row-level security", () => {
     expect(await as(db, "authenticated", userA, (tx) => tx.query(`select id from learners`))).toEqual([{ id: a.id }]);
     const courses = await as(db, "authenticated", userA, (tx) => tx.query(`select id from courses`));
     expect(Array.isArray(courses) && courses.length).toBe(COURSE_CATALOGUE.length);
-    expect(await as(db, "authenticated", userA, (tx) => tx.query(`select count(*) from tool_invocations`))).toBe("denied");
-    expect(await as(db, "authenticated", userA, (tx) => tx.query(`update learners set display_name = 'changed' where id = $1`, [a.id]))).toBe("denied");
+    expect(await as(db, "authenticated", userA, (tx) => tx.query(`select count(*) from tool_invocations`))).toBe(
+      "denied",
+    );
+    expect(
+      await as(db, "authenticated", userA, (tx) =>
+        tx.query(`update learners set display_name = 'changed' where id = $1`, [a.id]),
+      ),
+    ).toBe("denied");
     expect(await as(db, "authenticated", userA, (tx) => tx.query(`delete from learner_memory`))).toBe("denied");
   });
 

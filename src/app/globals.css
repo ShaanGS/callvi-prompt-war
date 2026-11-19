@@ -138,19 +138,54 @@ body {
 }
 
 /* Voice-first surfaces. The orb is static until the SDK supplies audio levels. */
-.voice-lobby { background: #fdfdfd; }
-.voice-live-surface { background: #fdfdfd; color: #17181c; }
-.voice-live-surface :focus-visible { outline-color: #4269df; }
-.voice-control {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 58px; height: 58px; border-radius: 50%;
-  background: #f1f2f5; color: #24262c; transition: background 150ms;
+.voice-lobby {
+  background: #fdfdfd;
 }
-.voice-control:hover { background: #e7e9ee; }
-.voice-control:disabled { opacity: 0.4; }
-.voice-control-dark { background: #202124; color: white; }
-.voice-control-dark:hover { background: #34363b; }
-.voice-dial-control { width: 76px; height: 76px; background: #444; color: white; border: 1px solid #727272; }
-.voice-dial-control:hover { background: #505050; }
-.voice-dial-end { background: #f12731; border-color: #f12731; }
-.voice-dial-end:hover { background: #d71f29; }
+.voice-live-surface {
+  background: #fdfdfd;
+  color: #17181c;
+}
+.voice-live-surface :focus-visible {
+  outline-color: #4269df;
+}
+.voice-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #f1f2f5;
+  color: #24262c;
+  transition: background 150ms;
+}
+.voice-control:hover {
+  background: #e7e9ee;
+}
+.voice-control:disabled {
+  opacity: 0.4;
+}
+.voice-control-dark {
+  background: #202124;
+  color: white;
+}
+.voice-control-dark:hover {
+  background: #34363b;
+}
+.voice-dial-control {
+  width: 76px;
+  height: 76px;
+  background: #444;
+  color: white;
+  border: 1px solid #727272;
+}
+.voice-dial-control:hover {
+  background: #505050;
+}
+.voice-dial-end {
+  background: #f12731;
+  border-color: #f12731;
+}
+.voice-dial-end:hover {
+  background: #d71f29;
+}

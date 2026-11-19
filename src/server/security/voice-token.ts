@@ -33,8 +33,7 @@ export function issueVoiceToken(secret: string, sessionId: string, ttlSeconds: n
 }
 
 export type VoiceTokenResult =
-  | { ok: true; claims: VoiceTokenClaims }
-  | { ok: false; reason: "malformed" | "bad_signature" | "expired" };
+  { ok: true; claims: VoiceTokenClaims } | { ok: false; reason: "malformed" | "bad_signature" | "expired" };
 
 export function verifyVoiceToken(secret: string, token: string, now = new Date()): VoiceTokenResult {
   const parts = token.split(".");

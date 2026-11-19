@@ -46,22 +46,38 @@ export interface RoomCopy {
 type Ended = { saved: boolean; summary: string | null };
 
 function newKey(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export function LearningRoom({ initialView, voice, copy }: { initialView: SessionView; voice: BrowserVoiceConfig | null; copy: RoomCopy }) {
+export function LearningRoom({
+  initialView,
+  voice,
+  copy,
+}: {
+  initialView: SessionView;
+  voice: BrowserVoiceConfig | null;
+  copy: RoomCopy;
+}) {
   const { room: r, common: c } = copy;
   const [view, setView] = useState(initialView);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ tone: "success" | "info"; text: string } | null>(null);
-  const [practice, setPractice] = useState<{ exerciseId: string; prompt: string } | null>(initialView.practice ? { exerciseId: initialView.practice.exerciseId, prompt: initialView.practice.prompt } : null);
+  const [practice, setPractice] = useState<{ exerciseId: string; prompt: string } | null>(
+    initialView.practice ? { exerciseId: initialView.practice.exerciseId, prompt: initialView.practice.prompt } : null,
+  );
   const [practiceOpen, setPracticeOpen] = useState(initialView.practice !== null);
   const [answer, setAnswer] = useState("");
   const [answerError, setAnswerError] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<PracticeData | null>(null);
   const [feedbackSaved, setFeedbackSaved] = useState<boolean>(false);
-  const [ended, setEnded] = useState<Ended | null>(initialView.open ? null : { saved: initialView.memoryMode === "durable" && initialView.summary !== null, summary: initialView.summary });
+  const [ended, setEnded] = useState<Ended | null>(
+    initialView.open
+      ? null
+      : { saved: initialView.memoryMode === "durable" && initialView.summary !== null, summary: initialView.summary },
+  );
   const submitKey = useRef<string | null>(null);
   const loadedOnce = useRef(false);
 
@@ -99,9 +115,12 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
       setFeedback(null);
       setAnswer("");
       submitKey.current = null;
-      setPractice(data.data.practice ? { exerciseId: data.data.practice.exercise_id, prompt: data.data.practice.prompt } : null);
+      setPractice(
+        data.data.practice ? { exerciseId: data.data.practice.exercise_id, prompt: data.data.practice.prompt } : null,
+      );
       if (request !== "different_explanation" && request !== "repeat") setPracticeOpen(false);
-      if (request === "different_explanation" && data.data.explanation_status.all_used) setNotice({ tone: "info", text: r.text.allApproaches });
+      if (request === "different_explanation" && data.data.explanation_status.all_used)
+        setNotice({ tone: "info", text: r.text.allApproaches });
       else setNotice(null);
     },
     [run, r.text.allApproaches],
@@ -125,7 +144,11 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
     setAnswerError(null);
     // One key per distinct submission: a network retry of the same answer never records twice.
     submitKey.current ??= newKey();
-    const response = await run("record_practice_attempt", { exercise_id: practice.exerciseId, answer_text: text }, submitKey.current);
+    const response = await run(
+      "record_practice_attempt",
+      { exercise_id: practice.exerciseId, answer_text: text },
+      submitKey.current,
+    );
     if (!response || !response.ok) return;
     submitKey.current = null;
     const data = practiceDataSchema.safeParse(response.data);
@@ -138,7 +161,10 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
   const saveCheckpoint = async () => {
     const response = await run("save_checkpoint", {});
     if (!response || !response.ok) return;
-    setNotice({ tone: response.saved ? "success" : "info", text: response.saved ? r.text.checkpointSaved : r.text.checkpointNotSaved });
+    setNotice({
+      tone: response.saved ? "success" : "info",
+      text: response.saved ? r.text.checkpointSaved : r.text.checkpointNotSaved,
+    });
   };
 
   const closeSession = useCallback(async () => {
@@ -178,23 +204,40 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b border-line bg-canvas">
         <div className="mx-auto flex h-16 w-full max-w-wide items-center gap-3 px-4 sm:px-6">
-          <Link href="/home" className="inline-flex size-9 items-center justify-center rounded-md text-muted hover:bg-sunken hover:text-ink" aria-label={c.back}>
+          <Link
+            href="/home"
+            className="inline-flex size-9 items-center justify-center rounded-md text-muted hover:bg-sunken hover:text-ink"
+            aria-label={c.back}
+          >
             <ArrowLeft aria-hidden className="size-5" />
           </Link>
           <div className="flex min-w-0 flex-1 flex-col">
             <p className="truncate text-sm font-semibold text-ink">{view.course?.title ?? r.title}</p>
-            {lesson ? <p className="truncate text-xs text-subtle">{fmt(c.lessonOf, { n: lesson.sequence, total: lesson.of })}</p> : null}
+            {lesson ? (
+              <p className="truncate text-xs text-subtle">
+                {fmt(c.lessonOf, { n: lesson.sequence, total: lesson.of })}
+              </p>
+            ) : null}
           </div>
           <span className="hidden sm:block">
             <Tag tone={durable ? "accent" : "neutral"}>{durable ? r.memoryOn : r.memoryOff}</Tag>
           </span>
-          <Button variant="secondary" size="sm" onClick={endSession} disabled={busy !== null} icon={<Square aria-hidden className="size-3.5" />}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={endSession}
+            disabled={busy !== null}
+            icon={<Square aria-hidden className="size-3.5" />}
+          >
             {busy === "close_learning_session" ? r.ending : r.end}
           </Button>
         </div>
       </header>
 
-      <main id="main" className="mx-auto grid w-full max-w-wide flex-1 gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12 lg:py-10">
+      <main
+        id="main"
+        className="mx-auto grid w-full max-w-wide flex-1 gap-8 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-12 lg:py-10"
+      >
         <div className="flex min-w-0 flex-col gap-6">
           <span className="sm:hidden">
             <Tag tone={durable ? "accent" : "neutral"}>{durable ? r.memoryOn : r.memoryOff}</Tag>
@@ -254,7 +297,11 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
               {!isVoice ? (
                 <section aria-label={r.explanation} className="flex flex-col gap-3 border-l-2 border-accent pl-4">
                   <p className="text-xs text-subtle">
-                    {r.approach[approachKey(concept.approach)]} · {fmt(r.approachCount, { used: Math.max(1, concept.approachesUsed), total: concept.approachesTotal })}
+                    {r.approach[approachKey(concept.approach)]} ·{" "}
+                    {fmt(r.approachCount, {
+                      used: Math.max(1, concept.approachesUsed),
+                      total: concept.approachesTotal,
+                    })}
                   </p>
                   <p className="text-lg leading-relaxed text-ink">{concept.explanation}</p>
                 </section>
@@ -284,14 +331,28 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
 
               {!isVoice && view.open ? (
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => loadLesson("different_explanation")} disabled={busy !== null} icon={<RefreshCw aria-hidden className="size-4" />}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => loadLesson("different_explanation")}
+                    disabled={busy !== null}
+                    icon={<RefreshCw aria-hidden className="size-4" />}
+                  >
                     {r.text.differently}
                   </Button>
-                  <Button variant="ghost" onClick={() => loadLesson("repeat")} disabled={busy !== null} icon={<Repeat2 aria-hidden className="size-4" />}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => loadLesson("repeat")}
+                    disabled={busy !== null}
+                    icon={<Repeat2 aria-hidden className="size-4" />}
+                  >
                     {r.text.repeat}
                   </Button>
                   {practice && !practiceOpen ? (
-                    <Button onClick={() => setPracticeOpen(true)} disabled={busy !== null} icon={<ListChecks aria-hidden className="size-4" />}>
+                    <Button
+                      onClick={() => setPracticeOpen(true)}
+                      disabled={busy !== null}
+                      icon={<ListChecks aria-hidden className="size-4" />}
+                    >
                       {r.text.practise}
                     </Button>
                   ) : null}
@@ -302,7 +363,10 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
 
           {/* Practice (typed study room) */}
           {!isVoice && practice && practiceOpen ? (
-            <section aria-labelledby="practice-title" className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5">
+            <section
+              aria-labelledby="practice-title"
+              className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-5"
+            >
               <h2 id="practice-title" className="text-base font-semibold">
                 {r.text.practiceTitle}
               </h2>
@@ -354,7 +418,12 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
 
           {!isVoice && view.open && view.course ? (
             <div className="border-t border-line pt-4">
-              <Button variant="ghost" onClick={saveCheckpoint} disabled={busy !== null} icon={<BookmarkCheck aria-hidden className="size-4" />}>
+              <Button
+                variant="ghost"
+                onClick={saveCheckpoint}
+                disabled={busy !== null}
+                icon={<BookmarkCheck aria-hidden className="size-4" />}
+              >
                 {busy === "save_checkpoint" ? c.saving : r.text.checkpoint}
               </Button>
             </div>
@@ -372,7 +441,10 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
                 {view.lessonConcepts.map((lc) => (
                   <li
                     key={lc.id}
-                    className={clsx("flex items-start gap-2 rounded-md px-2 py-1.5 text-sm", lc.id === concept?.id ? "bg-accent-soft text-accent-ink" : "text-ink")}
+                    className={clsx(
+                      "flex items-start gap-2 rounded-md px-2 py-1.5 text-sm",
+                      lc.id === concept?.id ? "bg-accent-soft text-accent-ink" : "text-ink",
+                    )}
                     aria-current={lc.id === concept?.id ? "step" : undefined}
                   >
                     <ConceptIcon state={lc.state} />
@@ -390,7 +462,10 @@ export function LearningRoom({ initialView, voice, copy }: { initialView: Sessio
             <Meter
               value={view.courseProgress.completedConcepts}
               max={view.courseProgress.totalConcepts}
-              label={fmt(c.ideasDone, { done: view.courseProgress.completedConcepts, total: view.courseProgress.totalConcepts })}
+              label={fmt(c.ideasDone, {
+                done: view.courseProgress.completedConcepts,
+                total: view.courseProgress.totalConcepts,
+              })}
             />
           ) : null}
 
@@ -426,8 +501,10 @@ function approachKey(value: string): Approach {
 }
 
 function ConceptIcon({ state }: { state: SessionView["lessonConcepts"][number]["state"] }) {
-  if (state === "practised" || state === "mastered" || state === "carried_forward") return <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-success" />;
-  if (state === "practising" || state === "needs_practice") return <CircleDot aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />;
+  if (state === "practised" || state === "mastered" || state === "carried_forward")
+    return <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-success" />;
+  if (state === "practising" || state === "needs_practice")
+    return <CircleDot aria-hidden className="mt-0.5 size-4 shrink-0 text-warning" />;
   if (state === "introduced") return <CircleDashed aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />;
   return <Circle aria-hidden className="mt-0.5 size-4 shrink-0 text-line-strong" />;
 }
@@ -516,10 +593,22 @@ function FeedbackView({
             <Button onClick={onRetry} disabled={busy} icon={<Repeat2 aria-hidden className="size-4" />}>
               {t.tryAgain}
             </Button>
-            <Button variant="secondary" onClick={onDifferent} disabled={busy} icon={<RefreshCw aria-hidden className="size-4" />}>
+            <Button
+              variant="secondary"
+              onClick={onDifferent}
+              disabled={busy}
+              icon={<RefreshCw aria-hidden className="size-4" />}
+            >
               {t.differently}
             </Button>
-            <Button variant={feedback.next_step === "offer_move_on" || feedback.next_step === "self_check" ? "secondary" : "ghost"} onClick={onMoveOn} disabled={busy} icon={<SkipForward aria-hidden className="size-4" />}>
+            <Button
+              variant={
+                feedback.next_step === "offer_move_on" || feedback.next_step === "self_check" ? "secondary" : "ghost"
+              }
+              onClick={onMoveOn}
+              disabled={busy}
+              icon={<SkipForward aria-hidden className="size-4" />}
+            >
               {t.moveOn}
             </Button>
           </>

@@ -15,20 +15,18 @@ const learnerRow = z
     created_at: col.date,
     updated_at: col.date,
   })
-  .transform(
-    (r): Learner => ({
-      id: r.id,
-      displayName: r.display_name,
-      preferredLanguage: r.preferred_language,
-      phoneLast4: r.phone_last4,
-      consentStatus: r.consent_status,
-      consentVersion: r.consent_version,
-      consentUpdatedAt: r.consent_updated_at,
-      onboardingCompletedAt: r.onboarding_completed_at,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    }),
-  );
+  .transform((r): Learner => ({
+    id: r.id,
+    displayName: r.display_name,
+    preferredLanguage: r.preferred_language,
+    phoneLast4: r.phone_last4,
+    consentStatus: r.consent_status,
+    consentVersion: r.consent_version,
+    consentUpdatedAt: r.consent_updated_at,
+    onboardingCompletedAt: r.onboarding_completed_at,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
 
 const LEARNER_COLUMNS = `id, display_name, preferred_language, phone_last4, consent_status, consent_version,
   consent_updated_at, onboarding_completed_at, created_at, updated_at`;
@@ -44,7 +42,9 @@ export const learnersRepo = {
     return maybeOne(
       db,
       learnerRow,
-      `select ${LEARNER_COLUMNS.split(",").map((c) => `l.${c.trim()}`).join(", ")}
+      `select ${LEARNER_COLUMNS.split(",")
+        .map((c) => `l.${c.trim()}`)
+        .join(", ")}
        from learner_identities i join learners l on l.id = i.learner_id
        where i.provider = $1 and i.subject = $2`,
       [provider, subject],
@@ -89,12 +89,7 @@ export const learnersRepo = {
     );
   },
 
-  async setConsent(
-    db: Queryable,
-    id: string,
-    status: Learner["consentStatus"],
-    version: string,
-  ): Promise<Learner> {
+  async setConsent(db: Queryable, id: string, status: Learner["consentStatus"], version: string): Promise<Learner> {
     return one(
       db,
       learnerRow,
@@ -105,12 +100,22 @@ export const learnersRepo = {
   },
 
   async markOnboarded(db: Queryable, id: string): Promise<void> {
-    await exec(db, `update learners set onboarding_completed_at = coalesce(onboarding_completed_at, now()) where id = $1`, [id]);
+    await exec(
+      db,
+      `update learners set onboarding_completed_at = coalesce(onboarding_completed_at, now()) where id = $1`,
+      [id],
+    );
   },
 
   async insertConsentRecord(
     db: Queryable,
-    input: { learnerId: string; decision: "granted" | "declined" | "revoked"; version: string; channel: string; sessionId?: string | null },
+    input: {
+      learnerId: string;
+      decision: "granted" | "declined" | "revoked";
+      version: string;
+      channel: string;
+      sessionId?: string | null;
+    },
   ): Promise<void> {
     await exec(
       db,
@@ -140,10 +145,12 @@ const staffRow = z.object({ id: col.uuid, role: z.enum(["admin", "staff"]), emai
 
 export const staffRepo = {
   async findRole(db: Queryable, provider: "supabase" | "dev", subject: string): Promise<StaffRole | null> {
-    const row = await maybeOne(db, staffRow, `select id, role, email_hint from staff_members where provider = $1 and subject = $2`, [
-      provider,
-      subject,
-    ]);
+    const row = await maybeOne(
+      db,
+      staffRow,
+      `select id, role, email_hint from staff_members where provider = $1 and subject = $2`,
+      [provider, subject],
+    );
     return row?.role ?? null;
   },
 

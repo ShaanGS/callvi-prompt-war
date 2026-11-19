@@ -28,7 +28,10 @@ export function SessionRows({ sessions, showLearner }: { sessions: StaffSessionR
             <Td>{formatStaffDate(s.startedAt)}</Td>
             {showLearner ? (
               <Td>
-                <Link href={`/staff/learners/${s.learnerId}`} className="font-mono text-accent underline-offset-4 hover:underline">
+                <Link
+                  href={`/staff/learners/${s.learnerId}`}
+                  className="font-mono text-accent underline-offset-4 hover:underline"
+                >
                   {s.learnerShortId}
                 </Link>
               </Td>
@@ -38,7 +41,9 @@ export function SessionRows({ sessions, showLearner }: { sessions: StaffSessionR
               <span className="text-subtle"> · {s.provider}</span>
             </Td>
             <Td>
-              <Tag tone={s.status === "failed" ? "danger" : s.status === "completed" ? "neutral" : "info"}>{s.status}</Tag>
+              <Tag tone={s.status === "failed" ? "danger" : s.status === "completed" ? "neutral" : "info"}>
+                {s.status}
+              </Tag>
             </Td>
             <Td>{s.memoryMode === "durable" ? "saved" : "session only"}</Td>
             <Td>{s.language}</Td>

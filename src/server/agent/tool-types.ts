@@ -113,4 +113,7 @@ export const learnerConfirmed = z.preprocess(
   z.literal(true, { error: "Restate it and ask the learner to confirm before calling this tool." }),
 );
 
-export const slugSchema = z.string().trim().regex(/^[a-z0-9-]{3,64}$/, "must be an id from a previous tool result");
+export const slugSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9-]{3,64}$/, "must be an id from a previous tool result");

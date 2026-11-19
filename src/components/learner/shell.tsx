@@ -42,7 +42,10 @@ export function LearnerShell({ ctx, children }: { ctx: PageContext; children: Re
             <LanguageSwitch language={language} t={t} />
             {staffRole ? (
               <form action={signOut} className="hidden md:block">
-                <button type="submit" className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink">
+                <button
+                  type="submit"
+                  className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink"
+                >
                   <LogOut aria-hidden className="size-4" />
                   {t.nav.signOut}
                 </button>
@@ -57,14 +60,27 @@ export function LearnerShell({ ctx, children }: { ctx: PageContext; children: Re
       </main>
 
       {signedIn ? (
-        <nav aria-label={t.nav.primary} className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
+        <nav
+          aria-label={t.nav.primary}
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        >
           <div className="flex">
             <BottomNavLink href="/home" label={t.nav.home} icon={<Home aria-hidden className="size-5" />} />
             <BottomNavLink href="/courses" label={t.nav.courses} icon={<BookOpen aria-hidden className="size-5" />} />
             <BottomNavLink href="/learn" label={t.nav.learn} icon={<Mic aria-hidden className="size-5" />} />
-            <BottomNavLink href="/progress" label={t.nav.progress} icon={<LineChart aria-hidden className="size-5" />} />
-            <BottomNavLink href="/privacy" label={t.nav.privacy} icon={<ShieldCheck aria-hidden className="size-5" />} />
-            {staffRole ? <BottomNavLink href="/staff" label={t.nav.staff} icon={<Wrench aria-hidden className="size-5" />} /> : null}
+            <BottomNavLink
+              href="/progress"
+              label={t.nav.progress}
+              icon={<LineChart aria-hidden className="size-5" />}
+            />
+            <BottomNavLink
+              href="/privacy"
+              label={t.nav.privacy}
+              icon={<ShieldCheck aria-hidden className="size-5" />}
+            />
+            {staffRole ? (
+              <BottomNavLink href="/staff" label={t.nav.staff} icon={<Wrench aria-hidden className="size-5" />} />
+            ) : null}
           </div>
         </nav>
       ) : null}
@@ -76,7 +92,10 @@ export function LearnerShell({ ctx, children }: { ctx: PageContext; children: Re
 export function MobileSignOut({ label }: { label: string }) {
   return (
     <form action={signOut} className="md:hidden">
-      <button type="submit" className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink">
+      <button
+        type="submit"
+        className="inline-flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted hover:bg-sunken hover:text-ink"
+      >
         <LogOut aria-hidden className="size-4" />
         {label}
       </button>

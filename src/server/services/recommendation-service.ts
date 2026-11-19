@@ -31,5 +31,7 @@ export function recommendCourses(courses: StoredCourse[], goalText: string, max 
 
 export function describeRecommendationReason(rec: CourseRecommendation, language: LanguageCode): string {
   const words = rec.matchedTerms.slice(0, 3).join(", ");
-  return language === "ta-IN" ? `உங்கள் இலக்கில் உள்ள சொற்களுடன் பொருந்துகிறது: ${words}` : `Matches words in your goal: ${words}`;
+  return language === "ta-IN"
+    ? `உங்கள் இலக்கில் உள்ள சொற்களுடன் பொருந்துகிறது: ${words}`
+    : `Matches words in your goal: ${words}`;
 }

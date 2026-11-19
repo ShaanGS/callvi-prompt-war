@@ -8,8 +8,45 @@ import { L, NUMBER_NOT_HEARD, OPEN_UNGRADED, TEAM_AUTHORED_NOTE, terms } from ".
  */
 
 const WHAT_IS_OFFERED = terms(
-  ["make", "sell", "stitch", "cook", "teach", "offer", "provide", "bake", "tailor", "murukku", "snack", "batter", "tuition", "service", "product", "pickle"],
-  ["செய்", "செஞ்ச", "செஞ்சி", "விக்க", "விப்ப", "விற்", "ஸ்நாக்", "ஸ்னாக்", "தைக்", "சமை", "கற்று", "வழங்க", "முறுக்கு", "மாவு", "டியூஷன்", "சேவை", "பொருள்", "தின்பண்ட", "ஊறுகாய்"],
+  [
+    "make",
+    "sell",
+    "stitch",
+    "cook",
+    "teach",
+    "offer",
+    "provide",
+    "bake",
+    "tailor",
+    "murukku",
+    "snack",
+    "batter",
+    "tuition",
+    "service",
+    "product",
+    "pickle",
+  ],
+  [
+    "செய்",
+    "செஞ்ச",
+    "செஞ்சி",
+    "விக்க",
+    "விப்ப",
+    "விற்",
+    "ஸ்நாக்",
+    "ஸ்னாக்",
+    "தைக்",
+    "சமை",
+    "கற்று",
+    "வழங்க",
+    "முறுக்கு",
+    "மாவு",
+    "டியூஷன்",
+    "சேவை",
+    "பொருள்",
+    "தின்பண்ட",
+    "ஊறுகாய்",
+  ],
 );
 
 export const smallBusinessStarter: z.input<typeof courseSchema> = {
@@ -29,9 +66,18 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
     "வீட்டிலிருந்து அல்லது உள்ளூரில் ஒரு சிறு தொழில் பற்றி யோசிப்பவர்கள். முன் அனுபவம் தேவையில்லை.",
   ),
   outcomes: [
-    L("Describe a product or service and a possible customer.", "ஒரு பொருளையோ சேவையையோ, அதை வாங்கக்கூடிய ஒரு வாடிக்கையாளரையோ விவரிப்பது."),
-    L("Tell cost, selling price and simple profit apart using small examples.", "சிறிய உதாரணங்களைக் கொண்டு செலவு, விற்பனை விலை, எளிய லாபம் ஆகியவற்றை வேறுபடுத்துவது."),
-    L("Practise introducing a product and answering a customer's question.", "ஒரு பொருளை அறிமுகப்படுத்தவும், வாடிக்கையாளரின் கேள்விக்குப் பதில் சொல்லவும் பழகுவது."),
+    L(
+      "Describe a product or service and a possible customer.",
+      "ஒரு பொருளையோ சேவையையோ, அதை வாங்கக்கூடிய ஒரு வாடிக்கையாளரையோ விவரிப்பது.",
+    ),
+    L(
+      "Tell cost, selling price and simple profit apart using small examples.",
+      "சிறிய உதாரணங்களைக் கொண்டு செலவு, விற்பனை விலை, எளிய லாபம் ஆகியவற்றை வேறுபடுத்துவது.",
+    ),
+    L(
+      "Practise introducing a product and answering a customer's question.",
+      "ஒரு பொருளை அறிமுகப்படுத்தவும், வாடிக்கையாளரின் கேள்விக்குப் பதில் சொல்லவும் பழகுவது.",
+    ),
   ],
   languages: ["ta-IN", "en-IN"],
   primaryLanguage: "ta-IN",
@@ -40,8 +86,48 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
   contentReview: { status: "team_authored", note: TEAM_AUTHORED_NOTE },
   estimatedMinutes: 24,
   recommendationTerms: terms(
-    ["business", "sell", "selling", "price", "pricing", "cost", "profit", "customer", "product", "shop", "home business", "snack", "food", "tailoring", "start", "earn", "small business", "own business"],
-    ["முறுக்கு", "விக்க", "விப்ப", "பிசினஸ்", "ஸ்நாக்", "தொழில்", "வியாபார", "விற்க", "விற்ப", "விலை", "செலவு", "லாப", "வாடிக்கையாளர்", "பொருள்", "கடை", "சொந்த", "சுய தொழில்", "தையல்", "உணவு", "தின்பண்ட"],
+    [
+      "business",
+      "sell",
+      "selling",
+      "price",
+      "pricing",
+      "cost",
+      "profit",
+      "customer",
+      "product",
+      "shop",
+      "home business",
+      "snack",
+      "food",
+      "tailoring",
+      "start",
+      "earn",
+      "small business",
+      "own business",
+    ],
+    [
+      "முறுக்கு",
+      "விக்க",
+      "விப்ப",
+      "பிசினஸ்",
+      "ஸ்நாக்",
+      "தொழில்",
+      "வியாபார",
+      "விற்க",
+      "விற்ப",
+      "விலை",
+      "செலவு",
+      "லாப",
+      "வாடிக்கையாளர்",
+      "பொருள்",
+      "கடை",
+      "சொந்த",
+      "சுய தொழில்",
+      "தையல்",
+      "உணவு",
+      "தின்பண்ட",
+    ],
   ),
   lessons: [
     // ---------------------------------------------------------------------
@@ -84,8 +170,14 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("A product is something you make or sell; a service is work you do for someone.", "பொருள் என்பது நீங்கள் செய்யும் அல்லது விற்கும் ஒன்று; சேவை என்பது ஒருவருக்காக நீங்கள் செய்யும் வேலை."),
-            L("Describe your offer in one clear sentence: what it is and who it is for.", "நீங்கள் வழங்குவதை ஒரு தெளிவான வாக்கியத்தில் சொல்லுங்கள்: அது என்ன, யாருக்காக."),
+            L(
+              "A product is something you make or sell; a service is work you do for someone.",
+              "பொருள் என்பது நீங்கள் செய்யும் அல்லது விற்கும் ஒன்று; சேவை என்பது ஒருவருக்காக நீங்கள் செய்யும் வேலை.",
+            ),
+            L(
+              "Describe your offer in one clear sentence: what it is and who it is for.",
+              "நீங்கள் வழங்குவதை ஒரு தெளிவான வாக்கியத்தில் சொல்லுங்கள்: அது என்ன, யாருக்காக.",
+            ),
           ],
           checkQuestion: L("In one sentence, what could you offer?", "ஒரே வாக்கியத்தில், நீங்கள் என்ன வழங்க முடியும்?"),
         },
@@ -116,10 +208,19 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("Start with one kind of customer, not everyone.", "எல்லோரையும் அல்ல, ஒரு வகை வாடிக்கையாளரிலிருந்து தொடங்குங்கள்."),
-            L("A clear customer helps you decide what to make and how to talk about it.", "வாடிக்கையாளர் தெளிவாக இருந்தால், என்ன செய்வது, எப்படிப் பேசுவது என்று முடிவு செய்வது எளிது."),
+            L(
+              "Start with one kind of customer, not everyone.",
+              "எல்லோரையும் அல்ல, ஒரு வகை வாடிக்கையாளரிலிருந்து தொடங்குங்கள்.",
+            ),
+            L(
+              "A clear customer helps you decide what to make and how to talk about it.",
+              "வாடிக்கையாளர் தெளிவாக இருந்தால், என்ன செய்வது, எப்படிப் பேசுவது என்று முடிவு செய்வது எளிது.",
+            ),
           ],
-          checkQuestion: L("Who might be the first customer for your offer?", "நீங்கள் வழங்குவதை முதலில் யார் வாங்கக்கூடும்?"),
+          checkQuestion: L(
+            "Who might be the first customer for your offer?",
+            "நீங்கள் வழங்குவதை முதலில் யார் வாங்கக்கூடும்?",
+          ),
         },
         {
           id: "sbs-customer-need",
@@ -148,7 +249,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("A need is the problem or wish behind a purchase.", "ஒரு பொருளை வாங்குவதற்குப் பின்னால் இருக்கும் சிரமம் அல்லது விருப்பமே தேவை."),
+            L(
+              "A need is the problem or wish behind a purchase.",
+              "ஒரு பொருளை வாங்குவதற்குப் பின்னால் இருக்கும் சிரமம் அல்லது விருப்பமே தேவை.",
+            ),
             L("Check your guess by asking real people.", "உங்கள் ஊகத்தை உண்மையான மனிதர்களிடம் கேட்டுச் சரிபாருங்கள்."),
           ],
           checkQuestion: L(
@@ -167,7 +271,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             "நீங்க என்ன செய்யலாம் இல்ல விக்கலாம், யாருக்கு? ஒரு வரியில சொல்லிப் பாருங்க. இன்னும் idea இல்லன்னா முறுக்கு example-ஐ எடுத்துக்கலாம்.",
           ),
           hints: [
-            L("Start with 'I make…' or 'I sell…', then add who it is for.", "'நான் … செய்கிறேன்' அல்லது 'நான் … விற்கிறேன்' என்று தொடங்கி, பிறகு யாருக்காக என்று சேர்த்துச் சொல்லுங்கள்."),
+            L(
+              "Start with 'I make…' or 'I sell…', then add who it is for.",
+              "'நான் … செய்கிறேன்' அல்லது 'நான் … விற்கிறேன்' என்று தொடங்கி, பிறகு யாருக்காக என்று சேர்த்துச் சொல்லுங்கள்.",
+            ),
           ],
           modelAnswer: L(
             "I make fresh murukku in small packets for working families on my street.",
@@ -176,25 +283,66 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
           rubric: {
             mode: "open",
             criteria: [
-              { id: "says-what", kind: "terms", description: L("Says what is offered", "என்ன வழங்கப்படுகிறது என்று சொல்கிறது"), terms: WHAT_IS_OFFERED },
+              {
+                id: "says-what",
+                kind: "terms",
+                description: L("Says what is offered", "என்ன வழங்கப்படுகிறது என்று சொல்கிறது"),
+                terms: WHAT_IS_OFFERED,
+              },
               {
                 id: "says-who",
                 kind: "terms",
                 description: L("Says who it is for", "யாருக்காக என்று சொல்கிறது"),
                 terms: terms(
-                  ["for", "customer", "people", "famil", "women", "student", "worker", "neighbour", "neighbor", "office", "children", "parent"],
-                  ["க்காக", "ங்களுக்கு", "பேருக்கு", "வீட்டுக்கு", "கஸ்டமர்", "தெரு", "வாடிக்கையாளர்", "மக்கள்", "குடும்ப", "பெண்", "மாணவ", "வேலைக்கு", "பக்கத்து", "அலுவலக", "குழந்தை", "பெற்றோர்"],
+                  [
+                    "for",
+                    "customer",
+                    "people",
+                    "famil",
+                    "women",
+                    "student",
+                    "worker",
+                    "neighbour",
+                    "neighbor",
+                    "office",
+                    "children",
+                    "parent",
+                  ],
+                  [
+                    "க்காக",
+                    "ங்களுக்கு",
+                    "பேருக்கு",
+                    "வீட்டுக்கு",
+                    "கஸ்டமர்",
+                    "தெரு",
+                    "வாடிக்கையாளர்",
+                    "மக்கள்",
+                    "குடும்ப",
+                    "பெண்",
+                    "மாணவ",
+                    "வேலைக்கு",
+                    "பக்கத்து",
+                    "அலுவலக",
+                    "குழந்தை",
+                    "பெற்றோர்",
+                  ],
                 ),
               },
             ],
             requiredForCorrect: ["says-what", "says-who"],
             feedback: {
-              correct: L("Clear: your sentence says what you offer and who it is for.", "என்ன விக்கிறீங்க, யாருக்குன்னு தெளிவா சொன்னீங்க."),
+              correct: L(
+                "Clear: your sentence says what you offer and who it is for.",
+                "என்ன விக்கிறீங்க, யாருக்குன்னு தெளிவா சொன்னீங்க.",
+              ),
               partial: L(
                 "Good start. Your sentence covers part of it. Add the missing piece so a customer knows both what it is and who it is for.",
                 "ஒரு பகுதியைச் சொன்னீங்க. என்ன விக்கிறீங்க, யாருக்குன்னு ரெண்டையும் சேர்த்துச் சொல்லலாம்.",
               ),
-              needs_practice: L("Let's try once more. Say what you make or do, and then who it is for.", "பரவாயில்லை, சின்னதா தொடங்கலாம். என்ன செய்வீங்க, யாருக்கு விப்பீங்கன்னு சொல்லிப் பாருங்க."),
+              needs_practice: L(
+                "Let's try once more. Say what you make or do, and then who it is for.",
+                "பரவாயில்லை, சின்னதா தொடங்கலாம். என்ன செய்வீங்க, யாருக்கு விப்பீங்கன்னு சொல்லிப் பாருங்க.",
+              ),
               ungraded: OPEN_UNGRADED,
             },
           },
@@ -208,7 +356,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             "கலா இட்லி மாவு விக்கிறாங்க. ஊர்ல இருக்கிற எல்லார்கிட்டயும் தொடங்கலாமா, இல்ல காலையில நேரமில்லாத அவங்க தெருவில இருக்கிற வேலைக்குப் போற குடும்பங்கள்கிட்டயா? எதைத் தேர்ந்தெடுப்பீங்க, ஏன்?",
           ),
           hints: [
-            L("Think about who Kala can actually reach and who has a clear need.", "கலா உண்மையில் யாரை அடைய முடியும், யாருக்குத் தெளிவான தேவை இருக்கிறது என்று யோசியுங்கள்."),
+            L(
+              "Think about who Kala can actually reach and who has a clear need.",
+              "கலா உண்மையில் யாரை அடைய முடியும், யாருக்குத் தெளிவான தேவை இருக்கிறது என்று யோசியுங்கள்.",
+            ),
           ],
           modelAnswer: L(
             "Working families on her street, because they are nearby and need to save time in the morning.",
@@ -220,14 +371,26 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
               {
                 id: "chooses-street",
                 kind: "terms",
-                description: L("Chooses the working families on her street", "அவர் தெருவில் வேலைக்குச் செல்லும் குடும்பங்களைத் தேர்ந்தெடுக்கிறது"),
-                terms: terms(["street", "famil", "second", "neighbour", "neighbor", "nearby", "working"], ["தெரு", "குடும்ப", "இரண்டாவது", "வேலைக்கு", "பக்கத்து"]),
+                description: L(
+                  "Chooses the working families on her street",
+                  "அவர் தெருவில் வேலைக்குச் செல்லும் குடும்பங்களைத் தேர்ந்தெடுக்கிறது",
+                ),
+                terms: terms(
+                  ["street", "famil", "second", "neighbour", "neighbor", "nearby", "working"],
+                  ["தெரு", "குடும்ப", "இரண்டாவது", "வேலைக்கு", "பக்கத்து"],
+                ),
               },
               {
                 id: "gives-reason",
                 kind: "terms",
-                description: L("Gives a reason, such as time, nearness or a clear need", "நேரம், அருகாமை, தெளிவான தேவை போன்ற ஒரு காரணத்தைச் சொல்கிறது"),
-                terms: terms(["time", "morning", "near", "busy", "specific", "clear", "close", "need", "reach"], ["டைம்", "பக்கத்துல", "அவசர", "நேர", "காலை", "அருகில்", "தேவை", "தெளிவ", "பக்கத்தில்"]),
+                description: L(
+                  "Gives a reason, such as time, nearness or a clear need",
+                  "நேரம், அருகாமை, தெளிவான தேவை போன்ற ஒரு காரணத்தைச் சொல்கிறது",
+                ),
+                terms: terms(
+                  ["time", "morning", "near", "busy", "specific", "clear", "close", "need", "reach"],
+                  ["டைம்", "பக்கத்துல", "அவசர", "நேர", "காலை", "அருகில்", "தேவை", "தெளிவ", "பக்கத்தில்"],
+                ),
               },
             ],
             requiredForCorrect: ["chooses-street", "gives-reason"],
@@ -256,7 +419,12 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             "How does Kala’s ready-made idli batter help a busy family in the morning?",
             "கலாவோட ரெடியான இட்லி மாவு, காலையில அவசரமா கிளம்புற ஒரு குடும்பத்துக்கு எப்படி உதவும்?",
           ),
-          hints: [L("What is hard for a busy family in the morning?", "காலையில் பரபரப்பான ஒரு குடும்பத்துக்கு எது கடினமாக இருக்கும்?")],
+          hints: [
+            L(
+              "What is hard for a busy family in the morning?",
+              "காலையில் பரபரப்பான ஒரு குடும்பத்துக்கு எது கடினமாக இருக்கும்?",
+            ),
+          ],
           modelAnswer: L(
             "It saves them the time and effort of grinding batter themselves on busy mornings.",
             "பரபரப்பான காலை நேரங்களில் தாங்களே மாவு அரைக்கும் நேரத்தையும் சிரமத்தையும் அது மிச்சப்படுத்துகிறது.",
@@ -267,7 +435,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
               {
                 id: "names-need",
                 kind: "terms",
-                description: L("Names a need such as saving time, freshness or convenience", "நேரம் மிச்சம், புதுமை, வசதி போன்ற ஒரு தேவையைச் சொல்கிறது"),
+                description: L(
+                  "Names a need such as saving time, freshness or convenience",
+                  "நேரம் மிச்சம், புதுமை, வசதி போன்ற ஒரு தேவையைச் சொல்கிறது",
+                ),
                 terms: terms(
                   ["time", "quick", "busy", "save", "morning", "fresh", "easy", "convenien", "grind", "effort", "work"],
                   ["டைம்", "ஈஸி", "சுலப", "நேர", "சீக்கிர", "மிச்ச", "அவசர", "புதி", "எளி", "அரைக்க", "சிரம", "வசதி"],
@@ -276,8 +447,14 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             ],
             requiredForCorrect: ["names-need"],
             feedback: {
-              correct: L("That's the need: the batter saves time and effort on busy mornings.", "ஆமாம், மாவு அரைக்கிற வேலை குறைஞ்சு நேரம் மிச்சமாகும். அந்த உதவியைத்தான் customer வாங்குறாங்க."),
-              partial: L("You're close. Try to name the difficulty the batter removes.", "அவங்க எந்த வேலையைச் சுலபமா முடிக்கலாம்னு சொல்லிப் பாருங்க."),
+              correct: L(
+                "That's the need: the batter saves time and effort on busy mornings.",
+                "ஆமாம், மாவு அரைக்கிற வேலை குறைஞ்சு நேரம் மிச்சமாகும். அந்த உதவியைத்தான் customer வாங்குறாங்க.",
+              ),
+              partial: L(
+                "You're close. Try to name the difficulty the batter removes.",
+                "அவங்க எந்த வேலையைச் சுலபமா முடிக்கலாம்னு சொல்லிப் பாருங்க.",
+              ),
               needs_practice: L(
                 "Think about the customer rather than the batter: what is hard for a busy family in the morning?",
                 "மாவு எப்படி இருக்குன்னு மட்டும் இல்ல; அதை வாங்குற குடும்பத்துக்கு என்ன உதவின்னு யோசிக்கலாம்.",
@@ -337,8 +514,14 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("Direct costs: ingredients, packaging and fuel used for a batch.", "நேரடிச் செலவுகள்: ஒரு தொகுப்புக்கான மூலப்பொருட்கள், பேக்கேஜிங், எரிபொருள்."),
-            L("Small costs add up, so write them all down.", "சிறிய செலவுகளும் சேர்ந்து பெரிதாகும், அதனால் எல்லாவற்றையும் எழுதுங்கள்."),
+            L(
+              "Direct costs: ingredients, packaging and fuel used for a batch.",
+              "நேரடிச் செலவுகள்: ஒரு தொகுப்புக்கான மூலப்பொருட்கள், பேக்கேஜிங், எரிபொருள்.",
+            ),
+            L(
+              "Small costs add up, so write them all down.",
+              "சிறிய செலவுகளும் சேர்ந்து பெரிதாகும், அதனால் எல்லாவற்றையும் எழுதுங்கள்.",
+            ),
           ],
           checkQuestion: L(
             "What would you spend money on to make one batch of your product?",
@@ -372,7 +555,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             },
           ],
           keyPoints: [
-            L("Cost of one item = total batch cost ÷ number of items.", "ஒரு பொருளின் செலவு = தொகுப்பின் மொத்தச் செலவு ÷ பொருட்களின் எண்ணிக்கை."),
+            L(
+              "Cost of one item = total batch cost ÷ number of items.",
+              "ஒரு பொருளின் செலவு = தொகுப்பின் மொத்தச் செலவு ÷ பொருட்களின் எண்ணிக்கை.",
+            ),
             L("Include all the direct costs in the total.", "மொத்தத்தில் எல்லா நேரடிச் செலவுகளையும் சேருங்கள்."),
           ],
           checkQuestion: L(
@@ -408,8 +594,14 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
           ],
           keyPoints: [
             L("Profit = selling price − cost.", "லாபம் = விற்பனை விலை − செலவு."),
-            L("A price must cover all relevant costs, including your time.", "விலை உங்கள் நேரம் உட்பட எல்லாத் தொடர்புடைய செலவுகளையும் ஈடுகட்ட வேண்டும்."),
-            L("Find out what customers nearby pay before deciding.", "முடிவு செய்வதற்கு முன் அருகிலுள்ள வாடிக்கையாளர்கள் எவ்வளவு கொடுக்கிறார்கள் என்று தெரிந்துகொள்ளுங்கள்."),
+            L(
+              "A price must cover all relevant costs, including your time.",
+              "விலை உங்கள் நேரம் உட்பட எல்லாத் தொடர்புடைய செலவுகளையும் ஈடுகட்ட வேண்டும்.",
+            ),
+            L(
+              "Find out what customers nearby pay before deciding.",
+              "முடிவு செய்வதற்கு முன் அருகிலுள்ள வாடிக்கையாளர்கள் எவ்வளவு கொடுக்கிறார்கள் என்று தெரிந்துகொள்ளுங்கள்.",
+            ),
           ],
           checkQuestion: L(
             "In your own words, what is the difference between cost and selling price?",
@@ -439,13 +631,37 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
           rubric: {
             mode: "auto",
             criteria: [
-              { id: "ingredients", kind: "terms", description: L("Ingredients (flour, oil)", "மூலப்பொருட்கள் (மாவு, எண்ணெய்)"), terms: terms(["flour", "oil", "ingredient", "rice"], ["மாவு", "எண்ணெய்", "மூலப்பொருள்", "அரிசி"]) },
-              { id: "packaging", kind: "terms", description: L("Packaging (covers)", "பேக்கேஜிங் (கவர்கள்)"), terms: terms(["cover", "packet", "packag", "bag", "plastic"], ["கவர்", "பாக்கெட்", "பை", "பிளாஸ்டிக்", "பேக்கேஜ்"]) },
-              { id: "fuel", kind: "terms", description: L("Fuel (gas)", "எரிபொருள் (எரிவாயு)"), terms: terms(["gas", "stove", "fuel", "cylinder"], ["எரிவாயு", "கேஸ்", "காஸ்", "அடுப்பு", "சிலிண்டர்", "எரிபொருள்"]) },
+              {
+                id: "ingredients",
+                kind: "terms",
+                description: L("Ingredients (flour, oil)", "மூலப்பொருட்கள் (மாவு, எண்ணெய்)"),
+                terms: terms(["flour", "oil", "ingredient", "rice"], ["மாவு", "எண்ணெய்", "மூலப்பொருள்", "அரிசி"]),
+              },
+              {
+                id: "packaging",
+                kind: "terms",
+                description: L("Packaging (covers)", "பேக்கேஜிங் (கவர்கள்)"),
+                terms: terms(
+                  ["cover", "packet", "packag", "bag", "plastic"],
+                  ["கவர்", "பாக்கெட்", "பை", "பிளாஸ்டிக்", "பேக்கேஜ்"],
+                ),
+              },
+              {
+                id: "fuel",
+                kind: "terms",
+                description: L("Fuel (gas)", "எரிபொருள் (எரிவாயு)"),
+                terms: terms(
+                  ["gas", "stove", "fuel", "cylinder"],
+                  ["எரிவாயு", "கேஸ்", "காஸ்", "அடுப்பு", "சிலிண்டர்", "எரிபொருள்"],
+                ),
+              },
             ],
             requiredForCorrect: ["ingredients", "packaging", "fuel"],
             feedback: {
-              correct: L("Yes: the flour and oil, the covers and the gas are all direct costs of the batch.", "மாவு, எண்ணெய், cover, gas — எல்லாச் செலவையும் சேர்த்தீங்க."),
+              correct: L(
+                "Yes: the flour and oil, the covers and the gas are all direct costs of the batch.",
+                "மாவு, எண்ணெய், cover, gas — எல்லாச் செலவையும் சேர்த்தீங்க.",
+              ),
               partial: L(
                 "You named some of the costs. At least one is missing — check ingredients, packaging and the gas.",
                 "சில செலவுகளைச் சொன்னீங்க. Ingredients, cover, gas — இதுல ஏதாவது விட்டுப் போச்சான்னு பாருங்க.",
@@ -470,7 +686,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             L("Share ₹120 equally across 10 packets.", "₹120-ஐ 10 பாக்கெட்டுகளுக்குச் சமமாகப் பகிருங்கள்."),
             L("What is 120 divided by 10?", "120-ஐ 10-ஆல் வகுத்தால் என்ன?"),
           ],
-          modelAnswer: L("₹12 per packet, because ₹120 ÷ 10 = ₹12.", "ஒரு பாக்கெட்டுக்கு ₹12, ஏனென்றால் ₹120 ÷ 10 = ₹12."),
+          modelAnswer: L(
+            "₹12 per packet, because ₹120 ÷ 10 = ₹12.",
+            "ஒரு பாக்கெட்டுக்கு ₹12, ஏனென்றால் ₹120 ÷ 10 = ₹12.",
+          ),
           rubric: {
             mode: "auto",
             criteria: [
@@ -541,17 +760,52 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
               {
                 id: "other-costs",
                 kind: "terms",
-                description: L("Mentions other costs such as covers, gas, travel or time", "கவர், எரிவாயு, போக்குவரத்து, நேரம் போன்ற மற்ற செலவுகளைச் சொல்கிறது"),
+                description: L(
+                  "Mentions other costs such as covers, gas, travel or time",
+                  "கவர், எரிவாயு, போக்குவரத்து, நேரம் போன்ற மற்ற செலவுகளைச் சொல்கிறது",
+                ),
                 terms: terms(
-                  ["cover", "gas", "travel", "transport", "time", "labour", "labor", "effort", "packet", "bus", "electric", "other cost"],
-                  ["கேசு", "காசு", "கவர்", "எரிவாயு", "கேஸ்", "போக்குவரத்து", "நேர", "உழைப்பு", "பஸ்", "மின்சார", "பாக்கெட்", "மற்ற செலவு"],
+                  [
+                    "cover",
+                    "gas",
+                    "travel",
+                    "transport",
+                    "time",
+                    "labour",
+                    "labor",
+                    "effort",
+                    "packet",
+                    "bus",
+                    "electric",
+                    "other cost",
+                  ],
+                  [
+                    "கேசு",
+                    "காசு",
+                    "கவர்",
+                    "எரிவாயு",
+                    "கேஸ்",
+                    "போக்குவரத்து",
+                    "நேர",
+                    "உழைப்பு",
+                    "பஸ்",
+                    "மின்சார",
+                    "பாக்கெட்",
+                    "மற்ற செலவு",
+                  ],
                 ),
               },
               {
                 id: "no-profit",
                 kind: "terms",
-                description: L("Explains that nothing would be left, or there would be a loss", "எதுவும் மீதம் இருக்காது அல்லது நஷ்டம் ஆகும் என்று விளக்குகிறது"),
-                terms: terms(["profit", "loss", "nothing left", "no money", "earn", "left over", "lose"], ["லாப", "நஷ்ட", "மீதம்", "வருமான", "இழப்பு"]),
+                description: L(
+                  "Explains that nothing would be left, or there would be a loss",
+                  "எதுவும் மீதம் இருக்காது அல்லது நஷ்டம் ஆகும் என்று விளக்குகிறது",
+                ),
+                terms: terms(
+                  ["profit", "loss", "nothing left", "no money", "earn", "left over", "lose"],
+                  ["லாப", "நஷ்ட", "மீதம்", "வருமான", "இழப்பு"],
+                ),
               },
             ],
             requiredForCorrect: ["other-costs"],
@@ -621,7 +875,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             L("What it is, why it's useful, how to get it.", "அது என்ன, ஏன் பயனுள்ளது, எப்படிப் பெறுவது."),
             L("Only say things that are true.", "உண்மையானதை மட்டுமே சொல்லுங்கள்."),
           ],
-          checkQuestion: L("How would you begin introducing your product?", "உங்கள் பொருளை அறிமுகப்படுத்த எப்படித் தொடங்குவீர்கள்?"),
+          checkQuestion: L(
+            "How would you begin introducing your product?",
+            "உங்கள் பொருளை அறிமுகப்படுத்த எப்படித் தொடங்குவீர்கள்?",
+          ),
         },
         {
           id: "sbs-ask-need",
@@ -686,7 +943,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
           ],
           keyPoints: [
             L("Answer with what is true.", "உண்மையானதைச் சொல்லுங்கள்."),
-            L("If you don't know, say you will check.", "தெரியவில்லை என்றால், பார்த்துச் சொல்கிறேன் என்று சொல்லுங்கள்."),
+            L(
+              "If you don't know, say you will check.",
+              "தெரியவில்லை என்றால், பார்த்துச் சொல்கிறேன் என்று சொல்லுங்கள்.",
+            ),
           ],
           checkQuestion: L(
             "What would you say if a customer asked something you weren't sure about?",
@@ -703,7 +963,12 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             "I’m your neighbour asking what you sell. Introduce your product, or the murukku example, in two or three sentences.",
             "நான் உங்க பக்கத்து வீட்டு customer-ன்னு வைங்க. என்ன விக்கிறீங்கன்னு கேட்கிறேன். உங்க பொருளையோ, முறுக்கு example-ஐயோ ரெண்டு மூணு வரியில சொல்லிப் பாருங்க.",
           ),
-          hints: [L("Say what it is, why it's useful, and how to get it.", "அது என்ன, ஏன் பயனுள்ளது, எப்படிப் பெறுவது என்று சொல்லுங்கள்.")],
+          hints: [
+            L(
+              "Say what it is, why it's useful, and how to get it.",
+              "அது என்ன, ஏன் பயனுள்ளது, எப்படிப் பெறுவது என்று சொல்லுங்கள்.",
+            ),
+          ],
           modelAnswer: L(
             "I make fresh murukku at home every Saturday. I use clean oil and pack it the same day. You can order a packet from me by Friday evening.",
             "ஒவ்வொரு சனிக்கிழமையும் வீட்டில் புதிய முறுக்கு செய்கிறேன். சுத்தமான எண்ணெய் பயன்படுத்தி, அன்றே பாக்கெட் செய்கிறேன். வெள்ளிக்கிழமை மாலைக்குள் என்னிடம் ஒரு பாக்கெட் ஆர்டர் செய்யலாம்.",
@@ -711,14 +976,46 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
           rubric: {
             mode: "open",
             criteria: [
-              { id: "says-what", kind: "terms", description: L("Says what is offered", "என்ன வழங்கப்படுகிறது என்று சொல்கிறது"), terms: WHAT_IS_OFFERED },
+              {
+                id: "says-what",
+                kind: "terms",
+                description: L("Says what is offered", "என்ன வழங்கப்படுகிறது என்று சொல்கிறது"),
+                terms: WHAT_IS_OFFERED,
+              },
               {
                 id: "why-useful",
                 kind: "terms",
-                description: L("Gives one honest reason it is useful", "அது பயனுள்ளது என்பதற்கு ஒரு நேர்மையான காரணம் சொல்கிறது"),
+                description: L(
+                  "Gives one honest reason it is useful",
+                  "அது பயனுள்ளது என்பதற்கு ஒரு நேர்மையான காரணம் சொல்கிறது",
+                ),
                 terms: terms(
-                  ["fresh", "homemade", "home made", "clean", "tasty", "quality", "save", "quick", "pure", "healthy", "good"],
-                  ["புது", "ஃப்ரெஷ்", "வீட்டுல", "புதி", "வீட்டில்", "சுத்த", "சுவை", "தரம்", "மிச்ச", "ஆரோக்கிய", "நல்ல"],
+                  [
+                    "fresh",
+                    "homemade",
+                    "home made",
+                    "clean",
+                    "tasty",
+                    "quality",
+                    "save",
+                    "quick",
+                    "pure",
+                    "healthy",
+                    "good",
+                  ],
+                  [
+                    "புது",
+                    "ஃப்ரெஷ்",
+                    "வீட்டுல",
+                    "புதி",
+                    "வீட்டில்",
+                    "சுத்த",
+                    "சுவை",
+                    "தரம்",
+                    "மிச்ச",
+                    "ஆரோக்கிய",
+                    "நல்ல",
+                  ],
                 ),
               },
               {
@@ -726,8 +1023,36 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
                 kind: "terms",
                 description: L("Says how or when to get it", "அதை எப்படி அல்லது எப்போது பெறலாம் என்று சொல்கிறது"),
                 terms: terms(
-                  ["order", "call", "deliver", "every", "available", "saturday", "sunday", "monday", "evening", "morning", "come", "pick", "get"],
-                  ["ஆடர்", "சொல்லுங்க", "வாங்கிக்க", "ஆர்டர்", "அழை", "கொண்டு வந்து", "ஒவ்வொரு", "கிடைக்கும்", "கிழமை", "மாலை", "காலை", "வந்து", "வாங்க"],
+                  [
+                    "order",
+                    "call",
+                    "deliver",
+                    "every",
+                    "available",
+                    "saturday",
+                    "sunday",
+                    "monday",
+                    "evening",
+                    "morning",
+                    "come",
+                    "pick",
+                    "get",
+                  ],
+                  [
+                    "ஆடர்",
+                    "சொல்லுங்க",
+                    "வாங்கிக்க",
+                    "ஆர்டர்",
+                    "அழை",
+                    "கொண்டு வந்து",
+                    "ஒவ்வொரு",
+                    "கிடைக்கும்",
+                    "கிழமை",
+                    "மாலை",
+                    "காலை",
+                    "வந்து",
+                    "வாங்க",
+                  ],
                 ),
               },
             ],
@@ -765,17 +1090,40 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
               {
                 id: "asks-question",
                 kind: "terms",
-                description: L("Asks the customer a question about their need", "வாடிக்கையாளரின் தேவை பற்றி ஒரு கேள்வி கேட்கிறது"),
+                description: L(
+                  "Asks the customer a question about their need",
+                  "வாடிக்கையாளரின் தேவை பற்றி ஒரு கேள்வி கேட்கிறது",
+                ),
                 terms: terms(
                   ["what", "which", "how many", "how much", "when", "who", "do you", "would you", "is it", "for whom"],
-                  ["எப்போ", "எத்தன", "யாருக்க", "வேணுமா", "என்ன", "எந்த", "எத்தனை", "எவ்வளவு", "எப்போது", "யாருக்கு", "வேண்டுமா", "பிடிக்குமா", "ா?"],
+                  [
+                    "எப்போ",
+                    "எத்தன",
+                    "யாருக்க",
+                    "வேணுமா",
+                    "என்ன",
+                    "எந்த",
+                    "எத்தனை",
+                    "எவ்வளவு",
+                    "எப்போது",
+                    "யாருக்கு",
+                    "வேண்டுமா",
+                    "பிடிக்குமா",
+                    "ா?",
+                  ],
                 ),
               },
             ],
             requiredForCorrect: ["asks-question"],
             feedback: {
-              correct: L("Good question. Now you would listen to the answer before suggesting anything.", "பொருத்தமான ஒரு கேள்வி கேட்டீங்க. பதிலைக் கேட்ட பிறகு packet-ஐ பரிந்துரைக்கலாம்."),
-              partial: L("Nearly. Turn it into one clear question for the customer.", "Customer-க்கு என்ன தேவைன்னு தெரிஞ்சுக்க ஒரு கேள்வியா கேட்டுப் பாருங்க."),
+              correct: L(
+                "Good question. Now you would listen to the answer before suggesting anything.",
+                "பொருத்தமான ஒரு கேள்வி கேட்டீங்க. பதிலைக் கேட்ட பிறகு packet-ஐ பரிந்துரைக்கலாம்.",
+              ),
+              partial: L(
+                "Nearly. Turn it into one clear question for the customer.",
+                "Customer-க்கு என்ன தேவைன்னு தெரிஞ்சுக்க ஒரு கேள்வியா கேட்டுப் பாருங்க.",
+              ),
               needs_practice: L(
                 "That sounds like a suggestion rather than a question. Try asking who it is for, or how many people.",
                 "முதல்ல விக்க முயற்சி செய்ய வேண்டாம். எத்தனை பேருக்கு, இல்ல எப்போ வேணும்னு ஒரு கேள்வி கேட்கலாம்.",
@@ -793,7 +1141,10 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
             "Customer கேட்கிறாங்க: தினமும் வீட்டுக்குக் கொண்டு வந்து தர முடியுமா? உங்களால சனிக்கிழமை மட்டும், உங்க தெரு பக்கத்துலதான் தர முடியும். நேர்மையா என்ன பதில் சொல்வீங்க?",
           ),
           hints: [
-            L("Say what you can do, and offer another way if you can.", "உங்களால் முடிவதைச் சொல்லுங்கள், முடிந்தால் வேறொரு வழியையும் சொல்லுங்கள்."),
+            L(
+              "Say what you can do, and offer another way if you can.",
+              "உங்களால் முடிவதைச் சொல்லுங்கள், முடிந்தால் வேறொரு வழியையும் சொல்லுங்கள்.",
+            ),
           ],
           modelAnswer: L(
             "I can't deliver every day. I deliver on Saturdays near my street, or you can order and pick it up from me.",
@@ -806,17 +1157,42 @@ export const smallBusinessStarter: z.input<typeof courseSchema> = {
                 id: "honest-limit",
                 kind: "terms",
                 acceptsNegation: true,
-                description: L("States the real limit honestly (Saturdays only)", "உண்மையான வரம்பை நேர்மையாகச் சொல்கிறது (சனிக்கிழமை மட்டும்)"),
+                description: L(
+                  "States the real limit honestly (Saturdays only)",
+                  "உண்மையான வரம்பை நேர்மையாகச் சொல்கிறது (சனிக்கிழமை மட்டும்)",
+                ),
                 terms: terms(
-                  ["saturday", "only saturday", "saturday only", "saturdays only", "not every day", "cannot deliver every day", "cant deliver every day", "can not deliver every day", "once a week", "weekly"],
-                  ["சனிக்கிழமை", "சனிக்கிழமை மட்டும்", "சனிக்கிழமைகளில்", "சனி மட்டும்", "தினமும் முடியாது", "தினமும் இல்லை", "வாரம் ஒரு"],
+                  [
+                    "saturday",
+                    "only saturday",
+                    "saturday only",
+                    "saturdays only",
+                    "not every day",
+                    "cannot deliver every day",
+                    "cant deliver every day",
+                    "can not deliver every day",
+                    "once a week",
+                    "weekly",
+                  ],
+                  [
+                    "சனிக்கிழமை",
+                    "சனிக்கிழமை மட்டும்",
+                    "சனிக்கிழமைகளில்",
+                    "சனி மட்டும்",
+                    "தினமும் முடியாது",
+                    "தினமும் இல்லை",
+                    "வாரம் ஒரு",
+                  ],
                 ),
               },
               {
                 id: "offers-alternative",
                 kind: "terms",
                 description: L("Offers another way to get it", "அதைப் பெற வேறொரு வழியைச் சொல்கிறது"),
-                terms: terms(["pick", "collect", "come", "order", "nearby", "instead", "another"], ["வந்து", "வாங்கி", "ஆர்டர்", "அருகில்", "பதிலாக"]),
+                terms: terms(
+                  ["pick", "collect", "come", "order", "nearby", "instead", "another"],
+                  ["வந்து", "வாங்கி", "ஆர்டர்", "அருகில்", "பதிலாக"],
+                ),
               },
             ],
             requiredForCorrect: ["honest-limit"],

@@ -32,7 +32,15 @@ export interface MemorySummary {
   consentStatus: Learner["consentStatus"];
   memoryMode: "durable" | "session_only";
   profile: { displayName: string | null; preferredLanguage: LanguageCode };
-  preferences: Array<{ id: string; key: string; value: string; source: MemorySource; sourceSessionId: string | null; updatedAt: Date; confirmed: boolean }>;
+  preferences: Array<{
+    id: string;
+    key: string;
+    value: string;
+    source: MemorySource;
+    sourceSessionId: string | null;
+    updatedAt: Date;
+    confirmed: boolean;
+  }>;
   activeGoal: { id: string; text: string; source: string; sourceSessionId: string | null; updatedAt: Date } | null;
   enrollments: Array<{
     id: string;
@@ -40,7 +48,14 @@ export interface MemorySummary {
     courseTitle: string;
     status: string;
     currentLessonTitle: string | null;
-    mastery: Array<{ conceptId: string; conceptTitle: string; lessonId: string; state: MasteryState; updatedAt: Date; sourceSessionId: string | null }>;
+    mastery: Array<{
+      conceptId: string;
+      conceptTitle: string;
+      lessonId: string;
+      state: MasteryState;
+      updatedAt: Date;
+      sourceSessionId: string | null;
+    }>;
   }>;
   lastCheckpoint: { summary: string; createdAt: Date; sessionId: string | null } | null;
 }
@@ -79,7 +94,13 @@ export const memoryService = {
       confirmed: p.userConfirmed,
     }));
     base.activeGoal = goal
-      ? { id: goal.id, text: goal.goalText, source: goal.source, sourceSessionId: goal.sourceSessionId, updatedAt: goal.updatedAt }
+      ? {
+          id: goal.id,
+          text: goal.goalText,
+          source: goal.source,
+          sourceSessionId: goal.sourceSessionId,
+          updatedAt: goal.updatedAt,
+        }
       : null;
 
     // One mastery read per enrollment, issued together rather than in turn.
@@ -124,7 +145,8 @@ export const memoryService = {
     const items = await memoryRepo.list(db, learner.id, ["preference"]);
     const out: Partial<Record<PreferenceKey, string>> = {};
     for (const item of items) {
-      if ((item.key === "explanation_style" || item.key === "pace") && typeof item.value === "string") out[item.key] = item.value;
+      if ((item.key === "explanation_style" || item.key === "pace") && typeof item.value === "string")
+        out[item.key] = item.value;
     }
     return out;
   },
@@ -150,16 +172,31 @@ export const memoryService = {
       userConfirmed: true,
       confidence: 1,
     });
-    await recordEvent(db, "memory.updated", { learnerId: learner.id, sessionId: provenance.sourceSessionId, metadata: { key } });
+    await recordEvent(db, "memory.updated", {
+      learnerId: learner.id,
+      sessionId: provenance.sourceSessionId,
+      metadata: { key },
+    });
     return { saved: true };
   },
 
   /** Learner correction of their goal. Requires durable memory. */
-  async correctGoal(db: Db, learner: Learner, goalText: string, provenance: Provenance): Promise<{ saved: boolean; goalId: string | null }> {
+  async correctGoal(
+    db: Db,
+    learner: Learner,
+    goalText: string,
+    provenance: Provenance,
+  ): Promise<{ saved: boolean; goalId: string | null }> {
     const text = goalText.trim().replace(/\s+/g, " ");
-    if (text.length < 3 || text.length > 500) throw new DomainError("VALIDATION", "A goal should be between 3 and 500 characters.");
+    if (text.length < 3 || text.length > 500)
+      throw new DomainError("VALIDATION", "A goal should be between 3 and 500 characters.");
     if (!memoryService.isDurable(learner)) return { saved: false, goalId: null };
-    const source = provenance.source === "learner_settings" ? "settings" : provenance.source === "text_session" ? "text_session" : "voice_session";
+    const source =
+      provenance.source === "learner_settings"
+        ? "settings"
+        : provenance.source === "text_session"
+          ? "text_session"
+          : "voice_session";
     const active = await goalsRepo.findActive(db, learner.id);
     const goal = active
       ? await goalsRepo.updateText(db, active.id, text, source, provenance.sourceSessionId)
@@ -172,7 +209,11 @@ export const memoryService = {
             idempotencyKey: null,
           }),
         );
-    await recordEvent(db, "memory.updated", { learnerId: learner.id, sessionId: provenance.sourceSessionId, metadata: { key: "goal" } });
+    await recordEvent(db, "memory.updated", {
+      learnerId: learner.id,
+      sessionId: provenance.sourceSessionId,
+      metadata: { key: "goal" },
+    });
     return { saved: true, goalId: goal.id };
   },
 

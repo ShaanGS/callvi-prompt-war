@@ -10,10 +10,13 @@ import { SubmitButton } from "@/components/ui/form-controls";
 type SignInCopy = Messages["signIn"];
 
 export function EmailSignIn({ copy, next }: { copy: SignInCopy; next: string }) {
-  const [state, setState] = useActionState<SignInState, FormData>(async (prev, formData) => {
-    if (formData.get("intent") === "reset") return { step: "email" };
-    return prev.step === "code" ? verifyEmailCode(prev, formData) : requestEmailCode(prev, formData);
-  }, { step: "email" });
+  const [state, setState] = useActionState<SignInState, FormData>(
+    async (prev, formData) => {
+      if (formData.get("intent") === "reset") return { step: "email" };
+      return prev.step === "code" ? verifyEmailCode(prev, formData) : requestEmailCode(prev, formData);
+    },
+    { step: "email" },
+  );
 
   if (state.step === "code") {
     return (
@@ -37,11 +40,21 @@ export function EmailSignIn({ copy, next }: { copy: SignInCopy; next: string }) 
             aria-describedby={state.error ? "code-error" : undefined}
             className="font-mono tracking-[0.3em]"
           />
-          {state.error ? <FieldError id="code-error">{state.error === "rate_limited" ? copy.rateLimited : copy.invalidCode}</FieldError> : null}
+          {state.error ? (
+            <FieldError id="code-error">
+              {state.error === "rate_limited" ? copy.rateLimited : copy.invalidCode}
+            </FieldError>
+          ) : null}
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <SubmitButton pendingLabel={copy.verifying}>{copy.verify}</SubmitButton>
-          <button type="submit" name="intent" value="reset" formNoValidate className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+          <button
+            type="submit"
+            name="intent"
+            value="reset"
+            formNoValidate
+            className="text-sm font-medium text-accent underline-offset-4 hover:underline"
+          >
             {copy.useDifferentEmail}
           </button>
         </div>

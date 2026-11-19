@@ -3,7 +3,11 @@ import { MAX_JSON_BYTES, readJsonBody } from "@/server/http/body";
 import { DomainError } from "@/server/errors";
 
 function post(body: string, headers: Record<string, string> = {}): Request {
-  return new Request("http://localhost/api/test", { method: "POST", body, headers: { "content-type": "application/json", ...headers } });
+  return new Request("http://localhost/api/test", {
+    method: "POST",
+    body,
+    headers: { "content-type": "application/json", ...headers },
+  });
 }
 
 /** A JSON object whose serialised form is exactly `bytes` bytes of ASCII. */
@@ -59,7 +63,9 @@ describe("JSON body size limit", () => {
   });
 
   it("ignores a non-numeric content-length and falls back to measuring the body", async () => {
-    await expect(readJsonBody(post('{"ok":true}', { "content-length": "not-a-number" }))).resolves.toEqual({ ok: true });
+    await expect(readJsonBody(post('{"ok":true}', { "content-length": "not-a-number" }))).resolves.toEqual({
+      ok: true,
+    });
   });
 
   // Tamil text is three bytes per character in UTF-8; counting characters would let it through at ~3x the cap.

@@ -110,12 +110,7 @@ export const coursesRepo = {
       `select ${LESSON_COLUMNS} from course_lessons where course_id = any($1::text[]) order by course_id, sequence`,
       [courses.map((c) => c.id)],
     );
-    return courses.map((c) =>
-      toCourse(
-        c,
-        lessons.filter((l) => l.course_id === c.id).map(toLesson),
-      ),
-    );
+    return courses.map((c) => toCourse(c, lessons.filter((l) => l.course_id === c.id).map(toLesson)));
   },
 
   async findWithLessons(db: Queryable, courseId: string): Promise<StoredCourse | null> {
@@ -131,7 +126,12 @@ export const coursesRepo = {
   },
 
   async findCourseIdForLesson(db: Queryable, lessonId: string): Promise<string | null> {
-    const rows = await many(db, z.object({ course_id: z.string() }), `select course_id from course_lessons where id = $1`, [lessonId]);
+    const rows = await many(
+      db,
+      z.object({ course_id: z.string() }),
+      `select course_id from course_lessons where id = $1`,
+      [lessonId],
+    );
     return rows[0]?.course_id ?? null;
   },
 

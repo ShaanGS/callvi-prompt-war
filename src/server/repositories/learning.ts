@@ -23,20 +23,19 @@ const goalRow = z
     created_at: col.date,
     updated_at: col.date,
   })
-  .transform(
-    (r): Goal => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      goalText: r.goal_text,
-      status: r.goal_status,
-      userConfirmed: r.user_confirmed,
-      source: r.source,
-      sourceSessionId: r.source_session_id,
-      createdAt: r.created_at,
-      updatedAt: r.updated_at,
-    }),
-  );
-const GOAL_COLUMNS = "id, learner_id, goal_text, goal_status, user_confirmed, source, source_session_id, created_at, updated_at";
+  .transform((r): Goal => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    goalText: r.goal_text,
+    status: r.goal_status,
+    userConfirmed: r.user_confirmed,
+    source: r.source,
+    sourceSessionId: r.source_session_id,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+const GOAL_COLUMNS =
+  "id, learner_id, goal_text, goal_status, user_confirmed, source, source_session_id, created_at, updated_at";
 
 const enrollmentRow = z
   .object({
@@ -50,20 +49,19 @@ const enrollmentRow = z
     last_activity_at: col.date,
     completed_at: col.nullableDate,
   })
-  .transform(
-    (r): Enrollment => ({
-      id: r.id,
-      learnerId: r.learner_id,
-      courseId: r.course_id,
-      goalId: r.goal_id,
-      status: r.status,
-      currentLessonId: r.current_lesson_id,
-      enrolledAt: r.enrolled_at,
-      lastActivityAt: r.last_activity_at,
-      completedAt: r.completed_at,
-    }),
-  );
-const ENROLLMENT_COLUMNS = "id, learner_id, course_id, goal_id, status, current_lesson_id, enrolled_at, last_activity_at, completed_at";
+  .transform((r): Enrollment => ({
+    id: r.id,
+    learnerId: r.learner_id,
+    courseId: r.course_id,
+    goalId: r.goal_id,
+    status: r.status,
+    currentLessonId: r.current_lesson_id,
+    enrolledAt: r.enrolled_at,
+    lastActivityAt: r.last_activity_at,
+    completedAt: r.completed_at,
+  }));
+const ENROLLMENT_COLUMNS =
+  "id, learner_id, course_id, goal_id, status, current_lesson_id, enrolled_at, last_activity_at, completed_at";
 
 const progressRow = z
   .object({
@@ -73,15 +71,13 @@ const progressRow = z
     started_at: col.nullableDate,
     completed_at: col.nullableDate,
   })
-  .transform(
-    (r): LessonProgress => ({
-      enrollmentId: r.enrollment_id,
-      lessonId: r.lesson_id,
-      status: r.status,
-      startedAt: r.started_at,
-      completedAt: r.completed_at,
-    }),
-  );
+  .transform((r): LessonProgress => ({
+    enrollmentId: r.enrollment_id,
+    lessonId: r.lesson_id,
+    status: r.status,
+    startedAt: r.started_at,
+    completedAt: r.completed_at,
+  }));
 
 const masteryRow = z
   .object({
@@ -94,24 +90,25 @@ const masteryRow = z
     source_session_id: col.uuid.nullable(),
     updated_at: col.date,
   })
-  .transform(
-    (r): ConceptMastery => ({
-      enrollmentId: r.enrollment_id,
-      lessonId: r.lesson_id,
-      conceptId: r.concept_id,
-      state: r.state,
-      attempts: r.attempts,
-      lastResult: r.last_result,
-      sourceSessionId: r.source_session_id,
-      updatedAt: r.updated_at,
-    }),
-  );
+  .transform((r): ConceptMastery => ({
+    enrollmentId: r.enrollment_id,
+    lessonId: r.lesson_id,
+    conceptId: r.concept_id,
+    state: r.state,
+    attempts: r.attempts,
+    lastResult: r.last_result,
+    sourceSessionId: r.source_session_id,
+    updatedAt: r.updated_at,
+  }));
 
 export const goalsRepo = {
   async findActive(db: Queryable, learnerId: string): Promise<Goal | null> {
-    return maybeOne(db, goalRow, `select ${GOAL_COLUMNS} from learner_goals where learner_id = $1 and goal_status = 'active'`, [
-      learnerId,
-    ]);
+    return maybeOne(
+      db,
+      goalRow,
+      `select ${GOAL_COLUMNS} from learner_goals where learner_id = $1 and goal_status = 'active'`,
+      [learnerId],
+    );
   },
 
   async findById(db: Queryable, id: string): Promise<Goal | null> {
@@ -123,9 +120,12 @@ export const goalsRepo = {
   },
 
   async list(db: Queryable, learnerId: string): Promise<Goal[]> {
-    return many(db, goalRow, `select ${GOAL_COLUMNS} from learner_goals where learner_id = $1 order by created_at desc limit 20`, [
-      learnerId,
-    ]);
+    return many(
+      db,
+      goalRow,
+      `select ${GOAL_COLUMNS} from learner_goals where learner_id = $1 order by created_at desc limit 20`,
+      [learnerId],
+    );
   },
 
   /** Pause the current active goal (if any) and create a new active one. */
@@ -152,7 +152,13 @@ export const goalsRepo = {
   },
 
   /** A learner correction: new text, and provenance now points at where the correction was made. */
-  async updateText(db: Queryable, goalId: string, goalText: string, source: Goal["source"], sourceSessionId: string | null): Promise<Goal> {
+  async updateText(
+    db: Queryable,
+    goalId: string,
+    goalText: string,
+    source: Goal["source"],
+    sourceSessionId: string | null,
+  ): Promise<Goal> {
     return one(
       db,
       goalRow,
@@ -199,7 +205,13 @@ export const enrollmentsRepo = {
 
   async create(
     db: Queryable,
-    input: { learnerId: string; courseId: string; goalId: string | null; currentLessonId: string; idempotencyKey: string | null },
+    input: {
+      learnerId: string;
+      courseId: string;
+      goalId: string | null;
+      currentLessonId: string;
+      idempotencyKey: string | null;
+    },
   ): Promise<Enrollment> {
     return one(
       db,
@@ -210,7 +222,11 @@ export const enrollmentsRepo = {
     );
   },
 
-  async touch(db: Queryable, id: string, patch: { status?: Enrollment["status"]; currentLessonId?: string | null; goalId?: string | null }) {
+  async touch(
+    db: Queryable,
+    id: string,
+    patch: { status?: Enrollment["status"]; currentLessonId?: string | null; goalId?: string | null },
+  ) {
     return one(
       db,
       enrollmentRow,

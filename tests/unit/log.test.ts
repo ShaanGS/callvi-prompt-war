@@ -90,7 +90,12 @@ describe("log redaction", () => {
   });
 
   it("replaces values under sensitive keys entirely, case-insensitively, keeping only the length", () => {
-    log.info("tool.called", { phone: "+919876543210", Authorization: "Bearer xyz", transcript: "hello there", answer_text: "twelve" });
+    log.info("tool.called", {
+      phone: "+919876543210",
+      Authorization: "Bearer xyz",
+      transcript: "hello there",
+      answer_text: "twelve",
+    });
     const line = lastLine(logSpy);
     expect(line.phone).toBe("[redacted:13]");
     expect(line.Authorization).toBe("[redacted:10]");

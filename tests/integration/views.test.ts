@@ -15,7 +15,15 @@ function agent(db: Db, learner: Learner, session: LearningSession) {
   return {
     state,
     async call(toolName: string, rawInput: Record<string, unknown> = {}) {
-      const r = await runTool({ db, channel: state.session.channel, learner: state.learner, session: state.session, toolName, rawInput, interactionId: null });
+      const r = await runTool({
+        db,
+        channel: state.session.channel,
+        learner: state.learner,
+        session: state.session,
+        toolName,
+        rawInput,
+        interactionId: null,
+      });
       if (r.session) state.session = r.session;
       if (r.learner) state.learner = r.learner;
       return r.response;
@@ -61,7 +69,9 @@ describe("enrolment progress view", () => {
     });
     expect(view!.completedConcepts).toBeGreaterThanOrEqual(1);
     expect(view!.completedConcepts).toBeLessThanOrEqual(view!.totalConcepts);
-    expect(view!.lessons.map((l) => l.sequence)).toEqual([...view!.lessons.map((l) => l.sequence)].sort((x, y) => x - y));
+    expect(view!.lessons.map((l) => l.sequence)).toEqual(
+      [...view!.lessons.map((l) => l.sequence)].sort((x, y) => x - y),
+    );
     expect(MASTERY_STATES).toContain(view!.lessons[0]!.concepts.find((c) => c.id === "sbs-offer")?.state);
     expect(view!.lessons.at(-1)!.concepts.every((c) => c.state === "not_started")).toBe(true);
     expect(view!.lastCheckpoint?.summary).toContain("Small Business Starter — lesson 1");
@@ -89,7 +99,11 @@ describe("home view", () => {
     expect(home.goal?.text).toBe(GOAL);
     expect(home.focus?.course.id).toBe("small-business-starter");
     expect(home.others).toEqual([]);
-    expect(home.openSession).toEqual({ id: a.state.session.id, channel: "simulated", startedAt: a.state.session.startedAt });
+    expect(home.openSession).toEqual({
+      id: a.state.session.id,
+      channel: "simulated",
+      startedAt: a.state.session.startedAt,
+    });
     expect(home.sessionCount).toBe(1);
   });
 
@@ -104,7 +118,9 @@ describe("home view", () => {
   // An open session left idle for hours is stale; resuming it would restore context the learner has moved on from.
   it("does not offer an open session that has been idle for more than two hours", async () => {
     const a = await learnSomething(db, await createLearner(db, { consent: "granted" }));
-    await db.query(`update learning_sessions set last_activity_at = now() - interval '3 hours' where id = $1`, [a.state.session.id]);
+    await db.query(`update learning_sessions set last_activity_at = now() - interval '3 hours' where id = $1`, [
+      a.state.session.id,
+    ]);
     expect((await homeView(db, a.state.learner, "en-IN")).openSession).toBeNull();
   });
 
@@ -116,7 +132,13 @@ describe("home view", () => {
 
   it("is empty for a brand-new learner", async () => {
     const learner = await createLearner(db, { consent: "granted" });
-    expect(await homeView(db, learner, "en-IN")).toEqual({ goal: null, focus: null, others: [], openSession: null, sessionCount: 0 });
+    expect(await homeView(db, learner, "en-IN")).toEqual({
+      goal: null,
+      focus: null,
+      others: [],
+      openSession: null,
+      sessionCount: 0,
+    });
   });
 });
 
@@ -125,7 +147,9 @@ describe("history view", () => {
     const a = await learnSomething(db, await createLearner(db, { consent: "granted" }));
     const history = await historyView(db, a.state.learner, "en-IN");
 
-    expect(history.sessions).toEqual([expect.objectContaining({ id: a.state.session.id, channel: "simulated", endedAt: null, minutes: null })]);
+    expect(history.sessions).toEqual([
+      expect.objectContaining({ id: a.state.session.id, channel: "simulated", endedAt: null, minutes: null }),
+    ]);
     expect(history.attempts).toHaveLength(1);
     expect(history.attempts[0]).toMatchObject({
       course: "Small Business Starter",
@@ -140,10 +164,15 @@ describe("history view", () => {
   it("reports session length in whole minutes, never less than one, once a session ends", async () => {
     const a = await learnSomething(db, await createLearner(db, { consent: "granted" }));
     await a.call("close_learning_session", { reason: "learner_ended" });
-    await db.query(`update learning_sessions set started_at = ended_at - interval '7 minutes 20 seconds' where id = $1`, [a.state.session.id]);
+    await db.query(
+      `update learning_sessions set started_at = ended_at - interval '7 minutes 20 seconds' where id = $1`,
+      [a.state.session.id],
+    );
     expect((await historyView(db, a.state.learner, "en-IN")).sessions[0]!.minutes).toBe(7);
 
-    await db.query(`update learning_sessions set started_at = ended_at - interval '5 seconds' where id = $1`, [a.state.session.id]);
+    await db.query(`update learning_sessions set started_at = ended_at - interval '5 seconds' where id = $1`, [
+      a.state.session.id,
+    ]);
     expect((await historyView(db, a.state.learner, "en-IN")).sessions[0]!.minutes).toBe(1);
   });
 
@@ -186,7 +215,9 @@ describe("live session view", () => {
     expect(view.concept).not.toBeNull();
     expect(view.concept!.approachesUsed).toBeLessThanOrEqual(view.concept!.approachesTotal);
     expect(view.concept!.explanation).not.toBe("");
-    expect(view.lessonConcepts.map((c) => c.id)).toEqual(course.lessons.find((l) => l.id === "sbs-01")!.concepts.map((c) => c.id));
+    expect(view.lessonConcepts.map((c) => c.id)).toEqual(
+      course.lessons.find((l) => l.id === "sbs-01")!.concepts.map((c) => c.id),
+    );
     expect(view.attempts).toEqual([expect.objectContaining({ exerciseId: "sbs-01-offer-sentence" })]);
     expect(view.courseProgress.totalConcepts).toBe(totalConcepts(course));
     expect(view.courseProgress.completedConcepts).toBeGreaterThanOrEqual(1);

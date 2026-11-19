@@ -8,4 +8,3 @@ export function CurrentPathInput({ name = "next" }: { name?: string }) {
   const search = useSearchParams().toString();
   return <input type="hidden" name={name} value={search ? `${pathname}?${search}` : pathname} />;
 }
-

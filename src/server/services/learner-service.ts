@@ -37,7 +37,10 @@ export const learnerService = {
         await learnersRepo.delete(db, learner.id);
         return { learner: winner, created: false };
       }
-      await recordEvent(db, "learner.identified", { learnerId: learner.id, metadata: { provider: identity.provider, created: true } });
+      await recordEvent(db, "learner.identified", {
+        learnerId: learner.id,
+        metadata: { provider: identity.provider, created: true },
+      });
       return { learner, created: true };
     } catch (e) {
       const raced = await learnersRepo.findByIdentity(db, identity.provider, identity.subject);
@@ -52,7 +55,11 @@ export const learnerService = {
     return learner;
   },
 
-  async updateProfile(db: Queryable, learnerId: string, patch: { displayName?: string | null; preferredLanguage?: LanguageCode }) {
+  async updateProfile(
+    db: Queryable,
+    learnerId: string,
+    patch: { displayName?: string | null; preferredLanguage?: LanguageCode },
+  ) {
     const displayName = patch.displayName === undefined ? undefined : patch.displayName?.trim() || null;
     if (displayName && displayName.length > 80) throw new DomainError("VALIDATION", "Name is too long.");
     return learnersRepo.updateProfile(db, learnerId, { displayName, preferredLanguage: patch.preferredLanguage });
@@ -75,7 +82,13 @@ export const learnerService = {
   ): Promise<Learner> {
     const learner = await db.transaction(async (tx) => {
       const updated = await learnersRepo.setConsent(tx, learnerId, decision, CONSENT_VERSION);
-      await learnersRepo.insertConsentRecord(tx, { learnerId, decision, version: CONSENT_VERSION, channel, sessionId: sourceSessionId });
+      await learnersRepo.insertConsentRecord(tx, {
+        learnerId,
+        decision,
+        version: CONSENT_VERSION,
+        channel,
+        sessionId: sourceSessionId,
+      });
       await sessionsRepo.setMemoryMode(tx, learnerId, decision === "granted" ? "durable" : "session_only");
       return updated;
     });

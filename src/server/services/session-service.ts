@@ -69,7 +69,8 @@ export const sessionService = {
   },
 
   requireOpen(session: LearningSession): void {
-    if (!isSessionOpen(session)) throw new DomainError("SESSION_CLOSED", "This learning session has ended. Start a new one to continue.");
+    if (!isSessionOpen(session))
+      throw new DomainError("SESSION_CLOSED", "This learning session has ended. Start a new one to continue.");
   },
 
   /**
@@ -105,7 +106,11 @@ export const sessionService = {
   },
 
   /** Build the structured checkpoint from session state (never from model text). */
-  async buildCheckpoint(db: Queryable, session: LearningSession, unresolvedDifficulty: string | null): Promise<{
+  async buildCheckpoint(
+    db: Queryable,
+    session: LearningSession,
+    unresolvedDifficulty: string | null,
+  ): Promise<{
     data: CheckpointData;
     course: StoredCourse | null;
   }> {
@@ -150,7 +155,13 @@ export const sessionService = {
   async saveCheckpoint(
     db: Db,
     input: { session: LearningSession; learner: Learner; idempotencyKey: string; unresolvedDifficulty: string | null },
-  ): Promise<{ saved: boolean; checkpoint: Checkpoint | null; data: CheckpointData; summary: string; replayed: boolean }> {
+  ): Promise<{
+    saved: boolean;
+    checkpoint: Checkpoint | null;
+    data: CheckpointData;
+    summary: string;
+    replayed: boolean;
+  }> {
     const { data, course } = await sessionService.buildCheckpoint(db, input.session, input.unresolvedDifficulty);
     const summaryEn = renderCheckpointSummary(data, course, "en-IN");
     const summaryLearner = renderCheckpointSummary(data, course, input.learner.preferredLanguage);
@@ -167,7 +178,11 @@ export const sessionService = {
     });
     if (created) {
       await sessionService.mutateState(db, input.session, (s) => ({ ...s, checkpointsSaved: s.checkpointsSaved + 1 }));
-      await recordEvent(db, "checkpoint.saved", { learnerId: input.learner.id, sessionId: input.session.id, channel: input.session.channel });
+      await recordEvent(db, "checkpoint.saved", {
+        learnerId: input.learner.id,
+        sessionId: input.session.id,
+        channel: input.session.channel,
+      });
     }
     return { saved: true, checkpoint, data, summary: summaryLearner, replayed: !created };
   },
@@ -187,7 +202,12 @@ export const sessionService = {
     },
   ): Promise<{ alreadyClosed: boolean; saved: boolean; summary: string | null; session: LearningSession }> {
     if (!isSessionOpen(input.session)) {
-      return { alreadyClosed: true, saved: input.session.checkpoint !== null, summary: input.session.summary, session: input.session };
+      return {
+        alreadyClosed: true,
+        saved: input.session.checkpoint !== null,
+        summary: input.session.summary,
+        session: input.session,
+      };
     }
     const durable = input.session.memoryMode === "durable" && memoryModeFor(input.learner) === "durable";
     let summary: string | null = null;
@@ -204,8 +224,15 @@ export const sessionService = {
       checkpointJson = cp.data;
     }
     const reloaded = (await sessionsRepo.findById(db, input.session.id)) ?? input.session;
-    const finalState: SessionState = durable ? { ...reloaded.state, phase: "closed" } : { ...emptySessionState(), phase: "closed" };
-    const status = input.reason === "error" ? "failed" : input.reason === "interrupted" || input.reason === "stale" ? "interrupted" : "completed";
+    const finalState: SessionState = durable
+      ? { ...reloaded.state, phase: "closed" }
+      : { ...emptySessionState(), phase: "closed" };
+    const status =
+      input.reason === "error"
+        ? "failed"
+        : input.reason === "interrupted" || input.reason === "stale"
+          ? "interrupted"
+          : "completed";
     const closed = await sessionsRepo.close(db, input.session.id, {
       status,
       summary,
@@ -261,7 +288,7 @@ async function initialState(db: Queryable, learner: Learner, requestedCourseId: 
   const enrollments = await enrollmentsRepo.listForLearner(db, learner.id);
   const enrollment = requestedCourseId
     ? enrollments.find((e) => e.courseId === requestedCourseId && e.status !== "withdrawn")
-    : enrollments.find((e) => e.status === "active") ?? enrollments[0];
+    : (enrollments.find((e) => e.status === "active") ?? enrollments[0]);
   if (requestedCourseId && !enrollment) {
     // Course chosen but not yet enrolled: the agent confirms before enrolling.
     await courseService.getAvailable(db, requestedCourseId);
