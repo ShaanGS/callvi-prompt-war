@@ -12,7 +12,8 @@ Guidance for contributors and coding agents.
 ## Before you push
 
 ```bash
-npm run lint && npm run typecheck && npm run test:coverage && npm run build
+npm run check          # format, lint, types, tests and the production build
+npm run test:coverage  # coverage thresholds, as CI runs them
 npm run test:preview   # the deployed preview: accessibility, headers, lessons
 npm run test:e2e       # the full app: journeys and accessibility in both languages
 ```

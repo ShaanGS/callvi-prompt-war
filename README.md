@@ -1,5 +1,7 @@
 # Callvi
 
+[![CI](https://github.com/ShaanGS/callvi-prompt-war/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ShaanGS/callvi-prompt-war/actions/workflows/ci.yml?query=branch%3Amain) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 [![Callvi. Build your skills, one call at a time.](docs/media/callvi-cover.webp)](https://callvi-prompt-war.vercel.app/)
 
 **[Try the learning demo](https://callvi-prompt-war.vercel.app/) · [தமிழில் கற்க](https://callvi-prompt-war.vercel.app/?lang=ta) · [Hear a recorded AI call](https://callvi-prompt-war.vercel.app/call-sample.html) · [Watch the walkthrough](https://callvi-prompt-war.vercel.app/walkthrough.mp4)**
@@ -8,7 +10,7 @@ Callvi is an AI learning companion that teaches practical skills **by voice conv
 
 **Prompt War theme: 2 — AI for Education.**
 
-> **What the public link runs:** three of Callvi's lessons with the same exercises and rubric as the full app, prerecorded lesson audio, and [a recording of a real live AI call](https://callvi-prompt-war.vercel.app/call-sample.html). It needs no account or keys. The full app, with saved progress and the educator dashboard, runs from this repository with no setup; live voice lessons also need a Sarvam or ElevenLabs key ([Run locally](#run-locally)).
+> **The public link** is a keyless preview: three lessons with the real exercises and rubric, prerecorded lesson audio, and [a recording of a live AI call](https://callvi-prompt-war.vercel.app/call-sample.html). **The full app**, with saved progress and the educator dashboard, runs from this repository with `npm ci && npm run dev`; live voice also needs a Sarvam or ElevenLabs key ([Setup and run](#setup-and-run)).
 
 ---
 
@@ -58,7 +60,7 @@ The model is deliberately kept away from the things it should not decide:
 - **It never invents memory.** It reads saved progress through [`get_memory_summary`](src/server/agent/tools.ts), and only writes after [`set_memory_consent`](src/server/agent/tools.ts).
 - **Its instructions are generated from code** ([`agent-setup.ts`](src/server/providers/sarvam/agent-setup.ts)) so the provider dashboard cannot drift from the app's own policy.
 
-## Key features
+## Features
 
 - Bilingual Tamil and English lessons, switchable at any moment.
 - Three practical courses (small business, everyday digital skills, communication) and a customer-call rehearsal.
@@ -80,6 +82,24 @@ The [public demo](https://callvi-prompt-war.vercel.app/) needs no account, keys 
 | [Communication](https://callvi-prompt-war.vercel.app/?skill=communication) | Answer a customer as a home tailor: give the fee and pickup time. Callvi shows which details it heard. |
 
 The demo runs the same authored exercises and the same rubric as the live app, but plays recorded audio instead of opening a live voice session, so it works without provider keys. [The recorded call](https://callvi-prompt-war.vercel.app/call-sample.html) is a real Sarvam session with a synthetic learner.
+
+## Setup and run
+
+Requires Node.js 24. The development server starts an embedded PostgreSQL database on first use, so no setup is needed to explore the app.
+
+```bash
+npm ci
+npm run dev
+```
+
+Open [localhost:3000](http://localhost:3000) and choose a skill. For live voice, add a Sarvam or ElevenLabs configuration ([setup guide](docs/SETUP.md), [environment variables](.env.example)).
+
+| Task | Command |
+| --- | --- |
+| Lint, type-check, test and build | `npm run check` |
+| Unit, integration and agent tests | `npm test` |
+| Browser journeys | `npx playwright install chromium` then `npm run test:e2e` |
+| Build the public preview | `npm run build:rehearsal` |
 
 ## Architecture
 
@@ -153,35 +173,17 @@ Callvi's learners are often on basic phones and patchy mobile data, so the previ
 
 ## Testing
 
-**328 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
+**329 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
 | Unit, integration and agent scenarios | **260** in 24 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, that no digit of a caller's number is stored, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
 | Deployed preview | **36** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, hashed bundles cached for a year, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
-| Full app | **32** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every learner screen in English and Tamil, on a phone, in feedback states and across the educator dashboard | `npm run test:e2e` |
+| Full app | **33** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every screen, from sign-in to the live room and the educator's view of one learner, in English and Tamil, on a phone and in feedback states | `npm run test:e2e` |
 
 Coverage of `src/server`, `src/content` and `src/lib` (excluding the agent evaluation harness, which is itself a test runner) is 83% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
 
 The tests assert behaviour a learner or educator relies on rather than implementation details. For example: an answer of 120 is told it forgot to divide while 1200 is told it multiplied, wrong agent secrets lock an address out before the secret is compared, and the educator dashboard never shows a learner's answer text.
-
-## Run locally
-
-Requires Node.js 24. The development server starts an embedded PostgreSQL database on first use, so no setup is needed to explore the app.
-
-```bash
-npm ci
-npm run dev
-```
-
-Open [localhost:3000](http://localhost:3000) and choose a skill. For live voice, add a Sarvam or ElevenLabs configuration ([setup guide](docs/SETUP.md), [environment variables](.env.example)).
-
-| Task | Command |
-| --- | --- |
-| Lint, type-check, test and build | `npm run check` |
-| Unit, integration and agent tests | `npm test` |
-| Browser journeys | `npx playwright install chromium` then `npm run test:e2e` |
-| Build the public preview | `npm run build:rehearsal` |
 
 ## Project history
 

@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { devSignIn, uniqueName, useEnglish } from "./helpers";
+import { devSignIn, onboard, openStudyRoom, uniqueName, useEnglish } from "./helpers";
 
 /**
  * The full app, not just the public preview: every learner-facing screen in
@@ -90,6 +90,33 @@ test("feedback states are accessible too, not just the empty lesson", async ({ p
   expect(await violations(page)).toEqual([]);
 });
 
+test("a signed-in learner's screens have no WCAG 2.2 AA violations, from sign-in to the live room", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await useEnglish(context, baseURL!);
+  await page.goto("/sign-in");
+  await expect(page.locator("h1").first()).toBeVisible();
+  expect(await violations(page), "/sign-in").toEqual([]);
+
+  await onboard(page, {
+    consent: "grant",
+    goal: "I want to price my homemade snacks and sell to neighbours",
+    courseTitle: "Small Business Starter",
+  });
+  expect(await violations(page), "/learn").toEqual([]);
+
+  await openStudyRoom(page);
+  expect(await violations(page), "/learn/[sessionId]").toEqual([]);
+
+  for (const path of ["/home", "/progress", "/courses/small-business-starter"]) {
+    await page.goto(path);
+    await expect(page.locator("h1").first()).toBeVisible();
+    expect(await violations(page), path).toEqual([]);
+  }
+});
+
 test("the educator dashboard has no WCAG 2.2 AA violations", async ({ page, context, baseURL }) => {
   // The sign-in screen follows the learner language; the helper's labels are English.
   await useEnglish(context, baseURL!);
@@ -99,4 +126,10 @@ test("the educator dashboard has no WCAG 2.2 AA violations", async ({ page, cont
     await expect(page.locator("h1").first()).toBeVisible();
     expect(await violations(page), path).toEqual([]);
   }
+  // A single learner's record, reached the way an educator would.
+  await page.goto("/staff/learners");
+  await page.locator('a[href^="/staff/learners/"]').first().click();
+  await page.waitForURL(/\/staff\/learners\/[0-9a-f-]{36}$/);
+  await expect(page.locator("h1").first()).toBeVisible();
+  expect(await violations(page), "/staff/learners/[id]").toEqual([]);
 });
