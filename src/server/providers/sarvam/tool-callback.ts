@@ -6,7 +6,7 @@ import { isSessionOpen, type LearningSession } from "../../domain/types";
 import { log } from "../../observability/log";
 import { safeEqual, sha256Hex } from "../../security/crypto";
 import { hashPhone, normalisePhone } from "../../security/phone";
-import { rateLimit } from "../../security/rate-limit";
+import { assertNotLimited, rateLimit } from "../../security/rate-limit";
 import { looksLikeVoiceToken, verifyVoiceToken } from "../../security/voice-token";
 import { sessionsRepo } from "../../repositories/sessions";
 import { learnersRepo } from "../../repositories/learners";
@@ -33,6 +33,14 @@ import type { ResolvedToolCaller } from "../interfaces";
  * A browser can never reach the phone path because it cannot present the
  * phone agent's secret.
  */
+
+/**
+ * Wrong-secret lockout: ten failures per IP in five minutes. A genuine agent
+ * never sends a wrong secret, so this only ever slows a guesser; it is far
+ * below the 600/min that legitimate tool traffic is allowed.
+ */
+const AUTH_FAILURE_LIMIT = 10;
+const AUTH_FAILURE_WINDOW_MS = 5 * 60_000;
 
 const envelopeSchema = z
   .object({
@@ -146,12 +154,17 @@ export async function handleSarvamToolCallback(
   input: { authorization: string | null; toolName: string; body: unknown; clientKey: string },
 ): Promise<CallbackResult> {
   try {
+    // Both limits run before the secret is compared. Checked after it, a wrong
+    // guess cost nothing, so the bearer secret was the only thing slowing a guesser.
+    const failures = `tool-auth-fail:${input.clientKey}`;
+    assertNotLimited(failures, AUTH_FAILURE_LIMIT);
+    rateLimit(`tool-ip:${input.clientKey}`, 600, 60_000);
     const channel = authenticateToolCaller(config, input.authorization);
     if (!channel) {
+      rateLimit(failures, AUTH_FAILURE_LIMIT + 1, AUTH_FAILURE_WINDOW_MS);
       log.warn("sarvam.tool_auth_failed", { tool: input.toolName.slice(0, 64) });
       throw new DomainError("UNAUTHENTICATED", "Invalid tool credentials.");
     }
-    rateLimit(`tool-ip:${input.clientKey}`, 600, 60_000);
     if (!getTool(input.toolName)) throw new DomainError("NOT_FOUND", "Unknown tool.");
 
     const envelope = envelopeSchema.safeParse(input.body);

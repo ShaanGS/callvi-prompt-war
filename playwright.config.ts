@@ -22,7 +22,7 @@ export default defineConfig({
     locale: "en-IN",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: /mobile.spec.ts/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"] }, testIgnore: [/mobile.spec.ts/, /preview\//] },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: {

@@ -2,10 +2,8 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, AudioLines, Headphones } from "lucide-react";
-import { getSkillPreview } from "@/content/skill-preview";
-import { customerCall } from "@/content/courses/customer-call";
-import { exerciseSchema } from "@/content/schema";
-import { assessAnswer } from "@/server/services/assessment/assessment-service";
+import { callPractice, getSkillPreview } from "@/content/skill-preview";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
 import { voiceCopy } from "@/lib/voice/copy";
 import { useDocumentLanguage } from "@/lib/use-document-language";
 import type { LanguageCode } from "@/lib/languages";
@@ -13,8 +11,6 @@ import { SkillHome } from "@/components/room/skill-home";
 import styles from "@/components/room/voice-entry.module.css";
 import { PracticeReply } from "./practice-reply";
 import { AudioPrompt } from "./audio-prompt";
-
-const tailoring = exerciseSchema.parse(customerCall.lessons[0].practice[0]);
 
 /**
  * Interface copy for this screen. Lesson content comes from the authored
@@ -78,7 +74,7 @@ export function SkillPreview({ language: initial, skill, standalone = false }: {
   const home = homeHref(standalone, tamil);
 
   if (isCall) {
-    return <PracticeReply exercise={tailoring} language={language} assets={assets} homeHref={home} syncDocument={standalone} />;
+    return <PracticeReply exercise={callPractice} language={language} assets={assets} homeHref={home} syncDocument={standalone} />;
   }
 
   const lessonHref = (id: string) => (standalone ? "./" : "/practice") + "?skill=" + id + "&lang=" + (tamil ? "ta" : "en");

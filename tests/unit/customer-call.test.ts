@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COURSE_CATALOGUE } from "@/content/courses";
-import { assessAnswer } from "@/server/services/assessment/assessment-service";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
 
 const exercise = COURSE_CATALOGUE.find((course) => course.id === "customer-call")!.lessons[0].practice[0];
 

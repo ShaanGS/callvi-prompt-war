@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { appendFile, writeFile } from "node:fs/promises";
-import { extractNumbers } from "../src/server/services/assessment/numbers";
+import { extractNumbers } from "../src/lib/assessment/numbers";
 
 test.skip(process.env.LIVE_VOICE_TEST !== "1", "Real Tamil review conversation; consumes provider credits.");
 test.use({ permissions: ["microphone"], launchOptions: { args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", "--use-file-for-fake-audio-capture=/private/tmp/callvi-silent-microphone.wav"] } });

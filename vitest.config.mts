@@ -17,5 +17,14 @@ export default defineConfig({
     pool: "forks",
     // Each integration worker starts a WebAssembly PostgreSQL instance.
     maxWorkers: 2,
+    coverage: {
+      provider: "v8",
+      // The logic a grade or a learner's data depends on. UI components are
+      // covered by the Playwright suites instead.
+      include: ["src/server/**", "src/content/**", "src/lib/**"],
+      reporter: ["text-summary", "html"],
+      // Set just under the measured figures so coverage can only ratchet up.
+      thresholds: { statements: 82, branches: 76, functions: 82, lines: 84 },
+    },
   },
 });

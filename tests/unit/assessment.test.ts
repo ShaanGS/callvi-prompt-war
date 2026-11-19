@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { COURSE_CATALOGUE } from "@/content/courses";
 import { exerciseSchema } from "@/content/schema";
-import { assessAnswer } from "@/server/services/assessment/assessment-service";
-import { extractNumbers } from "@/server/services/assessment/numbers";
+import { assessAnswer } from "@/lib/assessment/assessment-service";
+import { extractNumbers } from "@/lib/assessment/numbers";
 
 function exercise(id: string) {
   for (const course of COURSE_CATALOGUE) {

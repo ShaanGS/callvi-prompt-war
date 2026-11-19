@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { hashPhone, normalisePhone } from "@/server/security/phone";
 import { issueVoiceToken, looksLikeVoiceToken, verifyVoiceToken } from "@/server/security/voice-token";
 import { redactText, summariseArgs } from "@/server/security/redact";
-import { rateLimit, resetRateLimitsForTests } from "@/server/security/rate-limit";
+import { assertNotLimited, rateLimit, resetRateLimitsForTests } from "@/server/security/rate-limit";
 import { canonicalJson, safeEqual } from "@/server/security/crypto";
 import { DomainError } from "@/server/errors";
 
@@ -77,6 +77,17 @@ describe("rate limiting and helpers", () => {
     rateLimit("k", 2, 1000, now + 1);
     expect(() => rateLimit("k", 2, 1000, now + 2)).toThrow(DomainError);
     expect(() => rateLimit("k", 2, 1000, now + 1500)).not.toThrow();
+  });
+
+  // The lockout check must never itself spend from the bucket, or a correct
+  // request would be charged against a limit meant only for failures.
+  it("checks a bucket without counting against it, and only rejects once it is full", () => {
+    const now = 2_000_000;
+    for (let i = 0; i < 50; i++) expect(() => assertNotLimited("peek", 2, now)).not.toThrow();
+    rateLimit("peek", 99, 1000, now);
+    rateLimit("peek", 99, 1000, now);
+    expect(() => assertNotLimited("peek", 2, now)).toThrow(DomainError);
+    expect(() => assertNotLimited("peek", 2, now + 1001)).not.toThrow();
   });
 
   it("compares secrets in constant time and canonicalises JSON key order", () => {
