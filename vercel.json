@@ -1,4 +1,6 @@
 {
-  "buildCommand": "npm run db:migrate && npm run db:seed && npm run build",
-  "regions": ["sin1"]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build:rehearsal",
+  "outputDirectory": "dist/rehearsal-demo"
 }
