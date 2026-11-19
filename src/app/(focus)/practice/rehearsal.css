@@ -23,7 +23,7 @@
 .cv-audio,.cv-history-title button,.cv-concept button { background:transparent; border:0; padding:6px 0; }
 .cv-work form,.cv-reader form { display:grid; gap:10px; margin-top:20px; }
 .cv-work h2,.cv-reader h2 { font-size:26px; font-weight:500; letter-spacing:-.035em; }
-.cv-studio textarea,.cv-reader textarea { width:100%; min-height:74px; padding:10px 13px; color:#202320; background:white; border:1px solid #aeb3ae; border-radius:12px; resize:vertical; }
+.cv-studio textarea,.cv-reader textarea { width:100%; min-height:74px; padding:10px 13px; color:#202320; background:white; border:1px solid #858a85; border-radius:12px; resize:vertical; }
 .cv-examples,.cv-checks { flex-wrap:wrap; gap:6px; font-size:13px; }
 .cv-examples button,.cv-dictation button { border:1px solid #d5d9d5; border-radius:99px; background:#fff; padding:5px 10px; }
 .cv-submit,.cv-reader form button { display:inline-flex; gap:8px; align-items:center; justify-self:start; background:#111; color:white; border:none; border-radius:99px; padding:10px 18px; }
@@ -44,3 +44,14 @@
 .cv-question { margin-top:28px; }
 .cv-reader:lang(ta) h1,.cv-studio:lang(ta) h1 { line-height:1.45; letter-spacing:-.025em; }
 @media(max-width:700px) { .cv-header,.cv-grid,.cv-foot {width:calc(100% - 36px)} .cv-grid{grid-template-columns:1fr;gap:22px;padding:20px 0}.cv-brief{padding:20px}.cv-foot{align-items:start}.cv-reader{margin-top:4px} }
+
+/* The audience is on phones, often one-handed. WCAG 2.2 AA only asks for 24px,
+   but every control a learner taps mid-lesson gets the 44px platform minimum. */
+.cv-language button,
+.cv-audio,
+.cv-concept button,
+.cv-examples button,
+.cv-history-title button,
+.cv-dictation button { min-height:44px; }
+.cv-examples button,
+.cv-dictation button { padding-inline:14px; }
