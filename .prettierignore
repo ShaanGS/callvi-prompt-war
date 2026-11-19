@@ -1,0 +1,15 @@
+# Generated or vendored, not authored here
+.next/
+dist/
+coverage/
+test-results/
+playwright-report/
+.data/
+public/
+docs/media/
+package-lock.json
+next-env.d.ts
+# Applied migrations are never rewritten, even cosmetically
+supabase/migrations/
+# Prose is hand-formatted; Prettier would pad every table row to the widest cell
+*.md

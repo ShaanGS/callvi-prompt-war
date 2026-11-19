@@ -17,10 +17,12 @@
     "sarvam:config": "tsx --conditions=react-server scripts/sarvam-config.ts",
     "elevenlabs:configure": "tsx --conditions=react-server scripts/elevenlabs-configure.ts",
     "agent:eval-export": "tsx --conditions=react-server scripts/agent-eval-export.ts",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
     "build:rehearsal": "tsx scripts/extract-preview.ts && node scripts/build-rehearsal.mjs",
     "test:preview": "playwright test --config playwright.preview.config.ts",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.15",
@@ -51,6 +53,7 @@
     "esbuild": "0.28.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
+    "prettier": "3.9.10",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
