@@ -45,7 +45,7 @@ Configure the published Sarvam agents with those HTTPS callback URLs. The source
 
 ### Deploy the public learning preview by itself
 
-For a Cloud Run service with the same three interactive lessons as GitHub Pages, run the following in Cloud Shell from the repository root. This publishes the recorded call and browser exercises. The live AI browser calls, database and learner checkpoints use the full application deployment above.
+For a Cloud Run service with the same three interactive lessons as the Vercel preview, run the following in Cloud Shell from the repository root. This publishes the recorded call and browser exercises. The live AI browser calls, database and learner checkpoints use the full application deployment above.
 
 ```bash
 set -e
@@ -66,29 +66,18 @@ curl --fail --silent --output /dev/null "$url/"
 echo "$url"
 ```
 
-## Submission
+## Verification
 
-### Verification on November 18
+What was run, and what it showed. Anything not listed here was not verified.
 
-The production standalone build passed and returned HTTP 200 from its health endpoint with the hosted PostgreSQL connection. All 126 unit and integration tests passed. Six desktop/mobile browser journeys passed, including the new keyboard-only rehearsal. A separate live Sarvam browser test used a synthetic microphone and reached the provider's speaking state. Run it explicitly with `LIVE_SARVAM_TEST=1` and `npx playwright test e2e/live-sarvam.spec.ts --project desktop` against a configured agent. Seven optional ElevenLabs journeys were skipped in this run.
+| Check | Result |
+| --- | --- |
+| Lint and strict type-check | Pass, no warnings |
+| Unit, integration and agent-scenario tests (`npm test`) | 241 pass across 21 files, including row-level security, idempotent callbacks and the educator dashboard against a real PostgreSQL; 82% statement coverage, enforced in CI |
+| Deployed-preview tests (`npm run test:preview`) | 34 pass on desktop and mobile: accessibility, security headers and every lesson in both languages |
+| Accessibility of the public preview (axe-core, WCAG 2.2 AA and best practice) | 0 violations on every page, desktop and mobile, English and Tamil, checked on every push |
+| Security headers on the public preview | CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, COOP and HSTS served by Vercel |
+| Production standalone build | Built and returned HTTP 200 from `/api/health` with the hosted PostgreSQL connection |
+| Live Sarvam browser call | Reached the speaking state; with a synthetic caller, the agent identified a tailoring goal and, in a separate call, taught ₹50 divided by five packets and offered another example |
 
-The phone regression exercises the actual authenticated tool handler, curriculum and database across two simulated carrier interactions. At verification time the Sarvam workspace had zero inbound deployments. Physical handset audio, hangup delivery, redial and production callback routing still need a live test after deployment.
-
-### Verification on November 19
-
-The full application passed its production build, 126 unit and integration tests and eight standard desktop/mobile browser journeys. An additional live Sarvam smoke test reached the speaking state. In a separate browser call, a synthetic caller asked to practise a tailoring conversation. The live agent identified pricing and pickup times and asked the caller to confirm that goal. A subsequent synthetic learner asked about unit cost. The published excerpt includes the agent teaching ₹50 divided by five packets and offering another example. Full spoken lesson completion and real handset delivery still need separate verification.
-
-The public rehearsal offers English and Tamil customer audio, optional browser dictation and spoken coaching. Dictation availability and accuracy depend on the browser, language and microphone permission. The typed flow and recorded feedback work independently.
-
-Provide the public one-branch repository under 10 MB, working Vercel deployment URL, project description above and LinkedIn post URL. The README identifies the pre-existing Callvi components and the features built for this edition. Open the final links in a signed-out browser before using one of the two submission attempts.
-
-### LinkedIn draft
-
-What would you like to learn if a lesson were a phone call away?
-
-We built Callvi for women who want to practise everyday skills in Tamil or English. A learner can ask how to work out the cost of one packet, how to check a digital payment, or how to explain an idea clearly. Callvi teaches one step at a time, offers another example when needed and checks the learner’s attempt.
-
-For Prompt War’s AI for Education track, we built on our earlier voice companion and made three learning paths available to try in a browser. The demo includes a recording from a live AI call.
-
-Try Callvi: https://callvi-prompt-war.vercel.app/
-Source: https://github.com/ShaanGS/callvi-prompt-war
+Not yet verified: a full spoken lesson to completion, and real handset audio, hangup and redial on an inbound number, which needs a provisioned line.

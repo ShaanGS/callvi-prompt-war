@@ -24,7 +24,7 @@ The product must earn a claim of advantage over a general voice assistant. We ha
 | Adaptation | Prepared alternate explanations and explicit preferences | Explanation usage is session-based; no measured policy for choosing an intervention from earlier evidence |
 | Operations | Tool traces, outcomes and operator counts | No validated retention/transfer measurements, teaching-quality release gate or cost per demonstrated skill |
 
-Source anchors: `src/server/services/assessment/assessment-service.ts`, `src/server/agent/learning-policy.ts`, `src/server/agent/context-builder.ts`, `src/server/services/memory-service.ts`, and `src/server/services/staff-service.ts`.
+Source anchors: `src/lib/assessment/assessment-service.ts`, `src/server/agent/learning-policy.ts`, `src/server/agent/context-builder.ts`, `src/server/services/memory-service.ts`, and `src/server/services/staff-service.ts`.
 
 ### Reproduced quality failures
 
