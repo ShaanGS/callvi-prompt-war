@@ -1,15 +1,22 @@
 import { z } from "zod";
 import { isLanguageCode, type LanguageCode } from "@/lib/languages";
-import type { Lesson } from "@/content/schema";
+import type { Concept, Exercise, Lesson } from "@/content/schema";
 import { DomainError } from "../errors";
-import { memoryModeFor, sessionSourceFor, type MasteryState } from "../domain/types";
+import {
+  memoryModeFor,
+  sessionSourceFor,
+  type MasteryState,
+  type PracticeResult,
+  type SessionState,
+} from "../domain/types";
 import { canonicalJson, sha256Hex } from "../security/crypto";
 import { redactText } from "../security/redact";
 import { enrollmentsRepo } from "../repositories/learning";
 import { attemptsRepo, sessionsRepo } from "../repositories/sessions";
 import { evidenceRepo } from "../repositories/evidence";
-import { learningSignals } from "../services/learning-evidence";
-import { assessAnswer } from "@/lib/assessment/assessment-service";
+import type { StoredCourse } from "../repositories/courses";
+import { learningSignals, type LearningSignal } from "../services/learning-evidence";
+import { assessAnswer, type AssessmentOutcome } from "@/lib/assessment/assessment-service";
 import { courseService, exerciseForConcept, findExercise } from "../services/course-service";
 import { deletionService } from "../services/deletion-service";
 import { recordEvent } from "../services/events";
@@ -19,6 +26,7 @@ import { memoryService } from "../services/memory-service";
 import { recommendCourses } from "../services/recommendation-service";
 import { sessionService } from "../services/session-service";
 import { buildLearningContext } from "./context-builder";
+import { lessonGuidance, NOT_SAVED_SESSION_ONLY, practiceGuidance } from "./tool-guidance";
 import {
   canOpenLesson,
   canCarryForward,
@@ -47,9 +55,6 @@ import {
  * course content comes from the database, assessment from the rubric, and
  * checkpoints from session state.
  */
-
-const NOT_SAVED_SESSION_ONLY =
-  "The learner has not granted durable memory, so this is kept for this session only. Do not say it was saved.";
 
 async function snapshotFor(ctx: ToolContext): Promise<ProgressSnapshot> {
   const durable = ctx.session.memoryMode === "durable" && memoryModeFor(ctx.learner) === "durable";
@@ -306,20 +311,7 @@ const getLessonContext = defineTool({
           ctx.session.id,
         )
       : [];
-    const reviewTarget =
-      input.request === "review"
-        ? signals
-            .filter(
-              (s) =>
-                s.review_exercise_id &&
-                (!input.concept_id || input.concept_id === s.concept_id) &&
-                (!input.lesson_id || input.lesson_id === s.lesson_id),
-            )
-            .sort(
-              (a, b) =>
-                Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at),
-            )[0]
-        : null;
+    const reviewTarget = input.request === "review" ? pickReviewTarget(signals, input) : null;
     if (input.request === "review" && !reviewTarget)
       throw new DomainError(
         "POLICY_VIOLATION",
@@ -337,25 +329,12 @@ const getLessonContext = defineTool({
       restore?.lessonId ??
       state.lessonId ??
       frontierLesson(course, snapshot.completedLessonIds).id;
-    let opened =
-      enrollment && !isFreshReview
-        ? await learningService.openLesson(ctx.db, {
-            learner: ctx.learner,
-            enrollment,
-            course,
-            snapshot,
-            lessonId: requestedLessonId,
-          })
-        : (() => {
-            const access = canOpenLesson(course, snapshot.completedLessonIds, requestedLessonId);
-            if (!access.allowed) {
-              throw new DomainError("POLICY_VIOLATION", "That lesson opens after the earlier lessons are complete.", {
-                reason: access.reason,
-                next_allowed_lesson_id: access.nextAllowedLesson.id,
-              });
-            }
-            return { lesson: access.lesson, review: access.review };
-          })();
+    let opened = await openRequestedLesson(ctx, {
+      enrollment: isFreshReview ? null : enrollment,
+      course,
+      snapshot,
+      lessonId: requestedLessonId,
+    });
     let lesson = opened.lesson;
     const lessonChanged = lesson.id !== state.lessonId;
 
@@ -373,38 +352,11 @@ const getLessonContext = defineTool({
     let movedOn = false;
     const alreadyAdvanced = state.pendingExerciseId === null && state.attempts.at(-1)?.result === "correct";
     if (input.request === "move_on" && !restore && !alreadyAdvanced) {
-      const attempts = enrollment
-        ? await attemptsRepo.countForConcept(ctx.db, enrollment.id, concept.id)
-        : state.attempts.filter((a) => a.conceptId === concept.id).length;
-      if (!canCarryForward(attempts, snapshot.mastery[concept.id])) {
-        throw new DomainError("POLICY_VIOLATION", "Try the practice question for this idea once before moving on.", {
-          required_step: "record_practice_attempt",
-        });
-      }
-      if (enrollment) {
-        const progression = await learningService.carryForward(ctx.db, {
-          learner: ctx.learner,
-          session: ctx.session,
-          enrollment,
-          course,
-          lesson,
-          conceptId: concept.id,
-        });
-        snapshot = await learningService.progress(ctx.db, enrollment.id);
-        if (progression.nextLesson) {
-          lesson = progression.nextLesson;
-          opened = { lesson, review: false };
-        }
-      } else {
-        snapshot.mastery[concept.id] = "carried_forward";
-        if (isLessonComplete(lesson, snapshot.mastery)) {
-          snapshot.completedLessonIds.add(lesson.id);
-          const next = nextLessonAfter(course, lesson.id);
-          if (next) {
-            lesson = next;
-            opened = { lesson, review: false };
-          }
-        }
+      const carried = await carryConceptForward(ctx, { enrollment, course, lesson, conceptId: concept.id, snapshot });
+      snapshot = carried.snapshot;
+      if (carried.nextLesson) {
+        lesson = carried.nextLesson;
+        opened = { lesson, review: false };
       }
       concept = firstOpenConcept(lesson, snapshot.mastery) ?? lesson.concepts[0];
       movedOn = true;
@@ -426,35 +378,19 @@ const getLessonContext = defineTool({
     const reviewing = isFreshReview || opened.review;
     const helpRequested = input.request === "different_explanation" || input.request === "repeat";
 
-    ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) => {
-      const prior = s.explanationsUsed[concept.id] ?? [];
-      return {
-        ...s,
-        learningReady: s.learningReady || input.learner_ready === true,
-        lessonId: lesson.id,
-        conceptId: concept.id,
-        pendingExerciseId: exercise?.id ?? null,
-        reviewReturn: reviewing ? (s.reviewReturn ?? { lessonId: s.lessonId, conceptId: s.conceptId }) : null,
-        practiceSupport:
-          exercise && helpRequested && !s.practiceSupport[exercise.id]
-            ? { ...s.practiceSupport, [exercise.id]: "explanation_provided" }
-            : s.practiceSupport,
-        explanationsUsed:
-          isFreshReview && !helpRequested
-            ? s.explanationsUsed
-            : {
-                ...s.explanationsUsed,
-                [concept.id]: prior.includes(choice.approach) ? prior : [...prior, choice.approach],
-              },
-        conceptsCovered: s.conceptsCovered.includes(concept.id)
-          ? s.conceptsCovered
-          : [...s.conceptsCovered, concept.id],
-        sessionMastery: enrollment
-          ? s.sessionMastery
-          : { ...definedMastery(snapshot.mastery), [concept.id]: snapshot.mastery[concept.id] ?? "introduced" },
-        sessionCompletedLessons: enrollment ? s.sessionCompletedLessons : Array.from(snapshot.completedLessonIds),
-      };
-    });
+    ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) =>
+      stateAfterOpening(s, {
+        learnerReady: input.learner_ready === true,
+        lesson,
+        concept,
+        exercise,
+        approach: choice.approach,
+        reviewing,
+        freshReview: isFreshReview,
+        helpRequested,
+        sessionOnlySnapshot: enrollment ? null : snapshot,
+      }),
+    );
     if (enrollment) {
       await learningService.markIntroduced(ctx.db, {
         learner: ctx.learner,
@@ -473,58 +409,303 @@ const getLessonContext = defineTool({
       });
     }
 
-    let guidance =
-      "Teach this ONE idea in two or three short spoken sentences, paraphrasing into everyday language without changing the facts. Ask practice.prompt once and wait. Do not also ask check_question: it is an alternative, not another test. Send the learner's first substantive answer to record_practice_attempt before judging it. A request for help or a different explanation is not an answer to assess.";
-    if (input.request === "different_explanation" && choice.exhausted) {
-      guidance =
-        "Every prepared explanation for this idea has been used. Ask which part is unclear, or relate the same facts to the learner's own situation, or try the practice question together. Do not invent new facts.";
-    } else if (input.request === "different_explanation") {
-      guidance =
-        "This is a different teaching approach. Explain it in two short everyday sentences without repeating your previous wording. Then ask practice.prompt once and wait. Do not submit the learner's request for help as an attempt.";
-    }
-    if (isFreshReview && !helpRequested)
-      guidance =
-        "Ask ONLY the fresh practice.prompt and wait. Do not teach, hint, reveal a worked example or supply the answer first. This checks the same useful idea in a new situation. If help is requested, get a different explanation. Assess every answer with record_practice_attempt. Never call this mastery or retention based on one answer.";
-    if (opened.review) guidance = `This lesson is already complete; the learner is reviewing it. ${guidance}`;
+    const guidance = lessonGuidance({
+      request: input.request,
+      explanationsExhausted: choice.exhausted,
+      freshReview: isFreshReview,
+      helpRequested,
+      lessonAlreadyComplete: opened.review,
+    });
 
     return {
-      data: {
-        lesson: {
-          id: lesson.id,
-          title: title(lesson.title, language),
-          objective: title(lesson.objective, language),
-          sequence: lesson.sequence,
-          of: course.lessons.length,
-          is_review: reviewing,
-          review_notes: lesson.reviewFlags.map((f) => title(f, language)),
-          real_world_action: title(lesson.realWorldAction, language),
-        },
-        concept: {
-          id: concept.id,
-          title: title(concept.title, language),
-          explanation: isFreshReview && !helpRequested ? null : title(choice.text, language),
-          key_points: isFreshReview && !helpRequested ? [] : concept.keyPoints.map((k) => title(k, language)),
-          check_question: isFreshReview ? null : title(concept.checkQuestion, language),
-        },
-        explanation_status: {
-          approach: choice.approach,
-          alternatives_remaining: choice.remaining,
-          all_used: choice.exhausted,
-        },
-        practice: exercise
-          ? { exercise_id: exercise.id, prompt: title(exercise.prompt, language), kind: exercise.kind }
-          : null,
-        lesson_concepts: lesson.concepts.map((c) => ({
-          id: c.id,
-          title: title(c.title, language),
-          status: isConceptDone(snapshot.mastery[c.id]) ? "done" : (snapshot.mastery[c.id] ?? "not_started"),
-        })),
-        moved_on: movedOn,
-      },
+      data: lessonContextData({
+        language,
+        course,
+        lesson,
+        concept,
+        choice,
+        exercise,
+        snapshot,
+        reviewing,
+        showTeaching: !isFreshReview || helpRequested,
+        freshReview: isFreshReview,
+        movedOn,
+      }),
       guidance,
     };
   },
 });
+
+/** Where the session stands once an idea is opened: what is being taught, which approach was used, what is asked. */
+function stateAfterOpening(
+  s: SessionState,
+  a: {
+    learnerReady: boolean;
+    lesson: Lesson;
+    concept: Concept;
+    exercise: Exercise | null;
+    approach: ReturnType<typeof chooseExplanation>["approach"];
+    reviewing: boolean;
+    freshReview: boolean;
+    helpRequested: boolean;
+    sessionOnlySnapshot: ProgressSnapshot | null;
+  },
+): SessionState {
+  const { concept, exercise } = a;
+  const prior = s.explanationsUsed[concept.id] ?? [];
+  return {
+    ...s,
+    learningReady: s.learningReady || a.learnerReady,
+    lessonId: a.lesson.id,
+    conceptId: concept.id,
+    pendingExerciseId: exercise?.id ?? null,
+    reviewReturn: a.reviewing ? (s.reviewReturn ?? { lessonId: s.lessonId, conceptId: s.conceptId }) : null,
+    practiceSupport:
+      exercise && a.helpRequested && !s.practiceSupport[exercise.id]
+        ? { ...s.practiceSupport, [exercise.id]: "explanation_provided" }
+        : s.practiceSupport,
+    explanationsUsed:
+      a.freshReview && !a.helpRequested
+        ? s.explanationsUsed
+        : { ...s.explanationsUsed, [concept.id]: prior.includes(a.approach) ? prior : [...prior, a.approach] },
+    conceptsCovered: s.conceptsCovered.includes(concept.id) ? s.conceptsCovered : [...s.conceptsCovered, concept.id],
+    sessionMastery: a.sessionOnlySnapshot
+      ? {
+          ...definedMastery(a.sessionOnlySnapshot.mastery),
+          [concept.id]: a.sessionOnlySnapshot.mastery[concept.id] ?? "introduced",
+        }
+      : s.sessionMastery,
+    sessionCompletedLessons: a.sessionOnlySnapshot
+      ? Array.from(a.sessionOnlySnapshot.completedLessonIds)
+      : s.sessionCompletedLessons,
+  };
+}
+
+type OpenedLesson = { lesson: Lesson; review: boolean };
+type Enrollment = NonNullable<Awaited<ReturnType<typeof currentEnrollment>>>;
+
+/**
+ * Open a lesson, enforcing sequence. With an enrollment the service records
+ * the opening; without one (no consent, or a fresh review) access is only checked.
+ */
+async function openRequestedLesson(
+  ctx: ToolContext,
+  a: { enrollment: Enrollment | null; course: StoredCourse; snapshot: ProgressSnapshot; lessonId: string },
+): Promise<OpenedLesson> {
+  if (a.enrollment) {
+    return learningService.openLesson(ctx.db, {
+      learner: ctx.learner,
+      enrollment: a.enrollment,
+      course: a.course,
+      snapshot: a.snapshot,
+      lessonId: a.lessonId,
+    });
+  }
+  const access = canOpenLesson(a.course, a.snapshot.completedLessonIds, a.lessonId);
+  if (!access.allowed) {
+    throw new DomainError("POLICY_VIOLATION", "That lesson opens after the earlier lessons are complete.", {
+      reason: access.reason,
+      next_allowed_lesson_id: access.nextAllowedLesson.id,
+    });
+  }
+  return { lesson: access.lesson, review: access.review };
+}
+
+/**
+ * Carry an attempted idea forward at the learner's request. Refused until the
+ * idea's practice question has been tried once. Returns the updated progress
+ * and the next lesson if that finished this one.
+ */
+async function carryConceptForward(
+  ctx: ToolContext,
+  a: {
+    enrollment: Enrollment | null;
+    course: StoredCourse;
+    lesson: Lesson;
+    conceptId: string;
+    snapshot: ProgressSnapshot;
+  },
+): Promise<{ snapshot: ProgressSnapshot; nextLesson: Lesson | null }> {
+  const attempts = a.enrollment
+    ? await attemptsRepo.countForConcept(ctx.db, a.enrollment.id, a.conceptId)
+    : ctx.session.state.attempts.filter((t) => t.conceptId === a.conceptId).length;
+  if (!canCarryForward(attempts, a.snapshot.mastery[a.conceptId])) {
+    throw new DomainError("POLICY_VIOLATION", "Try the practice question for this idea once before moving on.", {
+      required_step: "record_practice_attempt",
+    });
+  }
+  if (a.enrollment) {
+    const progression = await learningService.carryForward(ctx.db, {
+      learner: ctx.learner,
+      session: ctx.session,
+      enrollment: a.enrollment,
+      course: a.course,
+      lesson: a.lesson,
+      conceptId: a.conceptId,
+    });
+    return {
+      snapshot: await learningService.progress(ctx.db, a.enrollment.id),
+      nextLesson: progression.nextLesson ?? null,
+    };
+  }
+  // Session-only: update the in-memory snapshot, write nothing.
+  const snapshot = a.snapshot;
+  snapshot.mastery[a.conceptId] = "carried_forward";
+  if (!isLessonComplete(a.lesson, snapshot.mastery)) return { snapshot, nextLesson: null };
+  snapshot.completedLessonIds.add(a.lesson.id);
+  return { snapshot, nextLesson: nextLessonAfter(a.course, a.lesson.id) ?? null };
+}
+
+/** What get_lesson_context returns to the agent: the idea to teach, the question to ask, and where it sits. */
+function lessonContextData(a: {
+  language: LanguageCode;
+  course: StoredCourse;
+  lesson: Lesson;
+  concept: Concept;
+  choice: ReturnType<typeof chooseExplanation>;
+  exercise: Exercise | null;
+  snapshot: ProgressSnapshot;
+  reviewing: boolean;
+  /** False for a fresh review question, which must be asked without teaching the answer first. */
+  showTeaching: boolean;
+  freshReview: boolean;
+  movedOn: boolean;
+}) {
+  const { language, lesson, concept, choice, exercise, snapshot } = a;
+  return {
+    lesson: {
+      id: lesson.id,
+      title: title(lesson.title, language),
+      objective: title(lesson.objective, language),
+      sequence: lesson.sequence,
+      of: a.course.lessons.length,
+      is_review: a.reviewing,
+      review_notes: lesson.reviewFlags.map((f) => title(f, language)),
+      real_world_action: title(lesson.realWorldAction, language),
+    },
+    concept: {
+      id: concept.id,
+      title: title(concept.title, language),
+      explanation: a.showTeaching ? title(choice.text, language) : null,
+      key_points: a.showTeaching ? concept.keyPoints.map((k) => title(k, language)) : [],
+      check_question: a.freshReview ? null : title(concept.checkQuestion, language),
+    },
+    explanation_status: {
+      approach: choice.approach,
+      alternatives_remaining: choice.remaining,
+      all_used: choice.exhausted,
+    },
+    practice: exercise
+      ? { exercise_id: exercise.id, prompt: title(exercise.prompt, language), kind: exercise.kind }
+      : null,
+    lesson_concepts: lesson.concepts.map((c) => ({
+      id: c.id,
+      title: title(c.title, language),
+      status: isConceptDone(snapshot.mastery[c.id]) ? "done" : (snapshot.mastery[c.id] ?? "not_started"),
+    })),
+    moved_on: a.movedOn,
+  };
+}
+
+/** The most useful prepared review question: overdue first, then least recently practised. */
+function pickReviewTarget(signals: LearningSignal[], filter: { concept_id?: string; lesson_id?: string }) {
+  return (
+    signals
+      .filter(
+        (s) =>
+          s.review_exercise_id &&
+          (!filter.concept_id || filter.concept_id === s.concept_id) &&
+          (!filter.lesson_id || filter.lesson_id === s.lesson_id),
+      )
+      .sort(
+        (a, b) => Number(b.review_due) - Number(a.review_due) || a.last_practised_at.localeCompare(b.last_practised_at),
+      )[0] ?? null
+  );
+}
+
+/**
+ * Progress for a learner who has not consented to memory: computed in the
+ * session snapshot only (which is updated in place), never written down.
+ */
+function applySessionOnlyAttempt(
+  snapshot: ProgressSnapshot,
+  course: StoredCourse,
+  lesson: Lesson,
+  conceptId: string,
+  result: PracticeResult,
+) {
+  const mastery = { ...snapshot.mastery };
+  const masteryState = masteryAfterAttempt(mastery[conceptId], result);
+  mastery[conceptId] = masteryState;
+  const lessonComplete = isLessonComplete(lesson, mastery);
+  const completed = new Set(snapshot.completedLessonIds);
+  if (lessonComplete) completed.add(lesson.id);
+  const courseComplete = course.lessons.every((l) => completed.has(l.id));
+  const nextLesson = lessonComplete && !courseComplete ? nextLessonAfter(course, lesson.id) : null;
+  snapshot.mastery = mastery;
+  snapshot.completedLessonIds = completed;
+  return { masteryState, lessonComplete, courseComplete, nextLesson };
+}
+
+/** Where the session stands after an attempt: what was tried, what support was given, and what is open next. */
+function stateAfterAttempt(
+  s: SessionState,
+  a: {
+    created: boolean;
+    lesson: Lesson;
+    exercise: Exercise;
+    outcome: AssessmentOutcome;
+    reviewing: boolean;
+    nextLesson: Lesson | null;
+    nextConcept: Concept | null;
+    sessionOnlySnapshot: ProgressSnapshot | null;
+  },
+): SessionState {
+  const { exercise, outcome } = a;
+  const attempts = a.created
+    ? [
+        ...s.attempts,
+        {
+          exerciseId: exercise.id,
+          conceptId: exercise.conceptId,
+          lessonId: a.lesson.id,
+          result: outcome.result,
+          at: new Date().toISOString(),
+        },
+      ].slice(-50)
+    : s.attempts;
+  const next = { ...s, attempts };
+  if (outcome.result !== "correct") {
+    next.practiceSupport = {
+      ...s.practiceSupport,
+      [exercise.id]: outcome.modelAnswer
+        ? "example_provided"
+        : outcome.hint
+          ? "hint_provided"
+          : (s.practiceSupport[exercise.id] ?? "none_recorded"),
+    };
+  }
+  if (a.sessionOnlySnapshot) {
+    next.sessionMastery = definedMastery(a.sessionOnlySnapshot.mastery);
+    next.sessionCompletedLessons = Array.from(a.sessionOnlySnapshot.completedLessonIds);
+  }
+  if (outcome.result === "correct") {
+    next.pendingExerciseId = null;
+    if (a.reviewing && s.reviewReturn) {
+      next.lessonId = s.reviewReturn.lessonId;
+      next.conceptId = s.reviewReturn.conceptId;
+      next.reviewReturn = null;
+    } else if (a.nextLesson) {
+      next.lessonId = a.nextLesson.id;
+      next.conceptId = a.nextLesson.concepts[0]?.id ?? null;
+    } else if (a.nextConcept) {
+      next.conceptId = a.nextConcept.id;
+    }
+  } else {
+    next.pendingExerciseId = exercise.id;
+  }
+  return next;
+}
 
 const recordPracticeAttempt = defineTool({
   name: "record_practice_attempt",
@@ -586,16 +767,13 @@ const recordPracticeAttempt = defineTool({
       ({ masteryState, lessonComplete, courseComplete, nextLesson, created } = r);
       saved = true;
     } else {
-      const mastery = { ...snapshotBefore.mastery };
-      masteryState = masteryAfterAttempt(mastery[exercise.conceptId], outcome.result);
-      mastery[exercise.conceptId] = masteryState;
-      lessonComplete = isLessonComplete(lesson, mastery);
-      const completed = new Set(snapshotBefore.completedLessonIds);
-      if (lessonComplete) completed.add(lesson.id);
-      courseComplete = course.lessons.every((l) => completed.has(l.id));
-      nextLesson = lessonComplete && !courseComplete ? nextLessonAfter(course, lesson.id) : null;
-      snapshotBefore.mastery = mastery;
-      snapshotBefore.completedLessonIds = completed;
+      ({ masteryState, lessonComplete, courseComplete, nextLesson } = applySessionOnlyAttempt(
+        snapshotBefore,
+        course,
+        lesson,
+        exercise.conceptId,
+        outcome.result,
+      ));
     }
 
     const nextStep =
@@ -615,51 +793,18 @@ const recordPracticeAttempt = defineTool({
         ? nextConceptAfter(lesson, exercise.conceptId, masteryNow)
         : null;
 
-    ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) => {
-      const attempts = created
-        ? [
-            ...s.attempts,
-            {
-              exerciseId: exercise.id,
-              conceptId: exercise.conceptId,
-              lessonId: lesson.id,
-              result: outcome.result,
-              at: new Date().toISOString(),
-            },
-          ].slice(-50)
-        : s.attempts;
-      const next = { ...s, attempts };
-      if (outcome.result !== "correct") {
-        next.practiceSupport = {
-          ...s.practiceSupport,
-          [exercise.id]: outcome.modelAnswer
-            ? "example_provided"
-            : outcome.hint
-              ? "hint_provided"
-              : (s.practiceSupport[exercise.id] ?? "none_recorded"),
-        };
-      }
-      if (!enrollment) {
-        next.sessionMastery = definedMastery(snapshotBefore.mastery);
-        next.sessionCompletedLessons = Array.from(snapshotBefore.completedLessonIds);
-      }
-      if (outcome.result === "correct") {
-        next.pendingExerciseId = null;
-        if (reviewing && s.reviewReturn) {
-          next.lessonId = s.reviewReturn.lessonId;
-          next.conceptId = s.reviewReturn.conceptId;
-          next.reviewReturn = null;
-        } else if (nextLesson) {
-          next.lessonId = nextLesson.id;
-          next.conceptId = nextLesson.concepts[0]?.id ?? null;
-        } else if (nextConcept) {
-          next.conceptId = nextConcept.id;
-        }
-      } else {
-        next.pendingExerciseId = exercise.id;
-      }
-      return next;
-    });
+    ctx.session = await sessionService.mutateState(ctx.db, ctx.session, (s) =>
+      stateAfterAttempt(s, {
+        created,
+        lesson,
+        exercise,
+        outcome,
+        reviewing,
+        nextLesson,
+        nextConcept,
+        sessionOnlySnapshot: enrollment ? null : snapshotBefore,
+      }),
+    );
     await recordEvent(ctx.db, "practice.feedback_given", {
       learnerId: ctx.learner.id,
       sessionId: ctx.session.id,
@@ -696,37 +841,7 @@ const recordPracticeAttempt = defineTool({
         course_complete: !reviewing && courseComplete,
         real_world_action: !reviewing && lessonComplete ? title(lesson.realWorldAction, language) : null,
       },
-      guidance: [
-        "Share this feedback kindly in your own words. Do not change the result or praise an answer that was not correct. A successful practice is not mastery. When help was provided, recognise the useful step without calling it independent learning.",
-        outcome.clarification
-          ? "Ask ONLY clarification. Do not give the answer or label it wrong. Keep the same exercise open."
-          : "",
-        nextStep === "review_complete"
-          ? "The review is finished. Name the useful idea she just applied in this new situation, then offer to continue from her saved course position or finish. Do not announce the course complete again."
-          : "",
-        outcome.result === "partial" || outcome.result === "needs_practice"
-          ? "This exercise is STILL OPEN. Call record_practice_attempt for EVERY subsequent substantive answer, INCLUDING a word-for-word repeat of the same answer. An unchanged spoken retry is a NEW attempt, not a request to repeat your hint. Never recycle the previous evaluation or promote this result yourself. For a missing-detail reply, append only the caller's exact new words to their exact earlier answer for this same exercise; do not invent or rewrite either part."
-          : "",
-        outcome.modelAnswer === null
-          ? "Do not supply a completed example answer. On partial, ask for just one missing part; do not make the learner repeat the entire answer."
-          : "",
-        nextStep === "next_concept"
-          ? "When the caller chooses to continue, get_lesson_context request=current opens the next idea. Do not use move_on after a correct answer; the server already advanced the position."
-          : "",
-        nextStep === "retry" ? "Offer one retry, using the hint if there is one." : "",
-        nextStep === "offer_move_on"
-          ? "Offer a choice: try once more, hear a different explanation, or move on (get_lesson_context request='move_on')."
-          : "",
-        nextStep === "self_check" && !outcome.clarification
-          ? "The rubric could not judge this answer. Compare it with the example answer together; do not call it right or wrong."
-          : "",
-        nextStep === "lesson_complete"
-          ? "The lesson is complete. Mention the real-world action and ask whether to continue or finish."
-          : "",
-        saved ? "" : NOT_SAVED_SESSION_ONLY,
-      ]
-        .filter(Boolean)
-        .join(" "),
+      guidance: practiceGuidance(outcome, nextStep, saved),
     };
   },
 });
