@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { clientKey, handle, json } from "@/server/http/respond";
+import { clientIp } from "@/server/http/client-ip";
 import { DomainError, ERROR_CODES, HTTP_STATUS } from "@/server/errors";
 
 afterEach(() => {
@@ -115,11 +116,19 @@ describe("route handler wrapper", () => {
 });
 
 describe("rate-limit client key", () => {
-  it("prefers the address Vercel's edge sets, which a client cannot override", () => {
-    const req = new Request("http://localhost/api/test", {
-      headers: { "x-vercel-forwarded-for": "203.0.113.7", "x-forwarded-for": "1.2.3.4, 203.0.113.7" },
+  it("prefers the address Vercel's edge sets when running on Vercel", () => {
+    const headers = new Headers({
+      "x-vercel-forwarded-for": "203.0.113.7",
+      "x-forwarded-for": "1.2.3.4, 198.51.100.4",
     });
-    expect(clientKey(req)).toBe("203.0.113.7");
+    expect(clientIp(headers, true)).toBe("203.0.113.7");
+  });
+
+  it("ignores x-vercel-forwarded-for anywhere else, where a client could send it", () => {
+    const headers = new Headers({ "x-vercel-forwarded-for": "6.6.6.6", "x-forwarded-for": "1.2.3.4, 198.51.100.4" });
+    expect(clientIp(headers, false)).toBe("198.51.100.4");
+    // The request-based key used by routes follows the same rule (tests do not run on Vercel).
+    expect(clientKey(new Request("http://localhost/api/test", { headers }))).toBe("198.51.100.4");
   });
 
   it("ignores a forged left-most x-forwarded-for entry and keys on the hop the proxy appended", () => {

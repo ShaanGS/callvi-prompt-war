@@ -69,6 +69,24 @@ describe("JSON body size limit", () => {
   });
 
   // Tamil text is three bytes per character in UTF-8; counting characters would let it through at ~3x the cap.
+  it("stops reading a chunked body with no declared length as soon as it passes the limit", async () => {
+    // An endless stream: if the reader buffered to the end, this would never finish.
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        controller.enqueue(new Uint8Array(1024).fill(0x20));
+      },
+    });
+    const request = new Request("http://localhost/api/test", {
+      method: "POST",
+      body: endless,
+      duplex: "half",
+    } as RequestInit);
+    expect((await rejection(readJsonBody(request))).code).toBe("PAYLOAD_TOO_LARGE");
+    expect(pulled).toBeLessThanOrEqual(MAX_JSON_BYTES / 1024 + 2);
+  });
+
   it("counts UTF-8 bytes rather than characters", async () => {
     const text = JSON.stringify({ a: "த".repeat(Math.ceil(MAX_JSON_BYTES / 3)) });
     expect(text.length).toBeLessThan(MAX_JSON_BYTES);

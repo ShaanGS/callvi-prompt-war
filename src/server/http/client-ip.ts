@@ -6,15 +6,18 @@
  * request. Instead this trusts, in order:
  *
  * 1. x-vercel-forwarded-for, which Vercel's edge sets and clients cannot
- *    override.
+ *    override — but only when actually running on Vercel. Anywhere else
+ *    (Cloud Run, a local server) a client could send it themselves.
  * 2. The right-most X-Forwarded-For entry, which the nearest proxy appended
  *    (Cloud Run's front end, or Next's own dev server). Behind an extra proxy
  *    this is that proxy's address, which errs towards limiting too much rather
  *    than too little.
  */
-export function clientIp(headers: Pick<Headers, "get">): string {
-  const vercel = headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
-  if (vercel) return vercel;
+export function clientIp(headers: Pick<Headers, "get">, onVercel = process.env.VERCEL === "1"): string {
+  if (onVercel) {
+    const vercel = headers.get("x-vercel-forwarded-for")?.split(",")[0]?.trim();
+    if (vercel) return vercel;
+  }
   const hops = (headers.get("x-forwarded-for") ?? "")
     .split(",")
     .map((h) => h.trim())
