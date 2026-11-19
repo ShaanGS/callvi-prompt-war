@@ -88,7 +88,7 @@ Learner (phone or browser)
    │  speech
    ▼
 Voice agent  ──  Sarvam Conversational AI  |  ElevenLabs Agents
-   │  authenticated tool calls (HMAC bearer, idempotency key)
+   │  authenticated tool calls (per-agent bearer secret, idempotency key)
    ▼
 Next.js route handlers  ──  Zod validation · rate limits · 16 KB body cap
    ▼
@@ -124,10 +124,10 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 
 - Every API route validates its input with Zod and caps the body at 16 KB; every route except the health check authenticates the caller.
 - Agent tool callbacks require a per-agent bearer secret, compared in constant time, and are idempotent. Repeated wrong secrets lock the address out before any secret is compared.
-- Every route and learner action is rate limited, keyed on an address the client cannot forge (not the first `X-Forwarded-For` entry).
-- Each staff page checks the staff role itself rather than relying on its layout. Cookies are `httpOnly`, `SameSite=Lax` and `Secure` in production.
+- Every route and learner action is rate limited. Limits are keyed on Vercel's own client-address header when running on Vercel, and otherwise on the hop the nearest proxy appended, never on the first `X-Forwarded-For` entry, which the client writes.
+- Each staff page checks the staff role itself rather than relying on its layout. Cookies the app sets itself are `httpOnly`, `SameSite=Lax` and `Secure` in production.
 - Phone numbers are stored only as HMAC hashes; logs are redacted.
-- Row-level security on every table, enforced by a test that fails if a new table arrives without it.
+- Every read checks that the learner owns the row; row-level security on every table backs that up for Supabase's public Data API, and a test fails if a table arrives without it.
 - The deployed site sends a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` and HSTS ([`vercel.json`](vercel.json)).
 
 Details and the threat model: [SECURITY.md](SECURITY.md) · [Privacy and retention](docs/PRIVACY_AND_RETENTION.md)
@@ -138,28 +138,30 @@ Details and the threat model: [SECURITY.md](SECURITY.md) · [Privacy and retenti
 - `<html lang>` follows the chosen language so screen readers pronounce Tamil correctly.
 - Feedback is announced through live regions; a changed explanation is announced too.
 - Skip links, visible focus, `prefers-reduced-motion` support and 44px touch targets.
+- Type is sized in `rem`, so it follows the reader's font-size setting, and no text is smaller than 12px.
 
 ## Efficiency
 
 Callvi's learners are often on basic phones and patchy mobile data, so the preview is built to download as little as possible.
 
 - **JavaScript cut by two thirds, from 928 KB to 303 KB** (about 95 KB compressed, as served). Lesson content is validated against the schema once at build time ([`extract-preview.ts`](scripts/extract-preview.ts)), so the phone receives three exercises as plain data rather than whole courses plus a validation library. The build fails if either is pulled back in ([`build-rehearsal.mjs`](scripts/build-rehearsal.mjs)).
-- Voice SDKs load only when a call starts; lesson audio loads only when played.
+- Voice SDKs load only when a call starts; lesson audio loads only when played. The live room stops polling while its tab is in the background.
+- Request bodies are counted as they stream in and cut off at 16 KB, so an oversized upload is never buffered.
 - Hash-named fonts are cached for a year; audio for a day.
 - Every foreign key has an index, so deleting a learner's data follows an index instead of scanning each table. A test fails if a new foreign key arrives without one.
 - The educator overview takes 4 queries rather than 15, and a learner's courses are read concurrently rather than one after another.
 
 ## Testing
 
-**310 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
+**319 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
-| Unit, integration and agent scenarios | **244** in 22 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
+| Unit, integration and agent scenarios | **253** in 23 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
 | Deployed preview | **34** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
 | Full app | **32** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every learner screen in English and Tamil, on a phone, in feedback states and across the educator dashboard | `npm run test:e2e` |
 
-Coverage of `src/server`, `src/content` and `src/lib` is 82% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
+Coverage of `src/server`, `src/content` and `src/lib` (excluding the agent evaluation harness, which is itself a test runner) is 83% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).
 
 The tests assert behaviour a learner or educator relies on rather than implementation details. For example: an answer of 120 is told it forgot to divide while 1200 is told it multiplied, wrong agent secrets lock an address out before the secret is compared, and the educator dashboard never shows a learner's answer text.
 
@@ -183,4 +185,4 @@ Open [localhost:3000](http://localhost:3000) and choose a skill. For live voice,
 
 ## Project history
 
-The voice companion, the first courses and the provider adapters predate Prompt War. During the hackathon we added the bilingual communication lesson and rubric, browser dictation and spoken feedback, the keyless public preview, a two-call regression, security headers, the accessibility work above, and Cloud Run packaging. All curriculum is team-authored and uses fictional details. [Media credits](docs/MEDIA.md)
+The voice companion, the first courses and the provider adapters predate Prompt War: they were built in a separate private repository, starting on 5 November 2026. This repository was created for the submission, so its own history starts on 19 November. During the hackathon we added the bilingual communication lesson and rubric, browser dictation and spoken feedback, the keyless public preview, a two-call regression, security headers, the accessibility work above, and Cloud Run packaging. All curriculum is team-authored and uses fictional details. [Media credits](docs/MEDIA.md)
