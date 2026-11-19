@@ -26,6 +26,8 @@ jobs:
       - run: npm run typecheck
       - name: Unit, integration and agent tests with coverage thresholds
         run: npm run test:coverage
+      - name: Production build
+        run: npm run build
       # Fails on any high or critical advisory in runtime dependencies.
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high
@@ -44,3 +46,28 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Build the preview and test it under vercel.json's headers
         run: npm run test:preview
+
+  app:
+    name: Full app — learner journeys and WCAG 2.2 AA in both languages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Runs against the real app, route handlers and an embedded PostgreSQL,
+      # signed in with the development identity. The live-provider specs skip
+      # themselves without credentials, so no secrets are needed here.
+      - name: Learner journeys, educator dashboard and accessibility
+        run: npm run test:e2e
+      - name: Keep traces of any failure
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
