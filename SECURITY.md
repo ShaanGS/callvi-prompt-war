@@ -15,18 +15,19 @@ Please open a private security advisory on this repository rather than a public 
 | Malformed or oversized input | Zod schema on every route and tool; request bodies counted as they stream and cut off at 16 KB | [`body.ts`](src/server/http/body.ts) |
 | One learner reading another's progress | Every service read checks ownership against the signed-in learner; row-level security on every table is the second layer, for Supabase's public Data API, tested against a real Postgres, and a schema test fails if a table arrives without it | [`row_level_security.sql`](supabase/migrations/20261104000200_row_level_security.sql), [`rls.test.ts`](tests/integration/rls.test.ts), [`schema.test.ts`](tests/integration/schema.test.ts) |
 | A tampered browser identity, or a cookie read by script or sent over HTTP | HMAC-signed identity cookie; every cookie the app sets itself is `httpOnly`, `SameSite=Lax` and `Secure` in production (Supabase's session cookies use the library's own settings) | [`browser-identity.ts`](src/server/auth/browser-identity.ts), [`cookies.ts`](src/server/auth/cookies.ts), [`proxy.ts`](src/proxy.ts) |
-| A phone number leaking from the database or logs | Numbers stored only as HMAC hashes; log fields redacted | [`phone.ts`](src/server/security/phone.ts), [`redact.ts`](src/server/security/redact.ts) |
+| A phone number leaking from the database or logs | Numbers stored only as HMAC hashes, with no digits in clear (a test searches every text column for a caller's number); log fields redacted | [`phone.ts`](src/server/security/phone.ts), [`redact.ts`](src/server/security/redact.ts) |
 | The model claiming a wrong answer is right, or inventing memory | Grading and memory are tool results the agent may not alter; memory is written only after recorded consent | [`agent-setup.ts`](src/server/providers/sarvam/agent-setup.ts), [`learning-policy.ts`](src/server/agent/learning-policy.ts) |
 | A development sign-in reaching production | Refused when `NODE_ENV=production`, with a test | [`dev-identity.ts`](src/server/auth/dev-identity.ts) |
-| Brute-force sign-in or abuse of public routes | Rate limits on every route and learner action, keyed on Vercel's client-address header on Vercel and otherwise on the hop the nearest proxy appended, never on the client-written first `X-Forwarded-For` entry; repeated wrong agent secrets lock the address out before any comparison | [`rate-limit.ts`](src/server/security/rate-limit.ts), [`client-ip.ts`](src/server/http/client-ip.ts) |
+| Brute-force sign-in or abuse of public routes | Rate limits on every route and learner action, and on how many new learners one address can create; keyed on Vercel's client-address header on Vercel and otherwise on the hop the nearest proxy appended, never on the client-written first `X-Forwarded-For` entry; repeated wrong agent secrets lock the address out before any comparison | [`rate-limit.ts`](src/server/security/rate-limit.ts), [`client-ip.ts`](src/server/http/client-ip.ts) |
 | A non-staff visitor reading the educator dashboard | Every staff page checks the role itself, not only the shared layout; browser identities can never hold a staff role, in code or in the schema | [`actor.ts`](src/server/auth/actor.ts), [`auth-guards.test.ts`](tests/integration/auth-guards.test.ts) |
-| Script injection or clickjacking on the public site | Strict Content-Security-Policy (`script-src 'self'`, `frame-ancestors 'none'`), `X-Frame-Options: DENY`, `nosniff`, HSTS | [`vercel.json`](vercel.json), [`next.config.ts`](next.config.ts) |
+| Script injection or clickjacking on the public site | Strict Content-Security-Policy (`script-src 'self'`, `connect-src 'self'`, `frame-ancestors 'none'`), `X-Frame-Options: DENY`, `nosniff`, HSTS | [`vercel.json`](vercel.json) |
+| Clickjacking or injected plugins in the full app | `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, HSTS. It has no `script-src` yet: that needs per-request nonces (see Known limitations) | [`next.config.ts`](next.config.ts) |
 
 ## Data the learner controls
 
-- Nothing about a learner is kept unless she agrees during the call ([`set_memory_consent`](src/server/agent/tools.ts)).
+- Without her agreement during the call ([`set_memory_consent`](src/server/agent/tools.ts)), no progress, goal, preference or answer is saved to her record. What the server does keep is a pseudonymous learner row, an outline of each session, and traces of which tools ran with the shape of their input, never her words.
 - She can ask what is remembered, correct it, or ask for everything to be deleted, all by speaking ([`request_data_deletion`](src/server/services/deletion-service.ts)).
-- Retention periods and what is never collected: [Privacy and retention](docs/PRIVACY_AND_RETENTION.md).
+- What is kept, what is never collected, and what is not yet automated (there is no scheduled retention job yet): [Privacy and retention](docs/PRIVACY_AND_RETENTION.md).
 
 ## Dependency advisories
 
@@ -36,5 +37,7 @@ One was resolved by removal rather than upgrade. `sarvam-conv-ai-sdk` lists `spe
 
 ## Known limitations
 
+- The full Next.js app's Content-Security-Policy has no `script-src`. Hydration scripts would need a per-request nonce, and the live voice SDKs open WebSockets to provider hosts that would need listing in `connect-src`. The public preview has the strict policy.
+- Session-only learners and their session outlines are not yet purged on a schedule.
 - The rate limiter is in memory, so limits are per instance rather than global. Production runs with a single instance; a shared store is needed before scaling out.
 - Proof of a learner's identity on a shared phone is not possible from caller ID alone, so saved progress is tied to a consented phone identity rather than to a person.

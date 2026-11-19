@@ -25,7 +25,7 @@ Callvi turns the phone call itself into the classroom:
 1. **The learner talks; the AI teaches.** A voice agent asks about her goal, recommends a course, and teaches one concept at a time in short spoken chunks.
 2. **Practice is checked against the lesson, not guessed by the model.** Her spoken or typed attempt is graded by a deterministic rubric for that exercise. The AI is told the result and cannot change it.
 3. **The explanation adapts.** If she does not follow, the agent fetches a different authored approach — an everyday example, an analogy, step by step or question-led — instead of repeating itself.
-4. **Progress survives the call.** With explicit consent, a checkpoint is saved so the next call resumes at the right idea. Without consent, nothing is kept.
+4. **Progress survives the call.** With explicit consent, a checkpoint is saved so the next call resumes at the right idea. Without consent, no progress, goal, preference or answer is saved to her record.
 5. **Educators can see what happened.** A staff area shows learners, sessions, course content and every tool call the agent made.
 
 ## How Callvi answers the AI for Education theme
@@ -122,11 +122,11 @@ PostgreSQL  ──  courses · sessions · mastery · consented checkpoints · r
 
 ## Security
 
-- Every API route validates its input with Zod and caps the body at 16 KB; every route except the health check authenticates the caller.
+- Every API route validates its input with Zod and caps the body at 16 KB; every route except the health check identifies the caller by a signed browser identity, a Supabase session or an agent's bearer secret.
 - Agent tool callbacks require a per-agent bearer secret, compared in constant time, and are idempotent. Repeated wrong secrets lock the address out before any secret is compared.
-- Every route and learner action is rate limited. Limits are keyed on Vercel's own client-address header when running on Vercel, and otherwise on the hop the nearest proxy appended, never on the first `X-Forwarded-For` entry, which the client writes.
+- Every route and learner action is rate limited, and one address can create at most 100 new learners in ten minutes. Limits are keyed on Vercel's own client-address header when running on Vercel, and otherwise on the hop the nearest proxy appended, never on the first `X-Forwarded-For` entry, which the client writes.
 - Each staff page checks the staff role itself rather than relying on its layout. Cookies the app sets itself are `httpOnly`, `SameSite=Lax` and `Secure` in production.
-- Phone numbers are stored only as HMAC hashes; logs are redacted.
+- Phone numbers are stored only as HMAC hashes, with no digits kept in clear, and a test searches every column to prove it; logs are redacted.
 - Every read checks that the learner owns the row; row-level security on every table backs that up for Supabase's public Data API, and a test fails if a table arrives without it.
 - The deployed site sends a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` and HSTS ([`vercel.json`](vercel.json)).
 
@@ -147,18 +147,18 @@ Callvi's learners are often on basic phones and patchy mobile data, so the previ
 - **JavaScript cut by two thirds, from 928 KB to 303 KB** (about 95 KB compressed, as served). Lesson content is validated against the schema once at build time ([`extract-preview.ts`](scripts/extract-preview.ts)), so the phone receives three exercises as plain data rather than whole courses plus a validation library. The build fails if either is pulled back in ([`build-rehearsal.mjs`](scripts/build-rehearsal.mjs)).
 - Voice SDKs load only when a call starts; lesson audio loads only when played. The live room stops polling while its tab is in the background.
 - Request bodies are counted as they stream in and cut off at 16 KB, so an oversized upload is never buffered.
-- Hash-named fonts are cached for a year; audio for a day.
+- The script, stylesheet and fonts are content-hashed and cached for a year, so a returning phone downloads nothing but the page; lesson audio is cached for a day.
 - Every foreign key has an index, so deleting a learner's data follows an index instead of scanning each table. A test fails if a new foreign key arrives without one.
 - The educator overview takes 4 queries rather than 15, and a learner's courses are read concurrently rather than one after another.
 
 ## Testing
 
-**320 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
+**328 automated tests run on every push** ([CI](.github/workflows/ci.yml)), alongside lint, strict type-checking, a production build and a dependency audit.
 
 | Suite | Tests | What it proves | Command |
 | --- | --- | --- | --- |
-| Unit, integration and agent scenarios | **254** in 23 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
-| Deployed preview | **34** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
+| Unit, integration and agent scenarios | **260** in 24 files | Rubric grading and misconception feedback, learning policy, curriculum schema, request limits, error responses, rate limiting and log redaction; against a real PostgreSQL (PGlite), learning flows, row-level security, the staff and learner guards, foreign-key indexes, that no digit of a caller's number is stored, idempotent provider callbacks and the educator dashboard's counts and privacy; and multi-turn tool sequences a voice agent makes | `npm test` |
+| Deployed preview | **36** | The built site served with the real `vercel.json` headers, on desktop and mobile: zero axe-core violations on 8 pages, every security header present, the CSP blocking nothing the lessons need, hashed bundles cached for a year, and each lesson teaching correctly in English and Tamil | `npm run test:preview` |
 | Full app | **32** | The Next.js app against an embedded PostgreSQL: sign-in, practice, memory consent and the customer-call rehearsal, plus zero axe-core violations on every learner screen in English and Tamil, on a phone, in feedback states and across the educator dashboard | `npm run test:e2e` |
 
 Coverage of `src/server`, `src/content` and `src/lib` (excluding the agent evaluation harness, which is itself a test runner) is 83% of statements and 77% of branches, and CI fails if it drops ([thresholds](vitest.config.mts), `npm run test:coverage`).

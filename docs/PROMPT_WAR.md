@@ -73,8 +73,8 @@ What was run, and what it showed. Anything not listed here was not verified.
 | Check | Result |
 | --- | --- |
 | Lint and strict type-check | Pass, no warnings |
-| Unit, integration and agent-scenario tests (`npm test`) | 254 pass across 23 files, including row-level security, the staff and learner guards, foreign-key indexes, idempotent callbacks and the educator dashboard against a real PostgreSQL; 83% statement coverage, enforced in CI |
-| Deployed-preview tests (`npm run test:preview`) | 34 pass on desktop and mobile: accessibility, security headers and every lesson in both languages |
+| Unit, integration and agent-scenario tests (`npm test`) | 260 pass across 24 files, including row-level security, the staff and learner guards, foreign-key indexes, idempotent callbacks and the educator dashboard against a real PostgreSQL; 83% statement coverage, enforced in CI |
+| Deployed-preview tests (`npm run test:preview`) | 36 pass on desktop and mobile: accessibility, security headers, asset caching and every lesson in both languages |
 | Full-app browser tests (`npm run test:e2e`) | 32 pass against the Next.js app and an embedded PostgreSQL: learner journeys, the customer-call rehearsal, and accessibility of every screen; run in CI |
 | Accessibility (axe-core, WCAG 2.2 AA and best practice) | 0 violations on every public preview page and every full-app screen, desktop and phone, English and Tamil, checked on every push |
 | Dependency audit (`npm audit --omit=dev`) | 0 vulnerabilities; CI fails on any high or critical advisory |
