@@ -137,7 +137,7 @@ Details and the threat model: [SECURITY.md](SECURITY.md) · [Privacy and retenti
 
 Callvi's learners are often on basic phones and patchy mobile data, so the preview is built to download as little as possible.
 
-- **75 KB of JavaScript over the wire** (303 KB uncompressed). Lesson content is validated against the schema once at build time ([`extract-preview.ts`](scripts/extract-preview.ts)), so the phone receives three exercises as plain data rather than whole courses plus a validation library. That cut the bundle by two thirds, and the build now fails if either is pulled back in ([`build-rehearsal.mjs`](scripts/build-rehearsal.mjs)).
+- **JavaScript cut by two thirds, from 928 KB to 303 KB** (about 95 KB compressed, as served). Lesson content is validated against the schema once at build time ([`extract-preview.ts`](scripts/extract-preview.ts)), so the phone receives three exercises as plain data rather than whole courses plus a validation library. The build fails if either is pulled back in ([`build-rehearsal.mjs`](scripts/build-rehearsal.mjs)).
 - Voice SDKs load only when a call starts; lesson audio loads only when played.
 - Hash-named fonts are cached for a year; audio for a day.
 - 21 database indexes cover the learner, session and mastery lookups the agent makes on every turn.
