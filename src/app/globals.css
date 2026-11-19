@@ -37,7 +37,8 @@
   --color-sunken: #f0f1f4;
   --color-ink: #17181c;
   --color-muted: #5e626c;
-  --color-subtle: #858994;
+  /* #858994 was 3.50:1 on white and 3.15:1 on panels; #666a75 clears AA (4.5:1) on every surface it sits on and stays lighter than --color-muted. */
+  --color-subtle: #666a75;
   --color-line: #e8e9ed;
   --color-line-strong: #d8dbe2;
 

@@ -4,7 +4,7 @@
 
 **[Try the learning demo](https://callvi-prompt-war.vercel.app/) · [தமிழில் கற்க](https://callvi-prompt-war.vercel.app/?lang=ta) · [Hear a recorded AI call](https://callvi-prompt-war.vercel.app/call-sample.html) · [Watch the walkthrough](https://callvi-prompt-war.vercel.app/walkthrough.mp4)**
 
-Callvi is an AI learning companion that teaches practical skills **over a phone call**, in **Tamil or English**. A learner says what she wants to be able to do. Callvi picks a short lesson, explains one idea, listens to her try it, and explains it differently when she needs that. With her permission, it remembers where she stopped.
+Callvi is an AI learning companion that teaches practical skills **by voice conversation**, in **Tamil or English**, designed to work over an ordinary phone call. A learner says what she wants to be able to do. Callvi picks a short lesson, explains one idea, listens to her try it, and explains it differently when she needs that. With her permission, it remembers where she stopped.
 
 **Prompt War theme: 2 — AI for Education.**
 
@@ -36,8 +36,8 @@ The theme asks for learning that is *more accessible, personalized, interactive 
 | **Personalized** | Her own goal is recorded and matched to a course; language, pace and explanation style are remembered when she consents. | [`recommendation-service.ts`](src/server/services/recommendation-service.ts), [`memory-service.ts`](src/server/services/memory-service.ts) |
 | **Interactive** | A real-time spoken conversation she can interrupt, plus practice she answers out loud or by dictation. | [`use-sarvam-voice.ts`](src/components/room/use-sarvam-voice.ts), [`dictation.tsx`](src/app/%28focus%29/practice/dictation.tsx) |
 | **Effective** | Every exercise has a rubric. Six mastery states separate "practised once" from "mastered" and "carried forward", so one lucky answer does not complete a course. | [`assessment-service.ts`](src/lib/assessment/assessment-service.ts), [`learning-policy.ts`](src/server/agent/learning-policy.ts) |
-| **Adapts to individual learning needs** | Five authored explanation approaches per concept; feedback branches on correct, partial, needs practice or ungraded, and a partial answer gets asked for the *one* missing detail. | [`schema.ts`](src/content/schema.ts), [`tools.ts`](src/server/agent/tools.ts) |
-| **Assists educators** | Staff dashboard for learners, sessions, courses and a full trace of the agent's tool calls, so a teacher can audit what the AI said and why. | [`src/app/staff`](src/app/staff), [`staff-service.ts`](src/server/services/staff-service.ts) |
+| **Adapts to individual learning needs** | Every concept has two or three authored explanations drawn from five approaches (65 across 22 concepts); feedback branches on correct, partial, needs practice or ungraded, and a partial answer gets asked for the *one* missing detail. | [`schema.ts`](src/content/schema.ts), [`tools.ts`](src/server/agent/tools.ts) |
+| **Assists educators** | Staff dashboard for learners, sessions and courses, plus a trace of every tool the agent called and whether it succeeded, so an educator can check what the AI did. Traces record the shape of each request, never the learner's words. | [`src/app/staff`](src/app/staff), [`staff-service.ts`](src/server/services/staff-service.ts) |
 | **Improves engagement** | Short lessons of one idea at a time, resume where she paused, and each lesson ends with one small real-world action to try. | [`session-service.ts`](src/server/services/session-service.ts), [`src/content/courses`](src/content/courses) |
 | **Transforms traditional teaching** | The interface is a phone call, not an app or a classroom, so it fits around work and needs no screen. | [Phone experience](docs/CALL_FIRST_PRODUCT.md) |
 
@@ -59,10 +59,10 @@ The model is deliberately kept away from the things it should not decide:
 ## Key features
 
 - Bilingual Tamil and English lessons, switchable at any moment.
-- Three practical courses: small business, everyday digital skills and communication.
+- Three practical courses (small business, everyday digital skills, communication) and a customer-call rehearsal.
 - Live voice lessons through Sarvam or ElevenLabs, with interruption and repeat.
 - Rubric-based practice feedback with hints and a model answer only when appropriate.
-- Five explanation approaches and six mastery states per learner.
+- Two or three explanations per concept from five approaches, and six mastery states per learner.
 - Consent-first memory with a spoken request to delete everything ([`request_data_deletion`](src/server/agent/tools.ts)).
 - Educator dashboard with session and tool-call traces.
 - A public, keyless web preview of three lessons with recorded audio and browser dictation.
