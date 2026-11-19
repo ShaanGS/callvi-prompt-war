@@ -5,29 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#1d3533">
   <title>Hear the live AI call · Callvi</title>
+  <link rel="stylesheet" href="./main.css">
   <style>
-    * { box-sizing: border-box }
-    body { margin: 0; background: #f8f5ef; color: #202a29; font: 17px/1.55 Arial, sans-serif }
-    main { width: min(100% - 36px, 740px); margin: 32px auto 48px }
-    a { color: #84331f; text-underline-offset: 4px }
-    h1 { font: 48px/1.05 Georgia, serif; letter-spacing: -.04em; margin: 20px 0 8px }
-    h2 { font: 26px Georgia, serif }
-    header { color: #fffaf0; background: #1d3533; border-radius: 12px; overflow: hidden; margin: 24px 0 }
-    header img { display: block; width: 100%; height: clamp(130px, 25vw, 220px); object-fit: cover; object-position: 50% 61% }
-    header div { padding: 20px clamp(18px,4vw,34px) 26px }
-    header p { max-width: 55ch; margin: 12px 0 18px }
-    audio { display: block; width: 100% }
-    dt { font-weight: bold; margin-top: 14px }
-    dd { margin: 0 }
-    .note { color: #58605c; font-size: 15px }
+    main{max-width:720px;margin:35px auto 60px;padding:0 22px}a{color:#294d91;text-decoration:underline;text-underline-offset:4px}
+    header{margin:26px 0;padding:clamp(22px,4vw,40px);border-radius:24px;background:linear-gradient(135deg,#deebeb,#edf0e6 58%,#dce6f0)}
+    header .voice-orb{width:78px}h1{font-size:clamp(32px,5vw,53px);line-height:1.1;letter-spacing:-.055em;font-weight:450;margin:16px 0}
+    h2{font-weight:500;letter-spacing:-.035em}audio{width:100%;display:block;margin-top:20px}dt{font-weight:600;margin-top:16px}dd{margin:4px 0}.note{color:#565f58}
   </style>
 </head>
 <body><main>
-  <a href="./">← Try the tailoring rehearsal</a>
+  <a href="./">← Back to Callvi</a>
   <header>
-    <img src="./rehearsal/worktable.webp" alt="">
+    <div class="voice-orb" aria-hidden="true"><span class="voice-orb-light"></span></div>
     <div><h1>On the line with Callvi</h1>
-    <p>A caller asks to rehearse. Listen for the two details the AI picks up before it starts teaching.</p>
+    <p>Every lesson begins with a goal. Hear Callvi greet a learner and check what she wants to practise.</p>
     <audio controls preload="metadata" aria-label="Call sample in English" src="./rehearsal/live-call.mp3"></audio></div>
   </header>
   <h2>Call transcript</h2>

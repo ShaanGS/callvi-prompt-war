@@ -4,13 +4,14 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { ArrowRight, ArrowUpRight, AudioLines, Check, Globe2, Menu, Phone, ShieldCheck, SlidersHorizontal, Smartphone, Store, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, AudioLines, Check, Globe2, Menu, Phone, ShieldCheck, SlidersHorizontal, X } from "lucide-react";
 import type { LanguageCode } from "@/lib/languages";
 import type { ElevenLabsVoiceConfig } from "@/lib/voice/config";
 import { voiceCopy } from "@/lib/voice/copy";
 import { initialVoiceState, isActivePhase } from "@/lib/voice/voice-state";
 import { setUiLanguage } from "@/app/actions/auth";
 import { CallScreen } from "./call-screen";
+import { SkillHome } from "./skill-home";
 import { VoiceOrb } from "./voice-orb";
 import { useElevenLabsVoice } from "./use-elevenlabs-voice";
 import { callRoomTool, closeDataSchema, fetchSessionView } from "./room-api";
@@ -102,11 +103,6 @@ export function VoiceEntry({ copy, language, ready, phoneNumber, resumeTitle, re
   const showingCall = !ended && !minimised && (creating || voice.state.phase !== "idle");
   return (
     <div className={styles.landing}>
-      <div className={styles.announcement}>
-        <AudioLines size={19} aria-hidden />
-        <span>{text.announcement}</span>
-        <a href="#how-it-works" className={styles.discover}>{text.discover}<ArrowUpRight size={13} aria-hidden /></a>
-      </div>
       <div className={styles.pageFrame}>
       <header className={styles.header}>
         <Link href="/" aria-label="Callvi" className={styles.wordmark}><AudioLines aria-hidden />callvi</Link>
@@ -123,7 +119,7 @@ export function VoiceEntry({ copy, language, ready, phoneNumber, resumeTitle, re
       </header>
 
       {menu ? (
-        <section className={`absolute top-36 z-40 w-[min(320px,calc(100vw-3rem))] rounded-2xl border border-line bg-white p-5 shadow-md ${menu === "learning" ? "left-6 sm:left-10" : "right-6 sm:right-10"}`} aria-label={menu === "learning" ? text.menu : text.settings}>
+        <section className={`absolute top-20 z-40 w-[min(320px,calc(100vw-3rem))] rounded-2xl border border-line bg-white p-5 shadow-md ${menu === "learning" ? "left-6 sm:left-10" : "right-6 sm:right-10"}`} aria-label={menu === "learning" ? text.menu : text.settings}>
           <div className="mb-5 flex items-center justify-between"><h2 className="text-sm font-semibold">{menu === "learning" ? text.menu : text.settings}</h2><button type="button" aria-label={text.close} onClick={() => setMenu(null)}><X className="size-4" /></button></div>
           {menu === "learning" ? (
             <nav className="flex flex-col gap-1">{[["/progress", text.progress], ["/courses", text.courses], ["/privacy", text.privacy]].map(([href, label]) => <Link key={href} href={href} className="flex items-center justify-between rounded-lg px-3 py-3 text-sm hover:bg-sunken">{label}<ArrowUpRight className="size-4 text-subtle" /></Link>)}</nav>
@@ -135,41 +131,22 @@ export function VoiceEntry({ copy, language, ready, phoneNumber, resumeTitle, re
 
       <main id="main" className={styles.main}>
         {deleted ? <p role="status" className="py-4 text-sm text-success">{language === "ta-IN" ? "உங்கள் தரவு நீக்கப்பட்டது." : "Your data has been deleted."}</p> : null}
-        <section className={styles.hero}>
-          <div><p className={styles.eyebrow}>{text.eyebrow}</p><h1>{text.title}</h1></div>
-          <p className={styles.heroDescription}>{text.body}</p>
-        </section>
-
-        <div className={styles.topicBar}>
-          <div className={styles.topics}>
-            <span><Store size={20} strokeWidth={1.6} aria-hidden />{text.business}</span>
-            <span><Smartphone size={20} strokeWidth={1.6} aria-hidden />{text.digital}</span>
-            <span><AudioLines size={20} strokeWidth={1.6} aria-hidden />{text.communication}</span>
-          </div>
-          <form className={styles.languagePill} aria-label={text.language} action={async (formData) => { formData.set("next", "/"); await setUiLanguage(formData); }}>{(["ta-IN", "en-IN"] as const).map((code) => <button key={code} type="submit" name="language" value={code} aria-pressed={language === code} className={language === code ? styles.selectedLanguage : ""}>{code === "ta-IN" ? "தமிழ்" : "English"}</button>)}</form>
-        </div>
-
-        <section id="start-learning" className={styles.voiceStage} aria-label={text.cardLabel}>
-          <div className={styles.stageTexture} aria-hidden />
-          <div className={styles.stageCaption} aria-hidden><span className={styles.liveDot} />{text.browser}</div>
-          <div className={styles.callCard}>
-            <div className={styles.cardEyebrow}><VoiceOrb level={minimised ? voice.state.level : 0} /><span>{text.cardLabel}</span></div>
-            <h2>{ended ? text.sessionEnded : resumeTitle ? text.resume : text.cardTitle}</h2>
-            <p className={styles.cardDescription}>{ended ? ended.saved ? text.saved : text.notSaved : resumeTitle ? resumeTitle : text.cardBody}</p>
-            {ended?.summary ? <p className={styles.summary}>{ended.summary}</p> : null}
-            {minimised && active ? (
-              <button type="button" onClick={() => setMinimised(false)} className={styles.callButton}><Phone size={17} />{text.returnCall}<ArrowUpRight size={17} /></button>
-            ) : (
-              <button type="button" onClick={() => { voice.reset(); void begin(); }} disabled={!hydrated || !ready || creating} className={styles.callButton}><Phone size={17} />{ended ? text.again : resumeTitle ? text.continueCall : text.call}<ArrowUpRight size={17} aria-hidden /></button>
-            )}
-            <p className={styles.callHint}>{ready ? text.firstCall : text.unavailable}</p>
-            {phoneNumber && <p className="mt-3"><a className="underline" href={`tel:${phoneNumber.replace(/[^\d+]/g, "")}`}>{text.dial} {phoneNumber}</a></p>}
-            <Link href="/practice" className="mt-3 inline-block text-sm underline">{text.textPractice}</Link>
-            {error ? <p role="alert" className="mt-4 text-sm text-danger">{error}</p> : null}
-            {resumeSummary && !ended ? <p className="sr-only">{resumeSummary}</p> : null}
-          </div>
-          <p className={styles.stageFootnote}>{text.hint}</p>
-        </section>
+        <SkillHome language={language} lessonHref={id => "/practice?skill=" + id} languageControl={
+          <form className={styles.languagePill} aria-label={text.language} action={async data => { data.set("next", "/"); await setUiLanguage(data); }}>
+            {(["ta-IN", "en-IN"] as const).map(code => <button key={code} type="submit" name="language" value={code} aria-pressed={language === code} className={language === code ? styles.selectedLanguage : ""}>{code === "ta-IN" ? "தமிழ்" : "English"}</button>)}
+          </form>
+        }>
+          <button type="button" className="skill-primary" disabled={!hydrated || !ready || creating} onClick={() => {
+            if (active) setMinimised(false); else { voice.reset(); void begin(); }
+          }}><Phone size={17} />{active ? text.returnCall : ended ? text.again : resumeTitle ? text.continueCall : text.call}</button>
+          <a href="#skills" className="skill-secondary">{text.textPractice}<ArrowRight size={16} /></a>
+          {phoneNumber && <a className="skill-secondary" href={`tel:${phoneNumber.replace(/[^\d+]/g, "")}`}>{text.dial} {phoneNumber}</a>}
+          {ended && <p role="status" className="skill-note">{ended.saved ? ended.summary ?? text.saved : text.notSaved}</p>}
+          {!ended && resumeTitle && <p className="skill-note">{text.resume} · {resumeTitle}</p>}
+          {resumeSummary && !ended && <p className="sr-only">{resumeSummary}</p>}
+          {!ready && <p className="skill-note">{text.unavailable}</p>}
+          {error && <p role="alert" className="skill-note">{error}</p>}
+        </SkillHome>
 
         <section id="how-it-works" className={styles.howSection}>
           <div className={styles.sectionIntro}><h2>{text.sectionTitle}</h2><p>{text.sectionBody}</p></div>
@@ -181,7 +158,7 @@ export function VoiceEntry({ copy, language, ready, phoneNumber, resumeTitle, re
       </main>
       <footer className={styles.footer}><Link href="/" className={styles.wordmark}><AudioLines aria-hidden />callvi</Link><p>{text.purpose}</p><Link href="/privacy">{text.privacy}<ArrowUpRight size={14} aria-hidden /></Link></footer>
       </div>
-      {!showingCall ? <button type="button" className={styles.floatingCall} disabled={!hydrated || !ready || creating} onClick={() => { if (active) setMinimised(false); else { voice.reset(); void begin(); } }} aria-label={active ? text.returnCall : text.voiceChat}><VoiceOrb level={minimised ? voice.state.level : 0} /><span>{active ? text.returnCall : text.voiceChat}</span></button> : null}
+      {!showingCall && active ? <button type="button" className={styles.floatingCall} disabled={!hydrated || !ready || creating} onClick={() => { if (active) setMinimised(false); else { voice.reset(); void begin(); } }} aria-label={active ? text.returnCall : text.voiceChat}><VoiceOrb level={minimised ? voice.state.level : 0} /><span>{active ? text.returnCall : text.voiceChat}</span></button> : null}
 
       {showingCall ? <CallScreen state={creating && voice.state.phase === "idle" ? { ...initialVoiceState, phase: "connecting" } : voice.state} copy={copy} name={copy.app.name} conceptTitle={liveTitle} fallbackHref="/learn" onMute={voice.toggleMute} onToggleOutput={voice.toggleOutput} outputMuted={voice.outputMuted} onEnd={() => { ++beginGeneration.current; setCreating(false); void voice.stop(); }} onRetry={() => { voice.reset(); const session = sessionRef.current; if (session) void voice.start(session); else void begin(); }} onClose={voice.reset} onMinimise={() => setMinimised(true)} /> : null}
     </div>

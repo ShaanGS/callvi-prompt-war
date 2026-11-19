@@ -11,7 +11,7 @@ import "./rehearsal.css";
 
 const words = {
   "en-IN": {
-    back: "Back to Callvi", title: "The tailoring call", tailor: "Home tailor",
+    back: "Back to Callvi", title: "Practise a clear reply", tailor: "Home tailor",
     fee: "Your fee", time: "Pickup", days: "2 days", customer: "The customer",
     question: "Could you shorten these trousers for forty rupees? I need them tomorrow.",
     listen: "Hear the customer", pause: "Pause audio", audioError: "Audio is unavailable. Read the text above.",
@@ -23,7 +23,7 @@ const words = {
     privacy: "Your written replies stay in this tab.", empty: "Type a reply, or choose one to edit.",
   },
   "ta-IN": {
-    back: "கால்விக்குத் திரும்பு", title: "ஒரு தையல் அழைப்பு", tailor: "வீட்டுத் தையல் கலைஞர்",
+    back: "கால்விக்குத் திரும்பு", title: "தெளிவாகப் பதில் சொல்லுங்கள்", tailor: "வீட்டுத் தையல் கலைஞர்",
     fee: "உங்கள் கூலி", time: "தர வேண்டிய நேரம்", days: "2 நாட்கள்", customer: "வாடிக்கையாளர்",
     question: "அக்கா, இந்த பேண்ட் கொஞ்சம் நீளம் குறைக்கணும். நாற்பது ரூபாய்க்கு செஞ்சு, நாளைக்குத் தர முடியுமா?",
     listen: "வாடிக்கையாளர் குரலைக் கேளுங்கள்", pause: "ஒலியை நிறுத்து", audioError: "ஒலி கிடைக்கவில்லை. மேலே உள்ள உரையைப் படிக்கலாம்.",
@@ -71,18 +71,17 @@ export function PracticeReply({ exercise, language: initialLanguage, assets = "/
 
   return <div className="cv-studio" lang={langCode}>
     <header className="cv-header">
-      <div className="cv-brand"><AudioLines aria-hidden />callvi<span>/</span><span>{language === "ta-IN" ? "பயிற்சி" : "Rehearsal"}</span></div>
+      <a className="cv-brand" href={homeHref ?? "./"} aria-label="Callvi"><AudioLines aria-hidden />callvi</a>
       <div className="cv-language" aria-label="Language">
         {(["ta-IN", "en-IN"] as const).map(code => <button key={code} type="button" lang={code} aria-pressed={code === language} onClick={() => changeLanguage(code)}>{code === "ta-IN" ? "தமிழ்" : "English"}</button>)}
       </div>
     </header>
     <main id="main" className="cv-grid">
       <section className="cv-brief" aria-labelledby="scenario-title">
-        <div className="cv-photo" role="img" aria-label={language === "ta-IN" ? "தையல் மேசையில் ஒரு விசைப்பலகை போன்" : "A keypad phone on a tailor’s worktable"} style={{backgroundImage: "url(" + assets + "/worktable.webp)"}} />
         <div className="cv-brief-text">
-          <span className="cv-role"><Phone size={15} aria-hidden />{text.tailor}</span>
+          <span className="cv-role"><Phone size={15} aria-hidden />{language === "ta-IN" ? "உரையாடல் திறன்கள்" : "Communication"}</span>
           <h1 id="scenario-title">{text.title}</h1>
-          <dl><div><dt>{text.fee}</dt><dd>₹50</dd></div><div><dt>{text.time}</dt><dd>{text.days}</dd></div></dl>
+          <p>{text.tailor}</p><dl><div><dt>{text.fee}</dt><dd>₹50</dd></div><div><dt>{text.time}</dt><dd>{text.days}</dd></div></dl>
         </div>
       </section>
       <section className="cv-work">

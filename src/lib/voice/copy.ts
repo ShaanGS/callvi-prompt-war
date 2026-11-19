@@ -1,14 +1,14 @@
 import type { LanguageCode } from "../languages";
 
 const en = {
-  eyebrow: "VOICE PRACTICE FOR WOMEN IN SMALL BUSINESS",
-  title: "Practise the call\nbefore the customer rings.",
-  body: "Rehearse a customer conversation in Tamil or English. Tell Callvi what you charge and when the work will be ready. Hear what your customer still needs to know.",
-  announcement: "Customer-call rehearsal in Tamil and English",
+  eyebrow: "Your AI learning companion",
+  title: "Build your skills.\nOne call at a time.",
+  body: "Tell Callvi what you want to learn. Work through a short lesson out loud, ask for another example, and try it yourself in Tamil or English.",
+  announcement: "Learn by voice in Tamil or English",
   discover: "Meet Callvi", how: "How it works", start: "Start learning", voiceChat: "Voice chat",
   business: "Small business", digital: "Everyday digital skills", communication: "Confident conversations",
   cardTitle: "Start with a hello.",
-  cardBody: "Try saying “I want to rehearse a customer call.” Practise quoting a price, hear what you missed, and try again.",
+  cardBody: "Tell Callvi what you’d like to learn. We’ll find a practical first step and work through it together.",
   dial: "Call from any phone", textPractice: "Practise by text",
   cardLabel: "YOUR PERSONAL LEARNING COMPANION",
   sectionTitle: "A little conversation.\nA world of possibility.",
@@ -34,14 +34,14 @@ const en = {
 };
 
 const ta: typeof en = {
-  eyebrow: "ஒரு உரையாடலில் தொடங்கும் புதிய வாய்ப்புகள்",
-  title: "வாடிக்கையாளர் அழைக்கும் முன்\nபேசிப் பழகுங்கள்.",
-  body: "தமிழிலோ ஆங்கிலத்திலோ வாடிக்கையாளருடன் பேசிப் பழகுங்கள். உங்கள் கூலி எவ்வளவு, வேலை எப்போது முடியும் என்று கால்வியிடம் சொல்லுங்கள். இன்னும் என்ன சொல்ல வேண்டும் என்று கேளுங்கள்.",
-  announcement: "தமிழிலும் ஆங்கிலத்திலும் வாடிக்கையாளர் அழைப்புப் பயிற்சி",
+  eyebrow: "உங்கள் AI கற்றல் துணை",
+  title: "ஒரு அழைப்பில்\nகற்கத் தொடங்குங்கள்.",
+  body: "என்ன கற்க விரும்புகிறீர்கள் என்று கால்வியிடம் சொல்லுங்கள். தமிழிலோ ஆங்கிலத்திலோ ஒரு சிறிய பாடத்தைக் கேளுங்கள், உதாரணம் கேளுங்கள், நீங்களே முயன்று பாருங்கள்.",
+  announcement: "தமிழிலும் ஆங்கிலத்திலும் குரல் வழிக் கற்றல்",
   discover: "கால்வியை அறியுங்கள்", how: "எப்படிச் செயல்படுகிறது", start: "கற்கத் தொடங்குங்கள்", voiceChat: "குரல் உரையாடல்",
   business: "சிறு வணிகம்", digital: "அன்றாட டிஜிட்டல் திறன்கள்", communication: "நம்பிக்கையான உரையாடல்கள்",
   cardTitle: "ஒரு வணக்கத்தில் தொடங்கலாம்.",
-  cardBody: "“தையல் வாடிக்கையாளரிடம் விலை பேசிப் பழகணும்” என்று சொல்லிப் பாருங்க. பதில் சொல்லுங்க, விடுபட்டதைக் கேளுங்க, மறுபடியும் முயற்சி செய்யுங்க.",
+  cardBody: "என்ன கற்க விரும்புகிறீர்கள் என்று சொல்லுங்கள். முதல் படியை ஒன்றாகத் தொடங்கலாம்.",
   dial: "எந்த போனிலிருந்தும் அழைக்கலாம்", textPractice: "எழுதி பயிற்சி செய்யுங்கள்",
   cardLabel: "உங்கள் தனிப்பட்ட கற்றல் துணை",
   sectionTitle: "ஒரு சிறிய உரையாடல்.\nபல புதிய வாய்ப்புகள்.",

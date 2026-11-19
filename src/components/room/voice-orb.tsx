@@ -1,3 +1,4 @@
+import "./orb.css";
 import type { CSSProperties } from "react";
 
 /** The shape responds only to measured audio amplitude; idle is still. */

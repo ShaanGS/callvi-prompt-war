@@ -1,0 +1,24 @@
+.voice-orb {
+  --voice-level: 0;
+  position: relative;
+  width: clamp(180px, 25vw, 256px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 28% 8%, #3f70ed 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 90%, #c7d9ff 0%, transparent 60%),
+    linear-gradient(145deg, #4778f5 5%, #7897ed 50%, #c5d5fa 100%);
+  transform: scale(calc(1 + var(--voice-level) * 0.14));
+  transition: transform 100ms linear;
+  box-shadow: inset 0 0 36px rgb(255 255 255 / 0.14);
+}
+.voice-orb-light {
+  position: absolute;
+  inset: -15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 75% 18% at 48% 54%, #f9fbff 0%, rgb(244 248 255 / 0.9) 20%, rgb(233 242 255 / 0.15) 65%, transparent 100%);
+  transform: rotate(calc(-35deg + var(--voice-level) * 38deg)) translateY(calc(var(--voice-level) * -12px));
+  filter: blur(8px);
+  transition: transform 120ms linear;
+}

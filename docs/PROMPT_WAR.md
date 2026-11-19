@@ -2,24 +2,18 @@
 
 ## Project description
 
-Callvi is an AI for Education assistant for women who run small businesses and want to practise real customer conversations in Tamil or English. A caller can rehearse a price negotiation, hear which part of her offer was unclear and try again. The learner chooses whether Callvi remembers her place. The web version offers microphone access and a keyboard-only rehearsal. A configured inbound phone agent can deliver the lesson through speech on a basic phone.
+Callvi is a phone-first AI skill-building platform for women learning in Tamil or English. A learner tells the companion her goal, gets a short lesson, asks for a different explanation and practises out loud. Callvi checks her response and, with consent, remembers where to continue next time. The curriculum covers small business, everyday digital skills and communication. The browser app uses Next.js, TypeScript, PostgreSQL and managed Sarvam or ElevenLabs voice. The standalone preview uses the same authored exercises and assessment logic.
 
 ## The 60-second pitch
 
-| Time | What the audience sees and hears |
+| Time | What to do |
 | --- | --- |
-| 0–10s | Open the [Tamil rehearsal](https://shaangs.github.io/callvi-prompt-war/?lang=ta). Say “Imagine you do alterations from home. You charge fifty rupees and need two days. Listen to what your customer wants.” Press the headphone button. |
-| 10–25s | Switch to English if helpful. Invite a judge to answer as the tailor. If they give the fee alone, play the feedback asking when the trousers will be ready. If they give both details straight away, ask them to remove one and retry. |
-| 25–40s | Compare the two attempts on screen. Point to the detail that changed. Say “She can try those words here before she needs to say them to a paying customer.” |
-| 40–55s | Play the [live AI call sample](https://shaangs.github.io/callvi-prompt-war/call-sample.html) from the caller’s request, or let the judge speak in a configured voice session. Explain that the voice agent plays the customer and the curriculum checks the offer. On GitHub Pages the customer audio is prerecorded and the learner can type or use supported browser dictation. |
-| 55–60s | Close with “A woman who runs her business by phone should be able to practise by phone.” Demonstrate handset access once the inbound number has passed the redial test below. |
+| 0–10s | Open Callvi. Say “Imagine you have ten minutes and a phone. What would you like to learn today?” Let a judge choose a skill. |
+| 10–25s | In the live browser app, call the companion and state a learning goal. In the public preview, play the sample greeting and open the selected skill. |
+| 25–45s | For small business, try the cost of one packet. Ask for another explanation and give an answer. Switch to Tamil to hear the same practice question. For digital skills, try the payment verification scenario instead. |
+| 45–60s | Show how the response changes the feedback. Explain that a live learner can pause and return to a saved step if she grants memory consent. |
 
-## Demonstrate the decision
-
-1. Open Callvi and choose English or Tamil. In a voice session, say “I'd like to rehearse a customer call” or “தையல் வாடிக்கையாளரிடம் விலை பேசிப் பழகணும்.” Choose the rehearsal when offered. The agent asks separately about memory.
-2. When the customer asks for a discount and an earlier pickup, answer “I charge fifty rupees.” Callvi should ask about pickup. Give the full offer in your own words. Try giving only the pickup time on a new attempt to hear the other branch.
-3. In a room without a microphone, open **Practise by text**. Give both answers and compare the feedback. This route runs the same assessment in the browser and discards the attempts when you leave.
-4. For a live telephone demo, dial the verified inbound line from a private test handset. Pause after the first attempt and hang up. Redial from that handset, ask to continue and finish the answer. Verify the consented course and fresh learning-intent check on the second call. Use fictional learning details. A shared caller ID identifies a line and cannot distinguish the people using it.
+The public preview offers three interactive examples. The communication example is a tailoring conversation. The published audio sample captures the live agent confirming a learner’s goal. A physical handset demonstration requires a verified inbound number.
 
 ## Cloud Run
 
@@ -63,6 +57,11 @@ Provide the public one-branch repository under 10 MB, working Cloud Run service 
 
 **LinkedIn draft**
 
-What do you say when a customer asks for a discount and wants the order tomorrow? We built a Tamil and English customer-call rehearsal for Callvi at Prompt War. You can play a home tailor, quote your fee, and try again after hearing which detail the customer still needs. The exercise builds on our earlier work on Callvi, a voice learning companion for women building practical skills.
+What would you like to learn if a lesson were a phone call away?
 
-Try the rehearsal: [insert verified Cloud Run link]
+We built Callvi for women who want to practise everyday skills in Tamil or English. A learner can ask how to work out the cost of one packet, how to check a digital payment, or how to explain an idea clearly. Callvi teaches one step at a time, offers another example when needed and checks the learner’s attempt.
+
+For Prompt War’s AI for Education track, we built on our earlier voice companion and made three learning paths available to try in a browser. The demo includes a recording from a live AI call.
+
+Try Callvi: https://shaangs.github.io/callvi-prompt-war/
+Source: https://github.com/ShaanGS/callvi-prompt-war

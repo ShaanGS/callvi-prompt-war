@@ -1,9 +1,8 @@
 import { getPageContext } from "@/server/auth/page-context";
-import { customerCall } from "@/content/courses/customer-call";
-import { exerciseSchema } from "@/content/schema";
-import { PracticeReply } from "./practice-reply";
+import { SkillPreview } from "./skill-preview";
 
-export default async function PracticePage() {
-  const { language } = await getPageContext();
-  return <PracticeReply exercise={exerciseSchema.parse(customerCall.lessons[0].practice[0])} language={language} homeHref="/" />;
+export default async function PracticePage({ searchParams }: { searchParams: Promise<{skill?: string; lang?: string}> }) {
+  const [{ language }, query] = await Promise.all([getPageContext(), searchParams]);
+  const selected = query.lang === "ta" ? "ta-IN" : query.lang === "en" ? "en-IN" : language;
+  return <SkillPreview key={query.skill ?? ""} skill={query.skill ?? ""} language={selected} />;
 }
