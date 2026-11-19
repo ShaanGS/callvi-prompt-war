@@ -66,7 +66,7 @@ export function CallScreen({ state, copy, name, conceptTitle, fallbackHref, onMu
           <div className="flex flex-col items-center px-6 pt-[9vh] text-center">
             <p className="text-xl text-white/65" role="status">{state.phase === "requesting_mic" ? call.allowMic : call.calling}</p>
             <h2 className="mt-2 text-5xl font-semibold tracking-tight sm:text-6xl">{name}</h2>
-            <p className="mt-4 text-sm text-white/45">{copy.app.aiLabel}</p>
+            <p className="mt-4 text-sm text-white/70">{copy.app.aiLabel}</p>
           </div>
           <div className="flex flex-1 items-center justify-center"><div className="grid size-24 place-items-center rounded-full border border-white/10 text-4xl font-medium text-white/20">C</div></div>
           <div className="mx-auto flex w-full max-w-sm flex-col items-center gap-8 px-8 pb-8">
@@ -79,7 +79,7 @@ export function CallScreen({ state, copy, name, conceptTitle, fallbackHref, onMu
           </div>
         </>
       ) : failed ? (
-        <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
           <VoiceOrb className="opacity-40" />
           <h2 className="mt-6 text-2xl font-medium">{call.failed}</h2>
           <p className="max-w-sm text-sm text-muted" role="alert">{state.error ? v.errors[state.error] : v.errors.generic}</p>
@@ -88,7 +88,7 @@ export function CallScreen({ state, copy, name, conceptTitle, fallbackHref, onMu
             <Control ref={primaryRef} label={call.tryAgain} onClick={onRetry} icon={<Phone className="size-6" />} dark />
           </div>
           <Link href={fallbackHref} className="text-xs text-muted underline underline-offset-4">{v.switchToText}</Link>
-        </main>
+        </div>
       ) : (
         <>
           <header className="flex items-center justify-between px-6 sm:px-10">
@@ -96,7 +96,7 @@ export function CallScreen({ state, copy, name, conceptTitle, fallbackHref, onMu
             <div className="text-center"><p className="text-base font-medium">{name}</p><p className="mt-0.5 text-xs text-subtle">{copy.app.aiLabel}</p></div>
             <span className="min-w-11 text-right text-sm tabular-nums text-subtle">{duration}</span>
           </header>
-          <main className="relative flex flex-1 flex-col items-center justify-center gap-12 px-6 pb-10">
+          <div className="relative flex flex-1 flex-col items-center justify-center gap-12 px-6 pb-10">
             <VoiceOrb level={state.level} />
             <div className="flex max-w-sm flex-col items-center gap-2 text-center">
               <p role="status" aria-live="polite" className="text-lg font-medium tracking-tight">{activity}</p>
@@ -109,7 +109,7 @@ export function CallScreen({ state, copy, name, conceptTitle, fallbackHref, onMu
                 )}
               </div>
             ) : null}
-          </main>
+          </div>
           <footer className="flex flex-col items-center gap-5 px-6 pb-5">
             <div className="flex items-center gap-4 sm:gap-6">
               {onToggleOutput ? <Control label={outputMuted ? (tamil ? "ஒலியை இயக்கு" : "Enable audio") : (tamil ? "ஒலியை நிறுத்து" : "Silence audio")} onClick={onToggleOutput} pressed={outputMuted} icon={outputMuted ? <VolumeX className="size-5" /> : <Volume2 className="size-5" />} /> : null}

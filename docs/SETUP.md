@@ -148,7 +148,7 @@ Set `ELEVENLABS_API_KEY` in `.env.local`, then run `npm run elevenlabs:configure
 
 The browser obtains a short-lived signed WebSocket URL from its authenticated session endpoint. Client tools call the same-origin learning APIs with the learner's cookie. This works on localhost without a public tunnel and keeps local and production databases separate. API keys never reach the browser.
 
-On Vercel set the same three variables for production. `vercel.json` applies migrations and seeds courses before building, using production environment variables. Learners enter without signing in. Operator sign-in remains protected.
+The public Vercel project builds only the static preview (`npm run build:rehearsal`, see `vercel.json`); it needs no variables. To run the full app, deploy it with the Dockerfile (see [Prompt War](PROMPT_WAR.md)) and run `npm run db:migrate` and `npm run db:seed` against its database first. Learners enter without signing in. Operator sign-in remains protected.
 
 The opt-in `LIVE_VOICE_TEST=1` browser test consumes provider credits and uses a synthetic learner. Normal test runs skip it.
 
