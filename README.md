@@ -186,3 +186,7 @@ Open [localhost:3000](http://localhost:3000) and choose a skill. For live voice,
 ## Project history
 
 The voice companion, the first courses and the provider adapters predate Prompt War: they were built in a separate private repository, starting on 5 November 2026. This repository was created for the submission, so its own history starts on 19 November. During the hackathon we added the bilingual communication lesson and rubric, browser dictation and spoken feedback, the keyless public preview, a two-call regression, security headers, the accessibility work above, and Cloud Run packaging. All curriculum is team-authored and uses fictional details. [Media credits](docs/MEDIA.md)
+
+## License
+
+[MIT](LICENSE). Third-party voice models and media keep their own licences; see [Media credits](docs/MEDIA.md).
