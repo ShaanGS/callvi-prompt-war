@@ -27,11 +27,11 @@ Please open a private security advisory on this repository rather than a public 
 - She can ask what is remembered, correct it, or ask for everything to be deleted, all by speaking ([`request_data_deletion`](src/server/services/deletion-service.ts)).
 - Retention periods and what is never collected: [Privacy and retention](docs/PRIVACY_AND_RETENTION.md).
 
-## Known advisories
+## Dependency advisories
 
-`npm audit --omit=dev` reports one issue, counted twice: [GHSA-w5fc-gj3h-26rx](https://github.com/advisories/GHSA-w5fc-gj3h-26rx), a denial-of-service in `speaker`, a native audio-output module that `sarvam-conv-ai-sdk` lists as a dependency. No fixed version exists.
+`npm audit --omit=dev` reports **no vulnerabilities**, and CI fails on any high or critical advisory.
 
-It is not reachable in Callvi. The SDK is only imported as `sarvam-conv-ai-sdk/browser`, lazily and inside a client component ([`use-sarvam-voice.ts`](src/components/room/use-sarvam-voice.ts)), and that entry point's `browser` field maps `speaker` to `false`. No server code imports the SDK. We will remove the exception when the SDK drops the dependency.
+One was resolved by removal rather than upgrade. `sarvam-conv-ai-sdk` lists `speaker`, a native audio-output module with a denial-of-service advisory ([GHSA-w5fc-gj3h-26rx](https://github.com/advisories/GHSA-w5fc-gj3h-26rx)) and no fixed version. Callvi never loads it: the SDK is imported only as `sarvam-conv-ai-sdk/browser`, whose `browser` field maps `speaker` to `false`, and no server code imports the SDK. An npm `overrides` entry replaces it with an [empty stub](vendor/speaker-stub) that throws if anything ever tries to load it, so the vulnerable code is not installed at all.
 
 ## Known limitations
 
