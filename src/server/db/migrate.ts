@@ -17,7 +17,10 @@ export async function migrate(db: Db, opts: { localCompat: boolean }): Promise<s
   await db.execScript(`create table if not exists public.app_schema_migrations (
     name text primary key,
     applied_at timestamptz not null default now()
-  );`);
+  );
+  -- It lives in public, which the Supabase Data API exposes. With RLS on and no
+  -- policy, browser roles read nothing; the owner connection is unaffected.
+  alter table public.app_schema_migrations enable row level security;`);
   const applied = new Set(
     (await db.query(`select name from public.app_schema_migrations`)).map((r) =>
       typeof r === "object" && r !== null && "name" in r ? String(r.name) : "",

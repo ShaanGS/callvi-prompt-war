@@ -10,12 +10,6 @@ import { courseService } from "./course-service";
  * no transcripts. Learners are referred to by a short pseudonymous id.
  */
 
-const countRow = z.object({ n: col.int });
-
-async function count(db: Queryable, sql: string, params: readonly unknown[] = []): Promise<number> {
-  return (await one(db, countRow, sql, params)).n;
-}
-
 export function shortId(id: string): string {
   return id.slice(0, 8);
 }
@@ -29,42 +23,73 @@ export interface StaffOverview {
   deletions: { total: number };
 }
 
+const totalsRow = z.object({
+  sessions_total: col.int,
+  sessions_7d: col.int,
+  sessions_open: col.int,
+  enrollments_total: col.int,
+  enrollments_completed: col.int,
+  practice_total: col.int,
+  tools_total: col.int,
+  tools_failed: col.int,
+  tools_24h: col.int,
+  tools_failed_24h: col.int,
+  deletions_total: col.int,
+  learners_total: col.int,
+});
+
+// One scan per table, every figure for that table taken in the same pass with
+// FILTER, instead of a separate count query per number.
+const TOTALS_SQL = `
+  with s as (
+    select count(*)::int as total,
+           count(*) filter (where started_at > now() - interval '7 days')::int as last_7d,
+           count(*) filter (where status in ('started','active','paused'))::int as open
+      from learning_sessions),
+  e as (
+    select count(*)::int as total, count(*) filter (where status = 'completed')::int as completed
+      from enrollments),
+  t as (
+    select count(*)::int as total,
+           count(*) filter (where status = 'failed')::int as failed,
+           count(*) filter (where created_at > now() - interval '24 hours')::int as last_24h,
+           count(*) filter (where status = 'failed' and created_at > now() - interval '24 hours')::int as failed_24h
+      from tool_invocations)
+  select s.total as sessions_total, s.last_7d as sessions_7d, s.open as sessions_open,
+         e.total as enrollments_total, e.completed as enrollments_completed,
+         (select count(*)::int from practice_attempts) as practice_total,
+         t.total as tools_total, t.failed as tools_failed, t.last_24h as tools_24h, t.failed_24h as tools_failed_24h,
+         (select count(*)::int from deletion_receipts) as deletions_total,
+         (select count(*)::int from learners) as learners_total
+    from s, e, t`;
+
 export async function staffOverview(db: Queryable): Promise<StaffOverview> {
   const grouped = z.object({ k: col.text, n: col.int });
-  const [consent, channels, results] = await Promise.all([
+  const [consent, channels, results, totals] = await Promise.all([
     many(db, grouped, `select consent_status as k, count(*)::int as n from learners group by consent_status`),
     many(db, grouped, `select channel as k, count(*)::int as n from learning_sessions group by channel`),
     many(db, grouped, `select result as k, count(*)::int as n from practice_attempts group by result`),
+    one(db, totalsRow, TOTALS_SQL),
   ]);
   const byConsent = Object.fromEntries(consent.map((r) => [r.k, r.n]));
-  const [sessionsTotal, sessions7, open, enrollTotal, enrollDone, practiceTotal, toolsTotal, toolsFailed, tools24, toolsFailed24, deletions, learners] =
-    await Promise.all([
-      count(db, `select count(*)::int as n from learning_sessions`),
-      count(db, `select count(*)::int as n from learning_sessions where started_at > now() - interval '7 days'`),
-      count(db, `select count(*)::int as n from learning_sessions where status in ('started','active','paused')`),
-      count(db, `select count(*)::int as n from enrollments`),
-      count(db, `select count(*)::int as n from enrollments where status = 'completed'`),
-      count(db, `select count(*)::int as n from practice_attempts`),
-      count(db, `select count(*)::int as n from tool_invocations`),
-      count(db, `select count(*)::int as n from tool_invocations where status = 'failed'`),
-      count(db, `select count(*)::int as n from tool_invocations where created_at > now() - interval '24 hours'`),
-      count(db, `select count(*)::int as n from tool_invocations where status = 'failed' and created_at > now() - interval '24 hours'`),
-      count(db, `select count(*)::int as n from deletion_receipts`),
-      count(db, `select count(*)::int as n from learners`),
-    ]);
   return {
     learners: {
-      total: learners,
+      total: totals.learners_total,
       consentGranted: byConsent.granted ?? 0,
       consentDeclined: byConsent.declined ?? 0,
       consentPending: byConsent.pending ?? 0,
       consentRevoked: byConsent.revoked ?? 0,
     },
-    sessions: { total: sessionsTotal, last7Days: sessions7, open, byChannel: Object.fromEntries(channels.map((r) => [r.k, r.n])) },
-    enrollments: { total: enrollTotal, completed: enrollDone },
-    practice: { total: practiceTotal, byResult: Object.fromEntries(results.map((r) => [r.k, r.n])) },
-    tools: { total: toolsTotal, failed: toolsFailed, last24h: tools24, failedLast24h: toolsFailed24 },
-    deletions: { total: deletions },
+    sessions: {
+      total: totals.sessions_total,
+      last7Days: totals.sessions_7d,
+      open: totals.sessions_open,
+      byChannel: Object.fromEntries(channels.map((r) => [r.k, r.n])),
+    },
+    enrollments: { total: totals.enrollments_total, completed: totals.enrollments_completed },
+    practice: { total: totals.practice_total, byResult: Object.fromEntries(results.map((r) => [r.k, r.n])) },
+    tools: { total: totals.tools_total, failed: totals.tools_failed, last24h: totals.tools_24h, failedLast24h: totals.tools_failed_24h },
+    deletions: { total: totals.deletions_total },
   };
 }
 

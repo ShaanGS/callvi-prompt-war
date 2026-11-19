@@ -51,31 +51,36 @@ function lessonsView(course: StoredCourse, mastery: Record<string, MasteryState 
 
 export async function enrollmentViews(db: Queryable, learner: Learner, language: LanguageCode): Promise<EnrollmentView[]> {
   if (learner.consentStatus !== "granted") return [];
-  const enrollments = await enrollmentsRepo.listForLearner(db, learner.id);
-  const courses = await courseService.listAll(db);
-  const out: EnrollmentView[] = [];
-  for (const e of enrollments) {
-    const course = courses.find((c) => c.id === e.courseId);
-    if (!course) continue;
-    const snapshot = await learningService.progress(db, e.id);
-    const lesson = course.lessons.find((l) => l.id === e.currentLessonId) ?? null;
-    const checkpoint = await checkpointsRepo.latestForEnrollment(db, e.id);
-    out.push({
-      id: e.id,
-      course: { id: course.id, title: course.title[language] },
-      status: e.status,
-      enrolledAt: e.enrolledAt,
-      lastActivityAt: e.lastActivityAt,
-      currentLesson: lesson ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length } : null,
-      completedConcepts: Object.values(snapshot.mastery).filter((s) => isConceptDone(s)).length,
-      totalConcepts: totalConcepts(course),
-      completedLessons: course.lessons.filter((l) => snapshot.completedLessonIds.has(l.id)).length,
-      evidence: learningSignals(await evidenceRepo.list(db, learner.id, e.id), course, language, "progress-page"),
-      lessons: lessonsView(course, snapshot.mastery, snapshot.completedLessonIds, language),
-      lastCheckpoint: checkpoint ? { summary: renderCheckpointSummary(checkpoint, course, language), at: checkpoint.createdAt } : null,
-    });
-  }
-  return out;
+  const [enrollments, courses] = await Promise.all([enrollmentsRepo.listForLearner(db, learner.id), courseService.listAll(db)]);
+  // Each enrollment's reads are independent of the others, so they run
+  // concurrently instead of one round trip after another.
+  const views = await Promise.all(
+    enrollments.map(async (e): Promise<EnrollmentView | null> => {
+      const course = courses.find((c) => c.id === e.courseId);
+      if (!course) return null;
+      const [snapshot, checkpoint, evidence] = await Promise.all([
+        learningService.progress(db, e.id),
+        checkpointsRepo.latestForEnrollment(db, e.id),
+        evidenceRepo.list(db, learner.id, e.id),
+      ]);
+      const lesson = course.lessons.find((l) => l.id === e.currentLessonId) ?? null;
+      return {
+        id: e.id,
+        course: { id: course.id, title: course.title[language] },
+        status: e.status,
+        enrolledAt: e.enrolledAt,
+        lastActivityAt: e.lastActivityAt,
+        currentLesson: lesson ? { id: lesson.id, title: lesson.title[language], sequence: lesson.sequence, of: course.lessons.length } : null,
+        completedConcepts: Object.values(snapshot.mastery).filter((s) => isConceptDone(s)).length,
+        totalConcepts: totalConcepts(course),
+        completedLessons: course.lessons.filter((l) => snapshot.completedLessonIds.has(l.id)).length,
+        evidence: learningSignals(evidence, course, language, "progress-page"),
+        lessons: lessonsView(course, snapshot.mastery, snapshot.completedLessonIds, language),
+        lastCheckpoint: checkpoint ? { summary: renderCheckpointSummary(checkpoint, course, language), at: checkpoint.createdAt } : null,
+      };
+    }),
+  );
+  return views.filter((v): v is EnrollmentView => v !== null);
 }
 
 export interface HomeView {

@@ -62,11 +62,12 @@ export const memoryService = {
     };
     if (!memoryService.isDurable(learner)) return base;
 
-    const [prefs, goal, enrollments, checkpoint] = await Promise.all([
+    const [prefs, goal, enrollments, checkpoint, courses] = await Promise.all([
       memoryRepo.list(db, learner.id, ["preference"]),
       goalsRepo.findActive(db, learner.id),
       enrollmentsRepo.listForLearner(db, learner.id),
       checkpointsRepo.latestForLearner(db, learner.id),
+      courseService.listAll(db),
     ]);
     base.preferences = prefs.map((p) => ({
       id: p.id,
@@ -81,11 +82,12 @@ export const memoryService = {
       ? { id: goal.id, text: goal.goalText, source: goal.source, sourceSessionId: goal.sourceSessionId, updatedAt: goal.updatedAt }
       : null;
 
-    const courses = await courseService.listAll(db);
-    for (const e of enrollments) {
+    // One mastery read per enrollment, issued together rather than in turn.
+    const masteries = await Promise.all(enrollments.map((e) => progressRepo.listMastery(db, e.id)));
+    for (const [i, e] of enrollments.entries()) {
       const course = courses.find((c) => c.id === e.courseId);
       if (!course) continue;
-      const mastery = await progressRepo.listMastery(db, e.id);
+      const mastery = masteries[i];
       base.enrollments.push({
         id: e.id,
         courseId: e.courseId,
